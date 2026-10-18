@@ -2,6 +2,14 @@
 
 Practice tools for Datadog certification exams.
 
+> **Unofficial.** This is a personal study project. It is not made, endorsed, or reviewed by Datadog, and its questions are not real exam questions. For the official certification, exam details, and free prep material, go to Datadog:
+>
+> - [Datadog Certification](https://www.datadoghq.com/certification/): the official program, registration, and policies
+> - [Datadog Fundamentals exam guide](https://www.datadoghq.com/pdf/datadog-fundamentals-exam-guide-aug-2026.pdf): exam format and the full content outline
+> - [Datadog Fundamentals learning path](https://learn.datadoghq.com/bundles/datadog-fundamentals-certification-learning-path): Datadog's courses for this exam
+
+
+
 | Folder | Exam |
 |---|---|
 | [`dd-fundamental/`](dd-fundamental/) | Datadog Fundamentals |
