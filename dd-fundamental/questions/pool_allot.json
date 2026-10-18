@@ -1,0 +1,1577 @@
+[
+ {
+  "id": "allot-001",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "easy",
+  "q": "How many custom metrics per host are included with Infrastructure Pro?",
+  "options": [
+   "100",
+   "500",
+   "200"
+  ],
+  "answer": 0,
+  "explanation": "Infrastructure Pro includes 100 custom metrics per host. 200 is the Infrastructure Enterprise allotment.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Correct: Infrastructure Pro includes 100 custom metrics per host, pooled across the account.",
+   "500 is the Infrastructure Pro custom events allotment per host per month, not custom metrics.",
+   "200 custom metrics per host is the Infrastructure Enterprise allotment."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-002",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "easy",
+  "q": "How many containers per host are included with Infrastructure Enterprise?",
+  "options": [
+   "10 per host per hour",
+   "5 per host per hour",
+   "20 per host per hour"
+  ],
+  "answer": 0,
+  "explanation": "Infrastructure Enterprise includes 10 containers per host per hour. Pro includes 5, and 20 per host is the CSM Enterprise container allotment.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Correct: Infrastructure Enterprise includes 10 containers per host per hour.",
+   "5 containers per host per hour is the Infrastructure Pro allotment (and CSM Pro).",
+   "20 containers per host is the CSM Enterprise allotment, not Infrastructure Enterprise."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-003",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "easy",
+  "q": "How many custom events per host per month are included with Infrastructure Pro?",
+  "options": [
+   "100",
+   "500",
+   "1,000"
+  ],
+  "answer": 1,
+  "explanation": "Infrastructure Pro includes 500 custom events per host per month. Enterprise doubles this to 1,000.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "100 is the Pro custom metrics allotment per host, not custom events.",
+   "Correct: Infrastructure Pro includes 500 custom events per host per month.",
+   "1,000 custom events per host per month is the Infrastructure Enterprise allotment."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-004",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "Which statement correctly compares the per-host allotments of Infrastructure Pro and Infrastructure Enterprise?",
+  "options": [
+   "Enterprise doubles custom metrics (200 vs 100), but both plans include 5 containers per host",
+   "Both plans include 100 custom metrics per host; only the container allotment differs",
+   "Enterprise doubles Pro for custom metrics (200 vs 100), containers (10 vs 5), and custom events (1,000 vs 500)"
+  ],
+  "answer": 2,
+  "explanation": "Every Infrastructure Enterprise per-host allotment is double the Pro one: 200 vs 100 custom metrics, 10 vs 5 containers per hour, and 1,000 vs 500 custom events per month.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Wrong: containers differ too, Pro includes 5 per host and Enterprise 10.",
+   "Wrong: Enterprise includes 200 custom metrics per host, double Pro's 100.",
+   "Correct: Enterprise doubles every Pro per-host allotment: metrics 200 vs 100, containers 10 vs 5, events 1,000 vs 500."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-005",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "easy",
+  "q": "How many indexed spans per APM host per month does APM include?",
+  "options": [
+   "300,000",
+   "1,000,000",
+   "400,000"
+  ],
+  "answer": 1,
+  "explanation": "APM, APM Pro and APM Enterprise each include 1,000,000 indexed spans per APM host per month. 300,000 per 1M invocations is the Serverless Functions APM allotment.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "300,000 indexed spans per 1M invocations is the Serverless Functions APM allotment.",
+   "Correct: every APM tier includes 1,000,000 indexed spans per APM host per month.",
+   "400,000 is the Pipeline Visibility pipeline span allotment per committer."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-006",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "easy",
+  "q": "How much ingested span volume is included per APM host per month?",
+  "options": [
+   "50 GB",
+   "150 GB",
+   "100 GB"
+  ],
+  "answer": 1,
+  "explanation": "Each APM host includes 150 GB of ingested spans per month. 50 GB is the Serverless Functions APM allotment per 1M invocations.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "50 GB per 1M invocations is the Serverless Functions APM ingested span allotment.",
+   "Correct: each APM host includes 150 GB of ingested spans per month.",
+   "100 GB is not a listed APM allotment; the per-host figure is 150 GB."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-007",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "Which allotment do APM Pro and APM Enterprise include that standard APM does not?",
+  "options": [
+   "1 Continuous Profiler host per APM host per month",
+   "1 Data Streams Monitoring client host per APM host",
+   "4 profiled containers per APM host per hour"
+  ],
+  "answer": 1,
+  "explanation": "Both APM Pro and APM Enterprise include 1 Data Streams Monitoring client host per APM host. The profiler host and the 4 profiled containers come with APM Enterprise only.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "The profiled host per APM host comes only with APM Enterprise, not APM Pro.",
+   "Correct: APM Pro and APM Enterprise both add 1 Data Streams Monitoring client host per APM host.",
+   "4 profiled containers per APM host per hour is exclusive to APM Enterprise."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-008",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "Which allotments come only with APM Enterprise?",
+  "options": [
+   "1 Continuous Profiler host and 4 profiled containers per APM host",
+   "1 Data Streams Monitoring client host per APM host",
+   "150 GB of ingested spans per APM host per month"
+  ],
+  "answer": 0,
+  "explanation": "The profiled host and the 4 profiled containers per APM host are exclusive to APM Enterprise. DSM client hosts come with both APM Pro and Enterprise, and 150 GB of ingested spans comes with every APM tier.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Correct: the profiled host and 4 profiled containers per APM host come only with APM Enterprise.",
+   "DSM client hosts are included with both APM Pro and APM Enterprise.",
+   "150 GB of ingested spans per host is included with every APM tier, including base APM."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-009",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "easy",
+  "q": "How many profiled containers are included per profiled host with Continuous Profiler?",
+  "options": [
+   "4",
+   "10",
+   "5"
+  ],
+  "answer": 0,
+  "explanation": "Continuous Profiler includes 4 profiled containers per profiled host per hour. 5 and 10 are the Infrastructure Pro and Enterprise container allotments.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Correct: Continuous Profiler includes 4 profiled containers per profiled host per hour.",
+   "10 containers per host is the Infrastructure Enterprise container allotment.",
+   "5 containers per host is the Infrastructure Pro (and CSM Pro) container allotment."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-010",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "easy",
+  "q": "How many normalized queries per database host are included with Database Monitoring?",
+  "options": [
+   "200",
+   "100",
+   "500"
+  ],
+  "answer": 0,
+  "explanation": "Database Monitoring includes 200 normalized queries per database host.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Correct: Database Monitoring includes 200 normalized queries per database host.",
+   "100 is the Infrastructure Pro custom metrics allotment, not a DBM figure.",
+   "500 is the Infrastructure Pro custom events allotment, not a DBM figure."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-011",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "How many custom metrics does Serverless Workload Monitoring include for functions (for example, AWS Lambda)?",
+  "options": [
+   "100 per function",
+   "5 per function",
+   "20 per function"
+  ],
+  "answer": 1,
+  "explanation": "Serverless Workload Monitoring for functions includes 5 custom metrics per function. The 20 figure applies to serverless apps, counted per app instance.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "100 per host is the Infrastructure Pro custom metric allotment, not serverless.",
+   "Correct: Serverless Workload Monitoring for functions includes 5 custom metrics per function.",
+   "20 custom metrics applies to serverless apps, counted per app instance."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-012",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "A team monitors containerized serverless apps (for example, Cloud Run or Azure App Service) with Serverless Workload Monitoring for Apps. What custom metric allotment applies?",
+  "options": [
+   "20 custom metrics per app instance",
+   "100 custom metrics per app instance",
+   "5 custom metrics per app instance"
+  ],
+  "answer": 0,
+  "explanation": "Serverless Workload Monitoring for apps includes 20 custom metrics per app instance. Functions get 5 per function.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Correct: Serverless Workload Monitoring for apps includes 20 custom metrics per app instance.",
+   "100 per host is the Infrastructure Pro custom metrics allotment.",
+   "5 custom metrics is the per-function allotment for serverless functions."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-013",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "What does Serverless Functions APM include for every 1 million invocations?",
+  "options": [
+   "150,000 indexed spans and 50 GB of ingested spans",
+   "300,000 indexed spans and 50 GB of ingested spans",
+   "1,000,000 indexed spans and 150 GB of ingested spans"
+  ],
+  "answer": 1,
+  "explanation": "Serverless Functions APM includes 300,000 indexed spans and 50 GB of ingested spans per 1M invocations. 1M indexed spans and 150 GB is the per-APM-host allotment.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Wrong indexed figure; Serverless Functions APM includes 300,000 indexed spans per 1M invocations.",
+   "Correct: 300,000 indexed spans and 50 GB of ingested spans per 1M invocations.",
+   "1M indexed spans and 150 GB is the per-APM-host allotment, not per invocations."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-014",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "How many pipeline spans per committer per month does Pipeline Visibility (part of CI Visibility) include?",
+  "options": [
+   "1,000,000",
+   "400,000",
+   "300,000"
+  ],
+  "answer": 1,
+  "explanation": "Pipeline Visibility includes 400,000 pipeline spans per committer per month. 1,000,000 is the Test Optimization test span allotment.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "1,000,000 is the Test Optimization test span allotment per committer.",
+   "Correct: Pipeline Visibility includes 400,000 pipeline spans per committer per month.",
+   "300,000 indexed spans per 1M invocations is the Serverless Functions APM allotment."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-015",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "How many test spans per committer per month does Test Optimization include?",
+  "options": [
+   "400,000",
+   "1,000,000",
+   "150,000"
+  ],
+  "answer": 1,
+  "explanation": "Test Optimization includes 1,000,000 test spans per committer per month. 400,000 is the Pipeline Visibility pipeline span allotment.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "400,000 is the Pipeline Visibility pipeline span allotment per committer.",
+   "Correct: Test Optimization includes 1,000,000 test spans per committer per month.",
+   "150 is the APM ingested GB per host; 150,000 is not a CI allotment."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-016",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "How many containers per CSM host are included with Cloud Security Management (CSM) Enterprise?",
+  "options": [
+   "5",
+   "10",
+   "20"
+  ],
+  "answer": 2,
+  "explanation": "CSM Enterprise includes 20 containers per CSM host per hour. CSM Pro includes 5.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "5 containers per CSM host is the CSM Pro allotment.",
+   "10 containers per host is the Infrastructure Enterprise allotment.",
+   "Correct: CSM Enterprise includes 20 containers per CSM host per hour."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-017",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "easy",
+  "q": "How many containers per CSM host are included with CSM Pro?",
+  "options": [
+   "4",
+   "20",
+   "5"
+  ],
+  "answer": 2,
+  "explanation": "CSM Pro includes 5 containers per CSM host per hour. 4 is the Workload Protection allotment and 20 is CSM Enterprise.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "4 containers per host is the Workload Protection allotment.",
+   "20 containers per CSM host is the CSM Enterprise allotment.",
+   "Correct: CSM Pro includes 5 containers per CSM host per hour."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-018",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "How many containers per host are included with Workload Protection?",
+  "options": [
+   "20 per host per hour",
+   "4 per host per hour",
+   "5 per host per hour"
+  ],
+  "answer": 1,
+  "explanation": "Workload Protection includes 4 containers per Workload Protection host per hour.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "20 containers per host is the CSM Enterprise allotment.",
+   "Correct: Workload Protection includes 4 containers per Workload Protection host per hour.",
+   "5 containers per host is the CSM Pro and Infrastructure Pro allotment."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-019",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "An organization on Infrastructure Pro with 5 hosts has also bought a contract commitment of 1,000 custom metrics. How many custom metrics are included per hour?",
+  "options": [
+   "500",
+   "1,000",
+   "1,500"
+  ],
+  "answer": 2,
+  "explanation": "The host allotment (5 x 100 = 500) is added to the 1,000 committed custom metrics, so 1,500 are included per hour.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "500 counts only the host allotment (5 x 100) and ignores the commitment.",
+   "1,000 counts only the commitment and ignores the host allotment.",
+   "Correct: 5 x 100 host allotment plus 1,000 committed gives 1,500 included per hour."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-020",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "hard",
+  "q": "An organization has 3 Infrastructure Enterprise hosts and no custom metric commitment. It averages 750 distinct custom metrics per hour for the month. How many custom metrics are billed as overage?",
+  "options": [
+   "150",
+   "450",
+   "600"
+  ],
+  "answer": 0,
+  "explanation": "3 Enterprise hosts x 200 = 600 included custom metrics, so 750 - 600 = 150 are overage. 450 is what you get if you wrongly apply the Pro allotment of 100 per host.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Correct: 3 x 200 = 600 included, so 750 - 600 = 150 are overage.",
+   "450 wrongly applies the Pro allotment (3 x 100 = 300).",
+   "600 is the included amount, not the overage."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-021",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "Two Infrastructure Pro hosts run a combined 12 containers for an entire hour. How many containers are billable for that hour?",
+  "options": [
+   "7",
+   "10",
+   "2"
+  ],
+  "answer": 2,
+  "explanation": "The container allotment is pooled at 5 per Pro host per hour: 2 x 5 = 10 included, so 12 - 10 = 2 containers are billable that hour.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "7 would use only one host's allotment (12 - 5); allotments are pooled across hosts.",
+   "10 is the included amount (2 x 5), not the billable amount.",
+   "Correct: 2 Pro hosts x 5 = 10 included, so 12 - 10 = 2 containers are billable."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-022",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "hard",
+  "q": "An organization has 4 Infrastructure Enterprise hosts. Host A sends 700 distinct custom metrics and hosts B, C and D each send 50. How many custom metrics are over the allotment?",
+  "options": [
+   "0",
+   "500",
+   "50"
+  ],
+  "answer": 2,
+  "explanation": "Custom metric allotments are pooled across the account: 4 x 200 = 800 included, and 700 + 150 = 850 are used, so 50 are overage. Host A's individual 700 is not compared to a per-host 200.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "0 ignores that total usage of 850 exceeds the pooled 800 allotment.",
+   "500 wrongly compares host A's 700 to a per-host 200; allotments are pooled.",
+   "Correct: pooled 4 x 200 = 800 included, 850 used, so 50 are overage."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-023",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "hard",
+  "q": "An organization with 10 hosts averages 1,800 distinct custom metrics per hour. How much overage would it have on Infrastructure Pro compared with Infrastructure Enterprise?",
+  "options": [
+   "Pro: 800 over; Enterprise: 800 over",
+   "Pro: 800 over; Enterprise: 0 over",
+   "Pro: 1,700 over; Enterprise: 1,600 over"
+  ],
+  "answer": 1,
+  "explanation": "Pro includes 10 x 100 = 1,000, so 800 are over. Enterprise includes 10 x 200 = 2,000, which covers all 1,800.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Enterprise includes 2,000 (10 x 200), which covers all 1,800.",
+   "Correct: Pro includes 1,000 (800 over); Enterprise includes 2,000 (0 over).",
+   "These subtract a single host's allotment instead of 10 hosts' pooled allotment."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-024",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "Three Infrastructure Enterprise hosts run 25 containers in total during an hour. How many containers are billable for that hour?",
+  "options": [
+   "0",
+   "25",
+   "10"
+  ],
+  "answer": 0,
+  "explanation": "Enterprise includes 10 containers per host per hour: 3 x 10 = 30 included, which covers all 25. On Pro (15 included), 10 would be billable.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Correct: 3 Enterprise hosts x 10 = 30 included, which covers all 25 containers.",
+   "25 ignores the Enterprise allotment of 10 containers per host per hour.",
+   "10 would be billable on Pro (3 x 5 = 15 included), not on Enterprise."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-025",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "hard",
+  "q": "An organization runs 4 APM hosts all month, and retention filters index 5,500,000 spans in total that month. How many indexed spans are billed above the allotment?",
+  "options": [
+   "4,500,000",
+   "1,500,000",
+   "0"
+  ],
+  "answer": 1,
+  "explanation": "Each APM host includes 1,000,000 indexed spans per month, so 4,000,000 are included. Indexed spans are summed over the month, so 5,500,000 - 4,000,000 = 1,500,000 are billable.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "4,500,000 subtracts a single host's 1,000,000 instead of the pooled 4,000,000.",
+   "Correct: 4 x 1,000,000 = 4,000,000 included; 5,500,000 - 4,000,000 = 1,500,000 billable.",
+   "0 would require 5.5M included; 4 APM hosts include 4M."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-026",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "easy",
+  "q": "An organization runs 10 APM hosts. How much ingested span volume is included per month?",
+  "options": [
+   "500 GB",
+   "150 GB",
+   "1,500 GB"
+  ],
+  "answer": 2,
+  "explanation": "Each APM host includes 150 GB of ingested spans per month, so 10 hosts include 1,500 GB.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "500 GB uses the Serverless Functions APM 50 GB figure, not the per-host 150 GB.",
+   "150 GB is the allotment for a single APM host, not 10.",
+   "Correct: 10 APM hosts x 150 GB = 1,500 GB of ingested spans per month."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-027",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "hard",
+  "q": "An organization has 3 APM Enterprise hosts. During one hour, 15 containers are being profiled. How many profiled containers are billable for that hour?",
+  "options": [
+   "0",
+   "11",
+   "3"
+  ],
+  "answer": 2,
+  "explanation": "APM Enterprise includes 4 profiled containers per APM host per hour: 3 x 4 = 12 included, so 15 - 12 = 3 are billable.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "0 would require 15 included; 3 APM Enterprise hosts include 12.",
+   "11 subtracts only one host's 4 containers; the allotment is pooled.",
+   "Correct: 3 x 4 = 12 profiled containers included, so 15 - 12 = 3 are billable."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-028",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "hard",
+  "q": "An organization has 2 Continuous Profiler hosts. During an hour, host A runs 5 profiled containers and host B runs 1. How many profiled containers are billable?",
+  "options": [
+   "1, because host A exceeds its own 4-container allotment and allotments are not shared",
+   "6, because profiled containers have no allotment with standalone Continuous Profiler",
+   "0, because the 8 included profiled containers are pooled across hosts"
+  ],
+  "answer": 2,
+  "explanation": "Continuous Profiler includes 4 profiled containers per profiled host, pooled across hosts. 2 x 4 = 8 covers the 6 in use, so none are billable.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Wrong: the profiled container allotment is aggregated across all profiled hosts.",
+   "Wrong: Continuous Profiler includes 4 profiled containers per profiled host.",
+   "Correct: 2 x 4 = 8 pooled profiled containers covers the 6 in use."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-029",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "easy",
+  "q": "An organization monitors 3 database hosts with Database Monitoring. How many normalized queries are included?",
+  "options": [
+   "300",
+   "600",
+   "200"
+  ],
+  "answer": 1,
+  "explanation": "DBM includes 200 normalized queries per database host, so 3 hosts include 600.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "300 wrongly uses 100 normalized queries per host; DBM includes 200.",
+   "Correct: 3 database hosts x 200 normalized queries = 600.",
+   "200 is the allotment for a single database host, not three."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-030",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "hard",
+  "q": "A Lambda workload with Serverless Functions APM has 5 million invocations in a month. Which span allotment applies?",
+  "options": [
+   "300,000 indexed spans and 50 GB of ingested spans",
+   "5,000,000 indexed spans and 750 GB of ingested spans",
+   "1,500,000 indexed spans and 250 GB of ingested spans"
+  ],
+  "answer": 2,
+  "explanation": "The allotment is 300,000 indexed spans and 50 GB of ingested spans per 1M invocations. For 5M invocations that is 5 x 300,000 = 1,500,000 indexed spans and 5 x 50 GB = 250 GB.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "This is the allotment for only 1M invocations, not 5M.",
+   "5M indexed and 750 GB scales the per-APM-host allotment, which does not apply to Lambda.",
+   "Correct: 5 x 300,000 = 1,500,000 indexed spans and 5 x 50 GB = 250 GB."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-031",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "An organization uses Serverless Workload Monitoring for 40 Lambda functions. How many custom metrics are included?",
+  "options": [
+   "800",
+   "200",
+   "4,000"
+  ],
+  "answer": 1,
+  "explanation": "Functions include 5 custom metrics each, so 40 x 5 = 200. 800 would use the 20-per-app-instance figure, which applies to serverless apps, not functions.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "800 wrongly uses the 20-per-app-instance figure for serverless apps.",
+   "Correct: 40 functions x 5 custom metrics = 200.",
+   "4,000 wrongly applies the Infrastructure Pro 100-per-host figure to functions."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-032",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "A team has 10 billable committers using both Pipeline Visibility and Test Optimization. What is included per month?",
+  "options": [
+   "400,000 pipeline spans and 1,000,000 test spans",
+   "4,000,000 pipeline spans and 10,000,000 test spans",
+   "10,000,000 pipeline spans and 4,000,000 test spans"
+  ],
+  "answer": 1,
+  "explanation": "Each committer includes 400,000 pipeline spans and 1,000,000 test spans per month, so 10 committers include 4M pipeline spans and 10M test spans.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "These are the per-committer allotments for one committer, not ten.",
+   "Correct: 10 x 400,000 = 4M pipeline spans and 10 x 1,000,000 = 10M test spans.",
+   "The figures are swapped; test spans are the larger allotment (1M per committer)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-033",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "medium",
+  "q": "An organization protects 4 hosts with CSM Enterprise. How many containers are included per hour?",
+  "options": [
+   "20",
+   "80",
+   "40"
+  ],
+  "answer": 1,
+  "explanation": "CSM Enterprise includes 20 containers per CSM host per hour, so 4 hosts include 80. 40 would use the Infrastructure Enterprise figure of 10 per host.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "20 is the allotment for a single CSM Enterprise host, not four.",
+   "Correct: 4 CSM Enterprise hosts x 20 containers = 80 per hour.",
+   "40 wrongly uses the Infrastructure Enterprise figure of 10 containers per host."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-034",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "easy",
+  "q": "An organization has 20 Infrastructure Pro hosts. How many custom events are included per month?",
+  "options": [
+   "10,000",
+   "500",
+   "20,000"
+  ],
+  "answer": 0,
+  "explanation": "Infrastructure Pro includes 500 custom events per host per month, so 20 hosts include 10,000. 20,000 would apply on Enterprise (1,000 per host).",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Correct: 20 Pro hosts x 500 custom events = 10,000 per month.",
+   "500 is the allotment for a single Pro host, not twenty.",
+   "20,000 would apply on Enterprise (1,000 custom events per host)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-035",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Product Allotments",
+  "difficulty": "hard",
+  "q": "The monthly APM allotment is 1,000,000 indexed spans per APM host. Approximately what is the equivalent hourly allotment per APM host?",
+  "options": [
+   "33,333 indexed spans",
+   "1,370 indexed spans",
+   "1,000 indexed spans"
+  ],
+  "answer": 1,
+  "explanation": "The allotments page lists 1,370 indexed spans per APM host per hour, which is 1,000,000 spread over the roughly 730 hours in a month. 33,333 is the per-day figure (1,000,000 / 30).",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "33,333 is the per-day figure (1,000,000 / 30), not per hour.",
+   "Correct: the allotments page lists 1,370 indexed spans per APM host per hour.",
+   "1,000 is not the listed hourly figure; 1,000,000 / ~730 hours is about 1,370."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-036",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "medium",
+  "q": "How are per-host custom metric allotments applied across an organization?",
+  "options": [
+   "They are pooled only across hosts that share the same env tag and the same cloud account",
+   "Each host is limited to its own allotment, and any excess on that host is billed",
+   "They are pooled across the whole account, so any host can use the combined total"
+  ],
+  "answer": 2,
+  "explanation": "Custom metric allotments are pooled across the whole infrastructure. For example, 3 Pro hosts give 300 custom metrics that can be spread across hosts or used by one.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "Wrong: there is no env tag or cloud account scoping of the custom metric allotment.",
+   "Wrong: allotments are not enforced per host; excess on one host can use other hosts' allotment.",
+   "Correct: custom metric allotments are counted across the entire infrastructure."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-037",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "medium",
+  "q": "How is overage computed under monthly on-demand billing?",
+  "options": [
+   "Usage is aggregated across the month, then commitments and allotments are subtracted at month end",
+   "Included usage is subtracted from each hour's usage, and the hourly results are then averaged over the month",
+   "The single peak hour of usage in the month is billed after the allotment and commitments are subtracted"
+  ],
+  "answer": 0,
+  "explanation": "With monthly on-demand, billable usage is aggregated across the month (averaged for custom metrics, summed for indexed spans), and commitments and allotments are subtracted at month end. Subtracting each hour and then averaging is hourly on-demand.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Correct: monthly on-demand aggregates usage over the month, then subtracts allotments and commitments at month end.",
+   "This describes hourly on-demand, where included usage is subtracted each hour.",
+   "Wrong: on-demand custom metrics are not billed on a single peak hour."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-038",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "medium",
+  "q": "How is overage computed under hourly on-demand billing?",
+  "options": [
+   "Usage is ranked by hour and the 99th percentile hour is billed after the allotment is subtracted",
+   "Usage is aggregated over the whole month first, and the allotment and commitments are subtracted once at month end",
+   "Included usage is subtracted from each hour's usage, and those hourly on-demand values are averaged over the month"
+  ],
+  "answer": 2,
+  "explanation": "With hourly on-demand, the included amount is subtracted from each hour's billable usage. The monthly on-demand figure is the average of those hourly values across all hours in the month.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "The 99th percentile method is the High Watermark Plan for hosts, not hourly on-demand.",
+   "This describes monthly on-demand, where subtraction happens once at month end.",
+   "Correct: hourly on-demand subtracts included usage each hour, then averages the hourly values."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-039",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "easy",
+  "q": "Which on-demand billing method is available for containers above the allotment?",
+  "options": [
+   "Monthly on-demand only",
+   "Hourly on-demand only",
+   "Either hourly or monthly, chosen by the customer"
+  ],
+  "answer": 1,
+  "explanation": "Containers are eligible only for hourly on-demand billing, and their allotment is set per hour.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Wrong: containers are not eligible for monthly on-demand frequency.",
+   "Correct: containers are only eligible for hourly on-demand frequency.",
+   "Wrong: customers cannot choose monthly on-demand for containers."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-040",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "medium",
+  "q": "How are APM indexed spans aggregated at month end for billing?",
+  "options": [
+   "Summed over the month",
+   "Taken at the 99th percentile hour",
+   "Averaged per hour over the month"
+  ],
+  "answer": 0,
+  "explanation": "Indexed spans are summed across the month before commitments and allotments are subtracted. Custom metrics, by contrast, are averaged per hour.",
+  "ref": "https://www.datadoghq.com/pricing/allotments/",
+  "notes": [
+   "Correct: indexed spans are summed over the month before allotments and commitments apply.",
+   "The 99th percentile is used for host counts under the High Watermark Plan.",
+   "Averaging per hour is how custom metrics are aggregated, not indexed spans."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-041",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "medium",
+  "q": "Under the High Watermark Plan, how is the billable host count determined?",
+  "options": [
+   "Hosts are metered hourly and the single highest hourly host count in the month (100th percentile) is billed",
+   "Hosts are metered hourly and the average number of hosts per hour across the whole month is billed",
+   "Hosts are metered hourly, the top 1% of hours is discarded, and the highest remaining hour (99th percentile) is billed"
+  ],
+  "answer": 2,
+  "explanation": "Datadog bills the maximum count (high-water mark) of the lower 99% of hourly readings, so short spikes in the top 1% of hours don't inflate the bill.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/pricing/",
+  "notes": [
+   "Wrong: the top 1% of hourly readings is excluded, so the single peak hour is not billed.",
+   "Wrong: HWMP does not use the monthly average host count.",
+   "Correct: Datadog bills the high-water mark of the lower 99% of hourly host readings."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-042",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "hard",
+  "q": "In a 720-hour month, an organization runs 100 hosts every hour except during a 5-hour load test, when it runs 400 hosts. Under the High Watermark Plan, how many hosts are billed?",
+  "options": [
+   "About 102 (the monthly average)",
+   "100",
+   "400"
+  ],
+  "answer": 1,
+  "explanation": "The top 1% of hours (7.2 of 720) is discarded, so all 5 load-test hours are dropped. The high-water mark of the remaining hours is 100. The plan doesn't use the monthly average.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/pricing/",
+  "notes": [
+   "About 102 is the monthly average, which HWMP does not use.",
+   "Correct: the top 1% (7.2 of 720 hours) is discarded, so all 5 spike hours drop and 100 is billed.",
+   "400 would only be billed if the spike lasted more than the top 1% of hours."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-043",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "medium",
+  "q": "An organization with highly ephemeral hosts wants to commit to a monthly minimum and pay an hourly rate for host hours above it. Which host billing plan fits?",
+  "options": [
+   "Hybrid Monthly/Hourly Plan (MHP)",
+   "High Watermark Plan (HWMP)",
+   "Metric Name pricing"
+  ],
+  "answer": 0,
+  "explanation": "Under MHP you commit to a monthly minimum, and host hours above it are billed at an hourly rate, which suits ephemeral environments. HWMP bills the 99th percentile hourly host count. Metric Name pricing is a custom metric model.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/pricing/",
+  "notes": [
+   "Correct: MHP commits to a monthly minimum and bills host hours above it at an hourly rate.",
+   "HWMP bills the 99th percentile hourly host count, with no hourly overage rate.",
+   "Metric Name pricing is a custom metrics pricing model, not a host billing plan."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-044",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "medium",
+  "q": "How does Datadog measure and bill monitored containers?",
+  "options": [
+   "Containers are counted every five minutes and billed on fractional hours",
+   "Containers are counted once per hour and each partial hour is rounded up",
+   "Containers are counted once per day at the peak and billed per day"
+  ],
+  "answer": 0,
+  "explanation": "Datadog records the container count every five minutes and charges monthly based on the fractional hours of monitored containers.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/pricing/",
+  "notes": [
+   "Correct: containers are recorded every five minutes and billed on fractional hours.",
+   "Wrong: containers are sampled every five minutes, not once per hour with rounding up.",
+   "Wrong: containers are not billed on a daily peak."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-045",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "easy",
+  "q": "How is Log Management billed?",
+  "options": [
+   "Ingestion per million log events, and indexing per GB",
+   "Both ingestion and indexing per GB",
+   "Ingestion per GB, and indexing per million log events"
+  ],
+  "answer": 2,
+  "explanation": "Ingested logs are billed per GB. Indexed logs are billed per million events submitted for indexing, at a rate that depends on the retention period.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/pricing/",
+  "notes": [
+   "The units are reversed; ingestion is per GB and indexing is per million events.",
+   "Wrong: indexing is billed per million log events, not per GB.",
+   "Correct: ingested logs are billed per GB and indexed logs per million events."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-046",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "easy",
+  "q": "How are Synthetic Monitoring tests billed?",
+  "options": [
+   "API tests per 10,000 runs; browser tests per 1,000 runs",
+   "API tests and browser tests both per 1,000 runs",
+   "API tests per 1,000 runs; browser tests per 10,000 runs"
+  ],
+  "answer": 0,
+  "explanation": "Synthetic API tests are billed per ten thousand runs and browser tests per thousand runs.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/pricing/",
+  "notes": [
+   "Correct: API tests are billed per 10,000 runs and browser tests per 1,000 runs.",
+   "Wrong: API tests are billed per 10,000 runs, not per 1,000.",
+   "The units are reversed; browser tests are the ones billed per 1,000 runs."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-047",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "medium",
+  "q": "RUM is billed per 1,000 sessions. A user is continuously active in a web app for 5 hours without a break. How many RUM sessions does this produce?",
+  "options": [
+   "1, because a session only ends after 15 minutes of user inactivity",
+   "2, because a session ends after 4 hours of continuous activity",
+   "5, because RUM starts a new billable session at the start of every hour"
+  ],
+  "answer": 1,
+  "explanation": "A RUM session expires after 15 minutes of inactivity or 4 hours of continuous activity. 5 hours of continuous use therefore produces two sessions.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/pricing/",
+  "notes": [
+   "Wrong: a session also expires after 4 hours of continuous activity.",
+   "Correct: a RUM session expires after 4 hours of continuous activity, so 5 hours yields 2 sessions.",
+   "Wrong: RUM does not start a new session every hour."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-048",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "medium",
+  "q": "An EC2 instance runs the Datadog Agent and is also discovered by the AWS integration. How many hosts does it count as for billing?",
+  "options": [
+   "Two, because the Agent and the AWS integration each report it as a separate billable host",
+   "Zero, because hosts discovered by a cloud integration are covered by the integration and are free",
+   "One. A host with the Agent and a cloud integration is not double-billed"
+  ],
+  "answer": 2,
+  "explanation": "An EC2 instance or VM running the Agent counts as a single instance, even when a cloud integration also reports it. There is no double billing.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/",
+  "notes": [
+   "Wrong: an instance with the Agent counts once even if a cloud integration also reports it.",
+   "Wrong: hosts discovered by cloud integrations are billable hosts, not free.",
+   "Correct: an EC2 or VM with the Agent counts as a single instance, with no double billing."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-049",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "medium",
+  "q": "Which statement about the Host List (Infrastructure > Hosts) is correct?",
+  "options": [
+   "It only shows hosts with the Agent installed; cloud integration hosts appear in a separate list",
+   "It is the authoritative source for the billable host count that appears on your monthly invoice",
+   "It shows hosts reporting through the Agent or cloud integrations, but you shouldn't use it to estimate host billing"
+  ],
+  "answer": 2,
+  "explanation": "The Host List is a live inventory of hosts reporting through the Agent or cloud integrations, but the docs warn it should not be used to estimate infrastructure host billing. Use the Plan & Usage pages instead.",
+  "ref": "https://docs.datadoghq.com/infrastructure/list/",
+  "notes": [
+   "Wrong: the Host List shows hosts reporting through both the Agent and cloud integrations.",
+   "Wrong: the docs explicitly say the list should not be used to estimate host billing.",
+   "Correct: it lists hosts from the Agent or cloud integrations, but should not be used to estimate billing."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-050",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Billing Methodology",
+  "difficulty": "medium",
+  "q": "Who can view the organization's usage, such as monthly custom metric counts, on the Usage page?",
+  "options": [
+   "Only users whose role has been granted the logs_read_data permission",
+   "Users with the Datadog Admin role or a role with the usage_read permission",
+   "Any user in the organization, including Read Only users, with no special permission needed"
+  ],
+  "answer": 1,
+  "explanation": "The usage_read permission (View your organization's usage and usage attribution) is held by default only by the Datadog Admin role; custom roles can be granted it. Standard and Read Only roles lack it by default.",
+  "ref": "https://docs.datadoghq.com/account_management/rbac/permissions/",
+  "notes": [
+   "logs_read_data controls access to log data, not usage data.",
+   "Correct: usage_read (held by the Datadog Admin role by default) grants viewing organization usage.",
+   "Wrong: Read Only and Standard roles don't have usage_read by default."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-051",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "easy",
+  "q": "In Datadog, what uniquely identifies a single custom metric for billing?",
+  "options": [
+   "Each individual data point submitted to the intake, counted per flush interval",
+   "A unique metric name, regardless of how many tags or tag values it is submitted with",
+   "A unique combination of metric name and tag values, including the host tag"
+  ],
+  "answer": 2,
+  "explanation": "A custom metric is a unique combination of metric name and tag values, including host. The same name with different tag values counts as several custom metrics.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "Wrong: data point volume does not affect custom metric counts.",
+   "Wrong: one metric name with different tag values counts as multiple custom metrics.",
+   "Correct: a custom metric is a unique combination of metric name and tag values, including host."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-052",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "easy",
+  "q": "Which of these is billed as a custom metric?",
+  "options": [
+   "system.cpu.user collected automatically by the Agent's core system check",
+   "aws.ec2.cpuutilization collected by the standard AWS integration from CloudWatch",
+   "A checkout.cart_value gauge sent from application code through DogStatsD"
+  ],
+  "answer": 2,
+  "explanation": "Metrics sent through DogStatsD or a custom Agent check are custom metrics. Standard metrics from Datadog integrations, such as the core system check or standard AWS metrics, are not.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "system.cpu.user is a standard metric from the Agent's core system check, not custom.",
+   "aws.ec2.cpuutilization is a standard AWS integration metric, not custom.",
+   "Correct: any metric sent through DogStatsD is a custom metric."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-053",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "Which Datadog integration can generate custom metrics, with no default limit on how many it collects?",
+  "options": [
+   "The Agent's core disk check reporting system.disk.* metrics",
+   "The OpenMetrics/Prometheus check scraping an application's endpoint",
+   "The Go-Expvar integration reading a Go application's expvar endpoint"
+  ],
+  "answer": 1,
+  "explanation": "OpenMetrics and Prometheus (as well as Nagios, WMI, PDH and Windows performance counters) have no default limit on custom metric collection. Go-Expvar can also emit custom metrics, but is limited to 350 by default.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/",
+  "notes": [
+   "The core disk check emits standard system.disk.* metrics, not custom metrics.",
+   "Correct: OpenMetrics/Prometheus checks emit custom metrics with no default limit.",
+   "Go-Expvar can emit custom metrics but is limited to 350 by default."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-054",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "Java-JMX, ActiveMQ XML and Go-Expvar can emit custom metrics. By default, how many custom metrics are they limited to?",
+  "options": [
+   "100",
+   "350",
+   "No default limit"
+  ],
+  "answer": 1,
+  "explanation": "These integrations are limited to 350 custom metrics by default. OpenMetrics/Prometheus-style checks have no default limit.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/",
+  "notes": [
+   "100 is the Infrastructure Pro per-host custom metric allotment, not this limit.",
+   "Correct: Java-JMX, ActiveMQ XML and Go-Expvar are limited to 350 custom metrics by default.",
+   "No default limit applies to OpenMetrics, Prometheus, Nagios, WMI and PDH-style checks."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-055",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "Which of these sources does NOT produce custom metrics?",
+  "options": [
+   "The documented standard metrics of a Datadog integration, such as nginx.net.connections",
+   "A custom Agent check written in Python and placed in checks.d",
+   "A third-party integration installed from the Datadog Marketplace"
+  ],
+  "answer": 0,
+  "explanation": "Standard metrics from Datadog's built-in integrations aren't custom. Metrics from Marketplace integrations and custom Agent checks are counted as custom.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/",
+  "notes": [
+   "Correct: documented standard metrics from Datadog's built-in integrations are not custom.",
+   "Metrics from a custom Agent check are custom metrics.",
+   "Metrics submitted by Marketplace integrations are counted as custom metrics."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-056",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "easy",
+  "q": "A gauge named app.queue.depth is submitted from 3 hosts with no tags other than host. How many custom metrics does this create?",
+  "options": [
+   "3",
+   "6",
+   "1"
+  ],
+  "answer": 0,
+  "explanation": "The host tag is part of a custom metric's identity, so each host's timeseries is a separate custom metric, giving 3.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "Correct: the host tag is part of a custom metric's identity, so 3 hosts give 3.",
+   "6 doubles the count with no reason; there is one timeseries per host.",
+   "1 ignores that the host tag is part of a custom metric's identity."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-057",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "A single host submits a gauge with tags env (2 values) and region (3 values), and every combination is reported. How many custom metrics does this create?",
+  "options": [
+   "1",
+   "5",
+   "6"
+  ],
+  "answer": 2,
+  "explanation": "Custom metrics count unique tag value combinations: 2 x 3 = 6. Adding the number of values (2 + 3 = 5) is a common mistake.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "1 ignores that each unique tag value combination is a separate custom metric.",
+   "5 adds the tag value counts instead of multiplying the combinations.",
+   "Correct: 2 env values x 3 region values = 6 unique combinations."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-058",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "A histogram is submitted through DogStatsD with 6 unique tag value combinations, using the default Agent histogram settings. How many custom metrics does it create?",
+  "options": [
+   "6",
+   "24",
+   "30"
+  ],
+  "answer": 2,
+  "explanation": "By default, a histogram produces 5 custom metrics per combination (avg, count, median, 95percentile, max), so 6 x 5 = 30.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "6 counts the combinations but ignores the 5 default histogram aggregations.",
+   "24 would use 4 aggregations per combination instead of the default 5.",
+   "Correct: 6 combinations x 5 default histogram aggregations = 30."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-059",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "hard",
+  "q": "A distribution metric has 3 unique tag value combinations, and percentile aggregations (p50, p75, p90, p95, p99) are enabled. How many custom metrics does it create?",
+  "options": [
+   "15",
+   "25",
+   "30"
+  ],
+  "answer": 2,
+  "explanation": "A distribution creates 5 custom metrics per combination (count, sum, min, max, avg). Enabling percentiles adds 5 more, giving 10 per combination. 3 x 10 = 30.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "15 counts only the 5 base aggregations and ignores the enabled percentiles.",
+   "25 is not a valid result; percentiles add a full 5 per combination.",
+   "Correct: (5 base + 5 percentiles) x 3 combinations = 30."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-060",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "hard",
+  "q": "A single host submits a count metric orders.placed and a histogram orders.value (default Agent settings). Both are tagged store with 4 values, and all are reported. How many custom metrics in total?",
+  "options": [
+   "24",
+   "8",
+   "40"
+  ],
+  "answer": 0,
+  "explanation": "The count gives 4 custom metrics (1 per combination), and the histogram gives 4 x 5 = 20. The total is 24.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "Correct: count gives 4 (1 per store) and histogram gives 4 x 5 = 20, for 24 in total.",
+   "8 treats the histogram like a count, ignoring its 5 default aggregations.",
+   "40 treats both metrics as histograms with 5 aggregations each."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-061",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "hard",
+  "q": "The datadog.yaml contains:\nhistogram_aggregates: [\"max\", \"median\", \"avg\", \"count\", \"sum\"]\nhistogram_percentiles: [\"0.95\"]\nA histogram is reported with 2 unique tag value combinations. How many custom metrics does it create?",
+  "options": [
+   "10",
+   "12",
+   "14"
+  ],
+  "answer": 1,
+  "explanation": "This config produces 5 aggregates plus 1 percentile, so 6 custom metrics per combination, and 2 x 6 = 12. Adding sum raises the count from the default 5.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "10 forgets the 0.95 percentile; it counts only the 5 aggregates.",
+   "Correct: 5 aggregates plus 1 percentile = 6 per combination, x 2 = 12.",
+   "14 counts 7 per combination; the config defines only 6 series."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-062",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "Which change reduces the number of custom metrics a DogStatsD histogram generates per tag combination?",
+  "options": [
+   "Removing aggregations from histogram_aggregates in datadog.yaml",
+   "Submitting the histogram less often, for example every 60 seconds instead of every 10",
+   "Changing the order of the tags on each submission so they sort alphabetically"
+  ],
+  "answer": 0,
+  "explanation": "The histogram's per-combination count comes from the configured aggregates and percentiles, so removing some lowers it. Submission frequency and tag order don't affect custom metric counts.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "Correct: fewer configured histogram aggregates means fewer custom metrics per combination.",
+   "Submission frequency doesn't affect billable custom metric counts.",
+   "Tag order doesn't create or remove custom metrics."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-063",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "easy",
+  "q": "A developer changes a DogStatsD gauge to submit every 1 second instead of every 10 seconds. Tags and hosts stay the same. What happens to billable custom metrics?",
+  "options": [
+   "They increase about tenfold, because ten times as many points are stored",
+   "They increase only if the metric type is a count, because counts are summed per interval",
+   "No change, because submission frequency does not affect billable custom metrics"
+  ],
+  "answer": 2,
+  "explanation": "Billable custom metrics depend on distinct metric name and tag value combinations. Submission frequency and query volume don't affect billable usage.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "Wrong: more data points don't create new custom metrics.",
+   "Wrong: submission frequency doesn't change counts for any metric type.",
+   "Correct: submission frequency doesn't affect billable custom metrics."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-064",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "hard",
+  "q": "A gauge on one host is tagged endpoint (4 values). A developer adds a user_id tag, and 50,000 distinct users hit every endpoint. Up to how many custom metrics can this gauge now produce?",
+  "options": [
+   "4",
+   "50,004",
+   "200,000"
+  ],
+  "answer": 2,
+  "explanation": "Each unique combination is a custom metric: 4 endpoints x 50,000 user IDs = up to 200,000. Unbounded tags like user_id cause a cardinality explosion.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "4 ignores the new user_id tag's added combinations.",
+   "50,004 adds the tag values instead of multiplying the combinations.",
+   "Correct: 4 endpoints x 50,000 user IDs = up to 200,000 custom metrics."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-065",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "Which tag is most likely to cause a custom metric cardinality explosion?",
+  "options": [
+   "request_id",
+   "env",
+   "availability-zone"
+  ],
+  "answer": 0,
+  "explanation": "request_id is unbounded and unique per request, so every value creates a new custom metric. env and availability-zone have few, bounded values.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "Correct: request_id is unbounded and unique per request, exploding cardinality.",
+   "env has a small, bounded set of values.",
+   "availability-zone has a small, bounded set of values."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-066",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "A temperature gauge on one host is tagged city, with 5 cities spread across 2 states. A developer adds a state tag. How many custom metrics does the gauge produce now?",
+  "options": [
+   "10",
+   "7",
+   "5"
+  ],
+  "answer": 2,
+  "explanation": "Each city belongs to one state, so adding state adds no granularity and the count stays 5. The count follows the most granular tag.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "10 multiplies cities by states, but each city belongs to only one state.",
+   "7 adds the state values, but state adds no new combinations.",
+   "Correct: state adds no granularity beyond city, so the count stays at 5."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-067",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "easy",
+  "q": "One submission of a metric uses tags env:prod,service:web and another uses service:web,env:prod. How many custom metrics is this?",
+  "options": [
+   "4",
+   "1",
+   "2"
+  ],
+  "answer": 1,
+  "explanation": "Changing the order of tags doesn't create a new custom metric. Both submissions have the same name and tag value combination.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "4 treats each tag in each submission as separate; tag order doesn't matter.",
+   "Correct: reordering tags doesn't create a new custom metric.",
+   "2 wrongly treats a different tag order as a new tag value combination."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-068",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "With Metrics without Limits, what is the difference between ingested and indexed custom metrics?",
+  "options": [
+   "Ingested counts everything sent; indexed counts what stays queryable after the tag configuration",
+   "Ingested counts what stays queryable after the tag configuration; indexed counts everything sent",
+   "Ingested counts metrics from integrations; indexed counts metrics sent through DogStatsD or the API"
+  ],
+  "answer": 0,
+  "explanation": "Metrics without Limits separates ingestion from indexing. Ingested volume is all data sent, and indexed volume is what remains queryable under the tag allowlist.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "Correct: ingested is everything sent; indexed is what remains queryable after tag configuration.",
+   "The definitions are reversed; indexed is what stays queryable.",
+   "Wrong: ingested vs indexed has nothing to do with the metric's source."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-069",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "hard",
+  "q": "A count metric is sent with 4 unique tag value combinations. With Metrics without Limits, a tag allowlist leaves 3 queryable combinations. How are ingested and indexed custom metrics counted?",
+  "options": [
+   "3 ingested, 4 indexed",
+   "4 ingested, 4 indexed",
+   "4 ingested, 3 indexed"
+  ],
+  "answer": 2,
+  "explanation": "Ingested reflects everything submitted (4), and indexed reflects the combinations that stay queryable after the tag configuration (3).",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "The values are reversed; ingested reflects all 4 submitted combinations.",
+   "Wrong: indexed counts only the 3 combinations left queryable by the allowlist.",
+   "Correct: 4 ingested (everything sent) and 3 indexed (queryable after the allowlist)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-070",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "Under standard (cardinality-based) custom metrics billing, a metric has NOT been configured with Metrics without Limits. How is it billed?",
+  "options": [
+   "On ingested custom metric volume only",
+   "On indexed custom metric volume only",
+   "On both ingested and indexed volume, at $0.10 per 100 each"
+  ],
+  "answer": 1,
+  "explanation": "Under cardinality pricing, only metrics configured with Metrics without Limits count toward ingested custom metrics (overage $0.10 per 100). Unconfigured metrics are charged only on indexed volume.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "Wrong: under cardinality pricing, only MWL-configured metrics count toward ingested volume.",
+   "Correct: unconfigured metrics are charged only on indexed custom metric volume.",
+   "Wrong: only configured metrics incur ingested charges, at $0.10 per 100 over allotment."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-071",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "In a 30-day month, an organization reports 400 distinct custom metrics every hour for the first 15 days and 800 every hour for the last 15 days. What is its billable custom metric count?",
+  "options": [
+   "800",
+   "600",
+   "1,200"
+  ],
+  "answer": 1,
+  "explanation": "Billable custom metrics are the average number of distinct custom metrics per hour over the month: (400 + 800) / 2 = 600. It is neither the peak nor the sum.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "800 is the peak hourly count; billing uses the hourly average.",
+   "Correct: the monthly average of hourly distinct counts is (400 + 800) / 2 = 600.",
+   "1,200 sums the two periods instead of averaging over all hours."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-072",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "Which metric name follows Datadog's naming rules without being modified?",
+  "options": [
+   "2xx.responses.count",
+   "app.checkout.latency_ms",
+   "app/checkout/latency"
+  ],
+  "answer": 1,
+  "explanation": "Metric names must start with a letter and contain only ASCII letters and numbers, underscores and periods. A name starting with a digit breaks the rules, and other characters such as / are converted to underscores.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/",
+  "notes": [
+   "Invalid: metric names must start with a letter, not a digit.",
+   "Correct: it starts with a letter and uses only letters, underscores and periods.",
+   "The / characters aren't allowed and are converted to underscores."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-073",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "easy",
+  "q": "What is the maximum length of a Datadog metric name?",
+  "options": [
+   "255 characters",
+   "200 characters",
+   "100 characters"
+  ],
+  "answer": 1,
+  "explanation": "Metric names must not exceed 200 characters. Under 100 is preferred for display, but it isn't the limit.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/",
+  "notes": [
+   "255 characters is not the metric name limit; the limit is 200.",
+   "Correct: metric names must not exceed 200 characters.",
+   "Fewer than 100 characters is preferred for display, but it isn't the limit."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-074",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "A batch job submits metrics with explicit timestamps. Which timestamps does Datadog accept?",
+  "options": [
+   "No more than 10 minutes in the future and no more than 1 hour in the past",
+   "No more than 1 hour in the future and no more than 10 minutes in the past",
+   "No more than 10 minutes in the future and no more than 24 hours in the past"
+  ],
+  "answer": 0,
+  "explanation": "Metric timestamps can't be more than ten minutes in the future or more than one hour in the past.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/",
+  "notes": [
+   "Correct: timestamps can be up to 10 minutes in the future and up to 1 hour in the past.",
+   "The limits are reversed; it's 10 minutes in the future and 1 hour in the past.",
+   "Wrong: the past limit is 1 hour, not 24 hours."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "allot-075",
+  "topic": "Allotments, Billing & Custom Metrics",
+  "subtopic": "Custom Metrics",
+  "difficulty": "medium",
+  "q": "Where can you see near-real-time ingested and indexed custom metric counts for one specific metric?",
+  "options": [
+   "In the metric's side panel in Metrics Summary",
+   "In the output of the Agent status command",
+   "On the host's page in the Infrastructure List"
+  ],
+  "answer": 0,
+  "explanation": "The Metrics Summary side panel shows near-real-time ingested and indexed counts for a metric. The Usage page shows monthly averages and top custom metrics.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "Correct: the Metrics Summary side panel shows near-real-time ingested and indexed counts per metric.",
+   "The Agent status command shows Agent health and check status, not billing counts.",
+   "The Host List/host page shows host details, not per-metric custom metric counts."
+  ],
+  "verified": "2026-10"
+ }
+]

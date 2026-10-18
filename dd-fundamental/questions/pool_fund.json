@@ -1,0 +1,1262 @@
+[
+ {
+  "id": "fund-001",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "easy",
+  "q": "Which statement about RAM is correct?",
+  "options": [
+   "A disk area the OS falls back to when physical memory runs out",
+   "Volatile memory holding the programs and data currently in use",
+   "Non-volatile storage that keeps its contents after the host reboots"
+  ],
+  "answer": 1,
+  "explanation": "RAM is fast, volatile working memory: it holds running programs and their data and is cleared when power is lost. The disk area used when memory runs out is swap.",
+  "ref": "https://en.wikipedia.org/wiki/Random-access_memory",
+  "notes": [
+   "That describes swap space, a disk area used as overflow when RAM is full.",
+   "Correct: RAM is fast, volatile working memory for running programs and their data.",
+   "That describes persistent storage such as an SSD or HDD; RAM loses its contents at power-off."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-002",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "easy",
+  "q": "What is swap space on a Linux host?",
+  "options": [
+   "A CPU cache layer that sits between main memory and the processor cores",
+   "Disk space used as overflow memory when RAM is full",
+   "A reserved region of physical RAM that only the kernel is allowed to use"
+  ],
+  "answer": 1,
+  "explanation": "Swap is disk-backed space the OS pages memory out to when RAM is exhausted. Because disk is far slower than RAM, heavy swapping degrades performance.",
+  "ref": "https://en.wikipedia.org/wiki/Memory_paging",
+  "notes": [
+   "CPU caches (L1/L2/L3) are on-chip SRAM, not disk space; swap lives on disk.",
+   "Correct: swap is disk space the OS pages memory out to when RAM is exhausted.",
+   "Kernel-reserved memory is part of RAM; swap is on disk and holds pages from any process."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-003",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "medium",
+  "q": "A host shows a high, sustained rate of major page faults and system.swap.used keeps climbing. What is the MOST likely cause?",
+  "options": [
+   "The CPU has too few cores to schedule all running processes",
+   "The root filesystem has run out of inodes for new files",
+   "The host does not have enough RAM"
+  ],
+  "answer": 2,
+  "explanation": "Many page faults plus growing swap usage mean the OS keeps moving memory pages between RAM and disk because RAM is insufficient. Adding cores or inodes would not fix that.",
+  "ref": "https://docs.datadoghq.com/integrations/system/",
+  "notes": [
+   "Too few cores shows up as high load per core and CPU usage, not as page faults and swap growth.",
+   "Inode exhaustion causes 'No space left on device' on file creation, not paging or swap use.",
+   "Correct: frequent major page faults plus rising swap mean pages are moving between RAM and disk because RAM is insufficient."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-004",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "medium",
+  "q": "A 4-core Linux host reports a 1-minute load average (system.load.1) of 4.0. How should this be read?",
+  "options": [
+   "The CPUs are only 4% utilized",
+   "Demand roughly matches capacity: about one running or waiting process per core",
+   "The host is overloaded at 400% of its capacity"
+  ],
+  "answer": 1,
+  "explanation": "Load average counts processes running or waiting to run, so it must be compared with the core count. A load of 4 on 4 cores means the CPUs are about fully used without a queue building.",
+  "ref": "https://docs.datadoghq.com/integrations/system/",
+  "notes": [
+   "Load average is a count of runnable/waiting processes, not a utilization percentage.",
+   "Correct: load 4.0 on 4 cores is about one runnable process per core, roughly full but no queue.",
+   "Load must be divided by core count; 4.0 on 4 cores is about 100%, not 400%."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-005",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "hard",
+  "q": "Host A has 2 CPU cores and a 1-minute load average of 6. Host B has 16 cores and a load average of 8. Which statement is correct?",
+  "options": [
+   "Host B, because its absolute load average is higher than Host A's",
+   "Host A, at 3 processes per core versus 0.5 per core on Host B",
+   "Neither; both are equally saturated because each load is above 1.0"
+  ],
+  "answer": 1,
+  "explanation": "Load must be normalized by cores: 6/2 = 3 per core (processes queueing) versus 8/16 = 0.5 per core. Datadog exposes this directly as system.load.norm.1 (load divided by the number of CPUs).",
+  "ref": "https://docs.datadoghq.com/integrations/system/",
+  "notes": [
+   "Absolute load ignores core count; 8 spread over 16 cores is only 0.5 per core.",
+   "Correct: 6/2 = 3 per core versus 8/16 = 0.5; system.load.norm.1 shows this normalized value.",
+   "Above 1.0 matters only per core; Host B at 0.5 per core is not saturated."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-006",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "medium",
+  "q": "A graph shows system.cpu.system is high while system.cpu.user stays low. Where is the CPU spending most of its time?",
+  "options": [
+   "Running user-space application code such as the web server or database",
+   "Sitting idle while waiting for outstanding disk I/O requests to complete",
+   "Running kernel code (system calls, drivers, interrupts)"
+  ],
+  "answer": 2,
+  "explanation": "system.cpu.system is the percentage of time the CPU runs kernel code; system.cpu.user is time in user-space processes. Waiting on disk is reported as system.cpu.iowait.",
+  "ref": "https://docs.datadoghq.com/integrations/system/",
+  "notes": [
+   "User-space application time is system.cpu.user, which the stem says is low.",
+   "Time waiting on disk I/O is reported as system.cpu.iowait, not system.cpu.system.",
+   "Correct: system.cpu.system is the percent of time the CPU spent running the kernel."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-007",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "medium",
+  "q": "On a database host, system.cpu.iowait is consistently high. What does this indicate?",
+  "options": [
+   "The CPU is often waiting for disk I/O operations to finish",
+   "The hypervisor is giving physical CPU time to other virtual machines",
+   "The CPU is busy executing kernel code"
+  ],
+  "answer": 0,
+  "explanation": "iowait is the percentage of time the CPU waits for I/O operations to complete, which usually points to a storage bottleneck. Hypervisor contention is shown by steal time (system.cpu.stolen).",
+  "ref": "https://docs.datadoghq.com/integrations/system/",
+  "notes": [
+   "Correct: system.cpu.iowait is the percent of time the CPU waited for I/O operations to complete.",
+   "Hypervisor contention is system.cpu.stolen (steal time), not iowait.",
+   "Kernel execution time is system.cpu.system, not iowait."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-008",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "medium",
+  "q": "On a cloud VM, system.cpu.stolen is high. What does this metric indicate?",
+  "options": [
+   "A hidden process on the VM is consuming CPU time that top does not account for",
+   "The kernel is reclaiming CPU time from processes that exceeded their cgroup limit",
+   "The virtual CPU is waiting while the hypervisor services other virtual CPUs"
+  ],
+  "answer": 2,
+  "explanation": "Steal time is the percentage of time a virtual CPU waits for the hypervisor to service another virtual CPU. It applies only to virtual machines and usually means noisy neighbors or an undersized instance.",
+  "ref": "https://docs.datadoghq.com/integrations/system/",
+  "notes": [
+   "Unaccounted in-guest processes would still show as user or system time, not steal time.",
+   "cgroup CPU throttling is a container limit, unrelated to hypervisor steal time.",
+   "Correct: steal is time the virtual CPU waits for the hypervisor to service another virtual CPU."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-009",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "medium",
+  "q": "Why does an SSD typically deliver far higher IOPS and lower latency than an HDD?",
+  "options": [
+   "No moving parts, so no seek time or rotational delay",
+   "It caches all data in RAM, which is faster but lost on power-off",
+   "It uses a larger block size, so fewer operations are needed per file"
+  ],
+  "answer": 0,
+  "explanation": "HDDs must physically move a head and wait for a platter to spin; SSDs read flash memory electronically. SSDs are still persistent (non-volatile) storage.",
+  "ref": "https://en.wikipedia.org/wiki/Solid-state_drive",
+  "notes": [
+   "Correct: SSDs use flash with no moving parts, so there is no seek time or rotational latency.",
+   "SSDs store data in non-volatile flash, not RAM; data survives power loss.",
+   "Block size is not the reason; the speedup comes from eliminating mechanical seeks and rotation."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-010",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "easy",
+  "q": "A storage volume is rated at 3,000 IOPS. What does IOPS measure?",
+  "options": [
+   "The number of megabytes per second the device can transfer",
+   "The average time a single read or write takes to complete",
+   "The number of read/write operations the device can perform per second"
+  ],
+  "answer": 2,
+  "explanation": "IOPS is input/output operations per second. Megabytes per second is throughput, and time per operation is latency; all three are different storage measures.",
+  "ref": "https://en.wikipedia.org/wiki/IOPS",
+  "notes": [
+   "Megabytes per second is throughput (bandwidth), not IOPS.",
+   "Time per operation is latency, not IOPS.",
+   "Correct: IOPS is input/output operations per second."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-011",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "hard",
+  "q": "df -h shows a filesystem is only 40% full, yet applications writing to it fail with \"No space left on device\". What should be checked next?",
+  "options": [
+   "Swap usage with swapon --show, since writes fail once swap space is full",
+   "Inode usage with df -i, since many small files can exhaust inodes",
+   "Memory usage with free -m, since a full page cache can block new disk writes"
+  ],
+  "answer": 1,
+  "explanation": "Each file uses one inode; when inodes run out no new files can be created even with free blocks. Datadog's Disk check reports this as system.fs.inodes.in_use.",
+  "ref": "https://docs.datadoghq.com/integrations/disk/",
+  "notes": [
+   "Swap is used for memory paging; a full swap does not cause filesystem write errors.",
+   "Correct: each file uses an inode; df -i shows inode exhaustion, tracked as system.fs.inodes.in_use.",
+   "Page cache is reclaimable memory and does not produce 'No space left on device'."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-012",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "easy",
+  "q": "How many bits are in one byte?",
+  "options": [
+   "4",
+   "8",
+   "16"
+  ],
+  "answer": 1,
+  "explanation": "One byte is 8 bits. Network speeds are usually quoted in bits per second, while file and memory sizes are quoted in bytes.",
+  "ref": "https://en.wikipedia.org/wiki/Byte",
+  "notes": [
+   "4 bits is a nibble (half a byte).",
+   "Correct: one byte is 8 bits.",
+   "16 bits is two bytes (often called a word on some architectures)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-013",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "medium",
+  "q": "A network link is rated at 100 Mbps. Ignoring protocol overhead, what is its maximum transfer rate in megabytes per second?",
+  "options": [
+   "12.5 MB/s",
+   "100 MB/s",
+   "800 MB/s"
+  ],
+  "answer": 0,
+  "explanation": "Mbps is megabits per second. Divide by 8 bits per byte: 100 / 8 = 12.5 MB/s. 800 comes from multiplying instead of dividing.",
+  "ref": "https://en.wikipedia.org/wiki/Data-rate_units",
+  "notes": [
+   "Correct: 100 megabits / 8 bits per byte = 12.5 megabytes per second.",
+   "100 MB/s confuses megabits (Mb) with megabytes (MB).",
+   "800 multiplies by 8 instead of dividing; converting bits to bytes divides by 8."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-014",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "hard",
+  "q": "A network graph shows a host receiving 2,500,000 bytes per second. Roughly what is this in megabits per second?",
+  "options": [
+   "0.3 Mbps",
+   "2.5 Mbps",
+   "20 Mbps"
+  ],
+  "answer": 2,
+  "explanation": "Multiply bytes by 8 to get bits: 2,500,000 x 8 = 20,000,000 bits/s = 20 Mbps. 2.5 skips the conversion and 0.3 divides by 8 instead of multiplying.",
+  "ref": "https://docs.datadoghq.com/integrations/network/",
+  "notes": [
+   "0.3 divides by 8; converting bytes to bits multiplies by 8.",
+   "2.5 is the value in megabytes per second, skipping the bytes-to-bits conversion.",
+   "Correct: 2,500,000 bytes/s x 8 = 20,000,000 bits/s = 20 Mbps (system.net.bytes_rcvd is bytes per second)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-015",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Hardware",
+  "difficulty": "medium",
+  "q": "On a Linux host, which network interface is \"lo\"?",
+  "options": [
+   "The loopback interface for traffic to the host itself (127.0.0.1)",
+   "The primary physical Ethernet adapter connected to the local network switch",
+   "The default-route interface used for outbound traffic to the internet"
+  ],
+  "answer": 0,
+  "explanation": "lo is the virtual loopback interface for 127.0.0.1. Physical NICs typically have names like eth0 or ens5. By default DogStatsD listens on localhost, which is reached through loopback.",
+  "ref": "https://en.wikipedia.org/wiki/Localhost",
+  "notes": [
+   "Correct: lo is the virtual loopback interface for 127.0.0.1, traffic that never leaves the host.",
+   "Physical NICs have names like eth0, ens5 or enp0s3, not lo.",
+   "The default route usually goes through a physical or virtual NIC such as eth0, never loopback."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-016",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "easy",
+  "q": "Which command displays the Linux distribution name and version of a host?",
+  "options": [
+   "uname -r",
+   "cat /proc/cpuinfo",
+   "cat /etc/os-release"
+  ],
+  "answer": 2,
+  "explanation": "/etc/os-release holds distribution identification such as NAME, ID and VERSION_ID. uname -r shows the kernel release, not the distribution.",
+  "ref": "https://www.freedesktop.org/software/systemd/man/latest/os-release.html",
+  "notes": [
+   "uname -r prints the kernel release, not the distribution name.",
+   "/proc/cpuinfo describes the processors, not the OS distribution.",
+   "Correct: /etc/os-release contains NAME, ID, VERSION_ID and similar distribution fields."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-017",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "easy",
+  "q": "Which command prints the release of the running Linux kernel (for example 5.15.0-91-generic)?",
+  "options": [
+   "cat /etc/hostname",
+   "uname -r",
+   "lsb_release -c"
+  ],
+  "answer": 1,
+  "explanation": "uname -r prints the kernel release. /etc/hostname holds the host name and lsb_release -c prints the distribution codename.",
+  "ref": "https://man7.org/linux/man-pages/man1/uname.1.html",
+  "notes": [
+   "/etc/hostname holds the host name only.",
+   "Correct: uname -r prints the running kernel release.",
+   "lsb_release -c prints the distribution codename (for example jammy), not the kernel."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-018",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "easy",
+  "q": "Which command prints the host's network node name, the same value as the hostname command?",
+  "options": [
+   "uname -n",
+   "uname -m",
+   "uname -r"
+  ],
+  "answer": 0,
+  "explanation": "uname -n prints the network node hostname. -r is the kernel release and -m the machine hardware name (for example x86_64).",
+  "ref": "https://man7.org/linux/man-pages/man1/uname.1.html",
+  "notes": [
+   "Correct: uname -n prints the network node hostname.",
+   "uname -m prints the machine hardware name, such as x86_64.",
+   "uname -r prints the kernel release."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-019",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "medium",
+  "q": "Which file contains lines such as ID=ubuntu and VERSION_ID=\"22.04\"?",
+  "options": [
+   "/proc/version",
+   "/proc/sys/kernel/osrelease",
+   "/etc/os-release"
+  ],
+  "answer": 2,
+  "explanation": "/etc/os-release is the standard distribution identification file. /proc/version shows the kernel version string and /proc/sys/kernel/osrelease holds only the kernel release.",
+  "ref": "https://www.freedesktop.org/software/systemd/man/latest/os-release.html",
+  "notes": [
+   "/proc/version shows the kernel version and build string, not distribution IDs.",
+   "/proc/sys/kernel/osrelease holds only the kernel release string.",
+   "Correct: /etc/os-release is the standard distribution identification file with ID and VERSION_ID."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-020",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "easy",
+  "q": "Which command shows the host's total, used and free memory and swap in megabytes?",
+  "options": [
+   "free -m",
+   "df -m",
+   "du -m"
+  ],
+  "answer": 0,
+  "explanation": "free reports RAM and swap usage; -m displays megabytes. df reports filesystem space and du reports space used by files and directories.",
+  "ref": "https://man7.org/linux/man-pages/man1/free.1.html",
+  "notes": [
+   "Correct: free reports RAM and swap totals, used and free; -m shows megabytes.",
+   "df reports filesystem disk space, not memory.",
+   "du reports disk space used by files and directories, not memory."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-021",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "medium",
+  "q": "You need the total disk space used by everything under /var/log. Which command gives that number?",
+  "options": [
+   "df -h /var/log",
+   "du -sh /var/log",
+   "ls -lh /var/log"
+  ],
+  "answer": 1,
+  "explanation": "du -sh sums the space used by a directory tree. df -h /var/log shows usage of the whole filesystem that contains /var/log, and ls -lh lists files without totalling subdirectories.",
+  "ref": "https://man7.org/linux/man-pages/man1/du.1.html",
+  "notes": [
+   "df shows usage of the whole filesystem containing /var/log, not just that directory.",
+   "Correct: du -sh sums the space used by the whole directory tree in human-readable form.",
+   "ls -lh lists entries in one directory and does not total subdirectories."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-022",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "easy",
+  "q": "Which command shows a continuously refreshing view of running processes with their CPU and memory usage?",
+  "options": [
+   "ps aux",
+   "lsof",
+   "top"
+  ],
+  "answer": 2,
+  "explanation": "top refreshes every few seconds and sorts by CPU by default. ps aux prints a one-time snapshot, and lsof lists open files.",
+  "ref": "https://man7.org/linux/man-pages/man1/top.1.html",
+  "notes": [
+   "ps aux prints a one-time snapshot and exits; it does not refresh.",
+   "lsof lists open files and the processes holding them.",
+   "Correct: top shows a continuously refreshing, CPU-sorted view of processes."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-023",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "easy",
+  "q": "Which command shows new lines as they are appended to the Agent log on Linux?",
+  "options": [
+   "head -n 50 /var/log/datadog/agent.log",
+   "tail -f /var/log/datadog/agent.log",
+   "cat /var/log/datadog/agent.log"
+  ],
+  "answer": 1,
+  "explanation": "tail -f follows a file and prints lines as they are written. cat and head print the current contents and exit. Agent logs on Linux are in /var/log/datadog/.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-log-files/",
+  "notes": [
+   "head prints the first lines of the file and exits.",
+   "Correct: tail -f follows the file and prints new lines as they are written.",
+   "cat prints the current contents once and exits."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-024",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "medium",
+  "q": "On a systemd-based host, which command shows journal log entries for the datadog-agent service?",
+  "options": [
+   "systemctl logs datadog-agent",
+   "dmesg -u datadog-agent",
+   "journalctl -u datadog-agent"
+  ],
+  "answer": 2,
+  "explanation": "journalctl reads the systemd journal and -u filters by unit. systemctl has no logs subcommand, and dmesg shows kernel ring buffer messages.",
+  "ref": "https://man7.org/linux/man-pages/man1/journalctl.1.html",
+  "notes": [
+   "systemctl has no logs subcommand; systemctl status shows only a few recent lines.",
+   "dmesg shows kernel ring buffer messages, not service logs; -u means userspace messages.",
+   "Correct: journalctl -u filters the systemd journal to one unit."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-025",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "medium",
+  "q": "A file has permissions set with chmod 640. What access does this grant?",
+  "options": [
+   "Owner read/write, group read, others no access",
+   "Owner read/write, group read/write, others read",
+   "Owner read/write/execute, group read, others no access"
+  ],
+  "answer": 0,
+  "explanation": "Each digit is owner, group, others, with read=4, write=2, execute=1. 6 = read+write, 4 = read, 0 = none.",
+  "ref": "https://man7.org/linux/man-pages/man1/chmod.1.html",
+  "notes": [
+   "Correct: 6 = read+write for owner, 4 = read for group, 0 = no access for others.",
+   "That would be 664: group 6 and others 4.",
+   "That would be 740: owner 7 (read+write+execute)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-026",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "medium",
+  "q": "The Agent runs as the dd-agent user and cannot read /var/log/myapp/app.log, which is owned by root with mode 600. Which command makes dd-agent the file's owner?",
+  "options": [
+   "sudo chown dd-agent /var/log/myapp/app.log",
+   "sudo usermod dd-agent /var/log/myapp/app.log",
+   "sudo chmod dd-agent /var/log/myapp/app.log"
+  ],
+  "answer": 0,
+  "explanation": "chown changes a file's owner; chmod changes permission bits and usermod changes user accounts. On Linux the Agent runs as dd-agent, so it needs read access to the logs it tails (Datadog's log troubleshooting guide suggests granting read permission, for example with chmod, rather than changing ownership).",
+  "ref": "https://man7.org/linux/man-pages/man1/chown.1.html",
+  "notes": [
+   "Correct: chown sets the file's owner, here to dd-agent.",
+   "usermod modifies user accounts (groups, shell, home), not file ownership.",
+   "chmod changes permission bits; it does not take a user name as owner."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-027",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "easy",
+  "q": "What does prefixing a command with sudo do?",
+  "options": [
+   "Runs it with root (superuser) privileges, if the user is permitted",
+   "Runs it in the background so it keeps going after you log out of the session",
+   "Runs it as the service account that owns the target file or directory"
+  ],
+  "answer": 0,
+  "explanation": "sudo runs a command as another user, root by default, subject to the sudoers policy. Agent service commands such as sudo systemctl restart datadog-agent need it.",
+  "ref": "https://www.sudo.ws/docs/man/sudo.man/",
+  "notes": [
+   "Correct: sudo runs a command as another user, root by default, if the sudoers policy allows it.",
+   "Running in the background is & (and nohup to survive logout), not sudo.",
+   "sudo defaults to root, not the file owner; -u selects a different user explicitly."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-028",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "medium",
+  "q": "On a systemd host, which command makes the datadog-agent service start automatically at boot?",
+  "options": [
+   "sudo systemctl enable datadog-agent",
+   "sudo systemctl restart datadog-agent",
+   "sudo systemctl start datadog-agent"
+  ],
+  "answer": 0,
+  "explanation": "enable creates the links that start a unit at boot. start and restart affect only the current run and do not change boot behavior.",
+  "ref": "https://man7.org/linux/man-pages/man1/systemctl.1.html",
+  "notes": [
+   "Correct: systemctl enable makes the unit start automatically at boot.",
+   "restart stops and starts the service now but does not change boot behavior.",
+   "start launches the service now but does not make it start at boot."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-029",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "medium",
+  "q": "A runbook says to run sudo apt-get install <package>. On which family of Linux distributions does this work?",
+  "options": [
+   "Red Hat Enterprise Linux, CentOS and Amazon Linux",
+   "Every Linux distribution, because apt is part of the kernel",
+   "Debian and Ubuntu"
+  ],
+  "answer": 2,
+  "explanation": "apt is the Debian/Ubuntu package manager; RHEL, CentOS and Amazon Linux use yum or dnf. Datadog publishes separate apt.datadoghq.com and yum.datadoghq.com repositories for this reason.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/linux/",
+  "notes": [
+   "RHEL, CentOS and Amazon Linux use yum or dnf, not apt.",
+   "apt is a userland package manager of the Debian family, not part of the kernel.",
+   "Correct: apt/apt-get is the Debian and Ubuntu package manager."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-030",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "easy",
+  "q": "Which Linux directory holds system-wide configuration files, including the Agent's datadog.yaml?",
+  "options": [
+   "/proc",
+   "/etc",
+   "/var/log"
+  ],
+  "answer": 1,
+  "explanation": "/etc is for configuration; on Linux the Agent's main file is /etc/datadog-agent/datadog.yaml. /var/log holds logs and /proc is a kernel pseudo-filesystem.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "/proc is a kernel pseudo-filesystem of process and system information.",
+   "Correct: /etc holds system configuration; the Agent's file is /etc/datadog-agent/datadog.yaml.",
+   "/var/log holds log files; Agent logs are in /var/log/datadog/."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-031",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "medium",
+  "q": "What is /proc on a Linux host?",
+  "options": [
+   "A kernel-generated pseudo-filesystem exposing process and system info",
+   "The directory where installed programs and services keep their executable binaries",
+   "A directory where the OS stores rotated and compressed log files from services"
+  ],
+  "answer": 0,
+  "explanation": "/proc is a virtual filesystem the kernel generates; it is not stored on disk. The containerized Agent mounts the host's /proc to collect host and process metrics.",
+  "ref": "https://man7.org/linux/man-pages/man5/proc.5.html",
+  "notes": [
+   "Correct: /proc is a virtual filesystem generated by the kernel, not stored on disk.",
+   "Executables live in directories such as /usr/bin and /usr/sbin.",
+   "Rotated logs live under /var/log, not /proc."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-032",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "easy",
+  "q": "Which statement best describes the Linux operating system?",
+  "options": [
+   "Free and open source: the code can be read, modified and shared",
+   "Freeware: free to download and use, but its source code is never published",
+   "Proprietary: the source code is closed and every installation must be licensed"
+  ],
+  "answer": 0,
+  "explanation": "Linux is open-source software released under the GPL. Windows, by contrast, is a proprietary operating system with closed source code.",
+  "ref": "https://en.wikipedia.org/wiki/Linux",
+  "notes": [
+   "Correct: Linux is open source under the GPL; its code can be read, modified and shared.",
+   "Freeware is free but closed source; Linux source code is public.",
+   "Proprietary closed source describes Windows, not Linux."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-033",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Linux Basics",
+  "difficulty": "hard",
+  "q": "On a Linux host, the Agent's configuration is in /etc/datadog-agent. Under which directory does the Agent package install its binaries and embedded runtime?",
+  "options": [
+   "/proc/datadog-agent",
+   "/opt/datadog-agent",
+   "/var/log/datadog"
+  ],
+  "answer": 1,
+  "explanation": "On Linux the Agent installs into /opt/datadog-agent (binaries, embedded Python, run files). /var/log/datadog holds its logs, and /proc is a kernel pseudo-filesystem.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/linux/",
+  "notes": [
+   "/proc is a kernel pseudo-filesystem; packages never install into it.",
+   "Correct: the Linux package installs into /opt/datadog-agent, including the embedded Python at /opt/datadog-agent/embedded/.",
+   "/var/log/datadog holds the Agent's log files, not its binaries."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-034",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "easy",
+  "q": "A datadog.yaml edit causes a parse error. The last line was indented by pressing the Tab key:\nlogs_enabled: true\nlogs_config:\n<TAB>container_collect_all: true\nWhat is the problem?",
+  "options": [
+   "Nested keys must be written on one line, as logs_config.container_collect_all",
+   "Boolean values must be quoted in YAML",
+   "YAML does not allow tab characters for indentation; spaces must be used"
+  ],
+  "answer": 2,
+  "explanation": "YAML indentation must use spaces only; a tab causes a parse error. Unquoted true is a valid boolean.",
+  "ref": "https://yaml.org/spec/1.2.2/",
+  "notes": [
+   "YAML nests keys by indentation; dotted keys on one line are not required.",
+   "Unquoted true is a valid YAML boolean.",
+   "Correct: YAML forbids tabs for indentation; use spaces."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-035",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "medium",
+  "q": "In this YAML, what kind of value is tags?\ntags:\n  - env:prod\n  - team:payments",
+  "options": [
+   "A single string \"env:prod team:payments\"",
+   "A map with the keys env and team",
+   "A list containing two strings"
+  ],
+  "answer": 2,
+  "explanation": "Lines starting with \"- \" are list items. Because there is no space after the colons, env:prod and team:payments are plain strings, not key/value pairs.",
+  "ref": "https://yaml.org/spec/1.2.2/",
+  "notes": [
+   "Each '- ' line is a separate list item, not part of one string.",
+   "Without a space after the colon, env:prod is a plain string, not a key/value pair.",
+   "Correct: tags is a list (sequence) of two strings."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-036",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "medium",
+  "q": "A datadog.yaml contains only these lines about the site:\n## @param site - string - optional - default: datadoghq.com\n# site: datadoghq.eu\nWhere does the Agent send data?",
+  "options": [
+   "Nowhere, because the Agent refuses to start without an uncommented site key",
+   "datadoghq.eu, because it is the only site value present in the file",
+   "datadoghq.com, because the site line is commented out"
+  ],
+  "answer": 2,
+  "explanation": "Lines starting with # are comments and are ignored, so the documented default (datadoghq.com) is used. To change it, remove the # and set the value.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "The Agent starts fine without an explicit site; it uses the default datadoghq.com.",
+   "A commented line is ignored, so datadoghq.eu is not applied.",
+   "Correct: the site line is commented out, so the default datadoghq.com is used."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-037",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "medium",
+  "q": "Which snippet correctly sets enabled to true under apm_config in datadog.yaml?",
+  "options": [
+   "apm_config:\nenabled: true",
+   "apm_config:\n  enabled: true",
+   "apm_config:\n  - enabled: true"
+  ],
+  "answer": 1,
+  "explanation": "Nesting is shown by indenting the child key with spaces. Without indentation, enabled becomes a separate top-level key, and the dash makes apm_config a list instead of a map.",
+  "ref": "https://yaml.org/spec/1.2.2/",
+  "notes": [
+   "Without indentation, enabled becomes a separate top-level key and apm_config is empty.",
+   "Correct: the child key is indented with spaces under apm_config.",
+   "The dash turns apm_config into a list instead of a map."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-038",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "easy",
+  "q": "Which character begins a comment in a YAML file such as datadog.yaml?",
+  "options": [
+   "#",
+   "//",
+   ";"
+  ],
+  "answer": 0,
+  "explanation": "YAML comments start with #. This is how datadog.yaml.example keeps every option commented out until you enable it.",
+  "ref": "https://yaml.org/spec/1.2.2/",
+  "notes": [
+   "Correct: YAML comments start with #.",
+   "// is a comment marker in languages like JavaScript and C, not YAML.",
+   "; starts comments in INI files, not YAML."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-039",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "medium",
+  "q": "Why is this JSON invalid?\n{\n  \"service\": \"web\",\n  \"env\": \"prod\",\n}",
+  "options": [
+   "A trailing comma follows the last member",
+   "Objects must be enclosed in square brackets, not braces",
+   "Keys must not be wrapped in quotes in JSON objects"
+  ],
+  "answer": 0,
+  "explanation": "JSON does not allow a comma after the last element of an object or array. Keys must be double-quoted strings, and {} is correct for objects ([] is for arrays).",
+  "ref": "https://www.json.org/json-en.html",
+  "notes": [
+   "Correct: JSON does not allow a trailing comma after the last member.",
+   "Braces are correct for objects; square brackets are for arrays.",
+   "JSON requires keys to be double-quoted strings."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-040",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "medium",
+  "q": "Why will a JSON parser reject this payload?\n{'host': 'web-01', 'port': 8126}",
+  "options": [
+   "JSON requires double quotes for strings and keys",
+   "Numeric values such as 8126 must also be wrapped in quotes",
+   "Keys in a JSON object must be written without any quotes"
+  ],
+  "answer": 0,
+  "explanation": "JSON requires double-quoted strings, so 'host' is invalid. Numbers are written without quotes.",
+  "ref": "https://www.json.org/json-en.html",
+  "notes": [
+   "Correct: JSON strings and keys must use double quotes, not single quotes.",
+   "JSON numbers are written without quotes; 8126 is valid.",
+   "JSON keys must be double-quoted, not unquoted."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-041",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "medium",
+  "q": "A teammate adds a line \"// staging only\" inside a JSON body sent to the Datadog API, and the request fails as malformed. Why?",
+  "options": [
+   "JSON comments must start with # instead of //",
+   "Comments are only allowed after the closing brace of the object",
+   "JSON has no comment syntax at all"
+  ],
+  "answer": 2,
+  "explanation": "JSON has no comment syntax at all, so any comment makes the document invalid. YAML, by contrast, supports # comments.",
+  "ref": "https://www.json.org/json-en.html",
+  "notes": [
+   "# is a YAML comment marker; JSON has no comment marker at all.",
+   "JSON allows nothing after the closing brace except whitespace.",
+   "Correct: JSON has no comment syntax, so any comment makes it invalid."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-042",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "medium",
+  "q": "In this JSON body for submitting metrics, what type of value is series?\n{\"series\": [{\"metric\": \"app.queue.depth\", \"points\": [{\"timestamp\": 1700000000, \"value\": 12}]}]}",
+  "options": [
+   "An array containing one object",
+   "A string holding the serialized metric data",
+   "An object whose single key is metric"
+  ],
+  "answer": 0,
+  "explanation": "Square brackets [] mark an array; its single element is an object in curly braces {}. Here series is an array of metric objects, as used by POST /api/v2/series.",
+  "ref": "https://docs.datadoghq.com/api/latest/metrics/#submit-metrics",
+  "notes": [
+   "Correct: series is an array ([]) whose single element is an object ({}), as used by POST /api/v2/series.",
+   "It is not quoted, so it is not a string.",
+   "Square brackets make it an array, not an object; metric is a key inside the element."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-043",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "hard",
+  "q": "Given this JSON loaded into a Python variable named data with json.loads:\n{\"host\": {\"name\": \"web-01\", \"tags\": [\"env:prod\", \"role:db\"]}}\nWhat does data[\"host\"][\"tags\"][1] return?",
+  "options": [
+   "\"env:prod\"",
+   "\"role:db\"",
+   "A KeyError, because tags is not a top-level key"
+  ],
+  "answer": 1,
+  "explanation": "data[\"host\"] is the inner object, [\"tags\"] is its array, and list indexes start at 0, so index 1 is the second element, role:db.",
+  "ref": "https://www.json.org/json-en.html",
+  "notes": [
+   "env:prod is index 0, the first element.",
+   "Correct: indexes start at 0, so [1] is the second element, role:db.",
+   "data['host'] is accessed first, so tags is reached correctly and no KeyError occurs."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-044",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "medium",
+  "q": "Which YAML line sets enabled to the boolean true rather than to a string?",
+  "options": [
+   "enabled: 'true'",
+   "enabled: \"true\"",
+   "enabled: true"
+  ],
+  "answer": 2,
+  "explanation": "Unquoted true is parsed as a boolean. Wrapping it in single or double quotes makes it the string \"true\".",
+  "ref": "https://yaml.org/spec/1.2.2/",
+  "notes": [
+   "Single quotes make it the string 'true'.",
+   "Double quotes make it the string \"true\".",
+   "Correct: unquoted true is parsed as a boolean."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-045",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "medium",
+  "q": "How many instances does this check configuration define?\ninit_config:\n\ninstances:\n  - name: site-a\n    url: https://a.example.com\n  - name: site-b\n    url: https://b.example.com",
+  "options": [
+   "2",
+   "3",
+   "4"
+  ],
+  "answer": 0,
+  "explanation": "Each \"- \" starts one list item, and the indented url belongs to the same item as the name above it, so there are two instances with two keys each.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "Correct: each '- ' starts one instance; url belongs to the item above, giving two instances.",
+   "Three would count init_config as an instance, but it is a separate top-level key.",
+   "Four counts each key line separately; name and url belong to the same item."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-046",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "hard",
+  "q": "This conf.yaml fails to load:\ninstances:\n  - name: site-a\n  url: https://a.example.com\nWhat is wrong?",
+  "options": [
+   "url is not aligned under name, so it falls outside the list item",
+   "A single list item in YAML can hold only one key/value pair",
+   "URL values must always be wrapped in quotes in YAML files"
+  ],
+  "answer": 0,
+  "explanation": "Keys of the same list item must be aligned (here, 4 spaces, under name). At 2 spaces, url sits at the level of the dash, which is invalid. Unquoted URLs are valid YAML.",
+  "ref": "https://yaml.org/spec/1.2.2/",
+  "notes": [
+   "Correct: url must align with name (4 spaces); at 2 spaces it falls outside the list item.",
+   "A YAML list item can hold any number of key/value pairs.",
+   "Unquoted URLs are valid YAML strings."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-047",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "medium",
+  "q": "Given this datadog.yaml excerpt, what is the value of the https key?\nproxy:\n  https: http://proxy.local:3128\n  no_proxy:\n    - 169.254.169.254",
+  "options": [
+   "http://proxy.local:3128",
+   "It is undefined, because https is not a top-level key",
+   "169.254.169.254"
+  ],
+  "answer": 0,
+  "explanation": "https is a key nested under proxy (proxy.https), and its value is the proxy URL. no_proxy is a sibling key whose value is a list.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/proxy/",
+  "notes": [
+   "Correct: proxy.https is the nested key and its value is the proxy URL.",
+   "Nested keys are still defined; https is reached as proxy.https.",
+   "169.254.169.254 is an item of the sibling no_proxy list."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-048",
+  "topic": "Computing Fundamentals",
+  "subtopic": "YAML & JSON",
+  "difficulty": "hard",
+  "q": "In datadog.yaml, the line \"# log_level: info\" was changed to \"log_level:debug\". What is wrong with the new line?",
+  "options": [
+   "No space after the colon, so it is not parsed as key: value",
+   "The value must be quoted, as in log_level: 'debug'",
+   "log_level must be nested under the logs_config section to take effect"
+  ],
+  "answer": 0,
+  "explanation": "YAML mappings need a space after the colon (key: value); without it, log_level:debug is read as a single plain string. log_level is a top-level option and quotes are optional for every level except 'OFF'.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/debug_mode/",
+  "notes": [
+   "Correct: without a space after the colon, YAML reads log_level:debug as one plain string.",
+   "Quotes are optional for log levels; Datadog's debug-mode docs say quotes are mandatory only for 'OFF'.",
+   "log_level is a top-level datadog.yaml option; logs_config controls log collection, not Agent logging."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-049",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "easy",
+  "q": "What is the purpose of the first line #!/bin/bash in a shell script?",
+  "options": [
+   "It loads a library of bash functions into the script",
+   "It is a comment that has no effect on how the script runs",
+   "It tells the OS which interpreter should run the script"
+  ],
+  "answer": 2,
+  "explanation": "The shebang (#!) line names the interpreter used when the script is run directly, for example ./script.sh. Bash treats it as a comment, but the OS reads it.",
+  "ref": "https://www.gnu.org/software/bash/manual/bash.html",
+  "notes": [
+   "Function libraries are loaded with source or ., not with the shebang line.",
+   "Bash ignores it as a comment, but the OS uses it to pick the interpreter.",
+   "Correct: the shebang names the interpreter that runs the script when executed directly."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-050",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "medium",
+  "q": "What does this command do?\n./collect.sh > out.log 2>&1",
+  "options": [
+   "Writes standard output to out.log and standard error to a file named 1",
+   "Writes both standard output and standard error to out.log",
+   "Writes only standard error to out.log"
+  ],
+  "answer": 1,
+  "explanation": "> out.log redirects stdout (fd 1) to the file, then 2>&1 sends stderr (fd 2) to the same place as stdout.",
+  "ref": "https://www.gnu.org/software/bash/manual/bash.html",
+  "notes": [
+   "2>&1 duplicates stderr onto stdout; it does not create a file named 1 (that would be 2>1).",
+   "Correct: stdout goes to out.log, then stderr is redirected to the same place.",
+   "stdout is redirected first, so both streams go to out.log, not only stderr."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-051",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "medium",
+  "q": "When does the echo run in this command?\nsudo systemctl restart datadog-agent && echo \"restarted\"",
+  "options": [
+   "Only if the restart command fails",
+   "Always, whatever the result of the restart",
+   "Only if the restart command exits with status 0"
+  ],
+  "answer": 2,
+  "explanation": "&& runs the second command only if the first succeeds (exit code 0). || would run it only on failure, and ; would always run it.",
+  "ref": "https://www.gnu.org/software/bash/manual/bash.html",
+  "notes": [
+   "Running only on failure is the || operator.",
+   "Always running regardless of result is the ; separator.",
+   "Correct: && runs the next command only if the previous one exits with status 0."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-052",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "hard",
+  "q": "A script runs:\ngrep -q \"ERROR\" app.log\necho $?\nIt prints 1. What does this mean?",
+  "options": [
+   "grep could not open or read the file app.log",
+   "grep found exactly one matching line in the file",
+   "grep ran but found no matching lines"
+  ],
+  "answer": 2,
+  "explanation": "$? holds the exit status of the last command. grep exits 0 when a match is found, 1 when no lines match, and 2 when an error such as an unreadable file occurs.",
+  "ref": "https://www.gnu.org/software/bash/manual/bash.html",
+  "notes": [
+   "An unreadable or missing file makes grep exit with status 2.",
+   "Exit status is not a match count; one or more matches give status 0.",
+   "Correct: grep exits 1 when no lines match."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-053",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "hard",
+  "q": "In a terminal you run DD_ENV=staging (without export) on its own line, and then python3 app.py, which prints os.environ.get(\"DD_ENV\"). What is printed?",
+  "options": [
+   "staging",
+   "An empty line",
+   "None"
+  ],
+  "answer": 2,
+  "explanation": "A variable set without export is a shell variable only and is not passed to child processes, so os.environ.get returns None. export DD_ENV=staging would make it visible.",
+  "ref": "https://www.gnu.org/software/bash/manual/bash.html",
+  "notes": [
+   "staging would print only if the variable were exported to child processes.",
+   "os.environ.get returns None for a missing variable, which prints as None, not a blank line.",
+   "Correct: without export it is a shell-only variable, so the child process sees no DD_ENV."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-054",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "easy",
+  "q": "In the command ps aux | grep datadog, what does the | do?",
+  "options": [
+   "Sends the standard output of ps aux as input to grep",
+   "Saves the output of ps aux to a file named grep",
+   "Runs ps aux and grep one after the other, independently"
+  ],
+  "answer": 0,
+  "explanation": "A pipe connects the stdout of the left command to the stdin of the right one, so grep filters the process list. Writing to a file uses > instead.",
+  "ref": "https://www.gnu.org/software/bash/manual/bash.html",
+  "notes": [
+   "Correct: the pipe feeds ps aux's stdout into grep's stdin.",
+   "Writing to a file uses > redirection, not |.",
+   "Independent sequential execution is ; and the commands are not connected."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-055",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "easy",
+  "q": "What does this Python code print?\nconfig = {\"site\": \"datadoghq.eu\", \"tags\": [\"env:prod\", \"team:ops\"]}\nprint(config[\"tags\"][0])",
+  "options": [
+   "['env:prod', 'team:ops']",
+   "env:prod",
+   "team:ops"
+  ],
+  "answer": 1,
+  "explanation": "config[\"tags\"] is the list, and [0] selects its first element. Python indexing starts at 0.",
+  "ref": "https://docs.python.org/3/tutorial/",
+  "notes": [
+   "That is config['tags'], the whole list, without the [0] index.",
+   "Correct: [0] selects the first list element, env:prod.",
+   "team:ops is index 1, the second element."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-056",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "medium",
+  "q": "What does this Python code print?\nhosts = [\"web-01\", \"web-02\", \"db-01\"]\ncount = 0\nfor h in hosts:\n    if h.startswith(\"web\"):\n        count += 1\nprint(count)",
+  "options": [
+   "1",
+   "2",
+   "3"
+  ],
+  "answer": 1,
+  "explanation": "The loop checks each hostname and adds 1 for the two that start with web. db-01 is skipped.",
+  "ref": "https://docs.python.org/3/tutorial/",
+  "notes": [
+   "Two hostnames start with web, so the count is not 1.",
+   "Correct: web-01 and web-02 match, db-01 does not.",
+   "3 would count every host, but db-01 does not start with web."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-057",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "medium",
+  "q": "What does this Python 3 code print?\ndef to_mb(b):\n    return b / 1024 / 1024\n\nprint(to_mb(2097152))",
+  "options": [
+   "2097152",
+   "2048.0",
+   "2.0"
+  ],
+  "answer": 2,
+  "explanation": "2,097,152 / 1024 = 2048, and 2048 / 1024 = 2. In Python 3 the / operator always returns a float, so it prints 2.0.",
+  "ref": "https://docs.python.org/3/tutorial/",
+  "notes": [
+   "The function divides the input, so it does not print it unchanged.",
+   "2048.0 is the result after only one division by 1024.",
+   "Correct: 2097152 / 1024 / 1024 = 2, and / returns a float in Python 3."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-058",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "easy",
+  "q": "What happens when this Python code runs?\nfor i in range(3):\nprint(i)",
+  "options": [
+   "An IndentationError, because the loop body isn't indented",
+   "It prints only 2, the last value of i",
+   "It prints 0, 1 and 2, each on a separate line"
+  ],
+  "answer": 0,
+  "explanation": "Python uses indentation to define blocks, so the body of a for loop must be indented. Indented, it would print 0, 1 and 2.",
+  "ref": "https://docs.python.org/3/tutorial/",
+  "notes": [
+   "Correct: Python requires the loop body to be indented, so this raises IndentationError.",
+   "The code never runs; it fails to compile before any print happens.",
+   "That is what the code would print only if print(i) were indented."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-059",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "medium",
+  "q": "DD_SITE is not set in the environment. What does this Python code print?\nimport os\nprint(os.environ.get(\"DD_SITE\", \"datadoghq.com\"))",
+  "options": [
+   "datadoghq.com",
+   "It raises a KeyError",
+   "None"
+  ],
+  "answer": 0,
+  "explanation": "dict.get returns the default given as its second argument when the key is missing. os.environ[\"DD_SITE\"] with square brackets would raise a KeyError instead.",
+  "ref": "https://docs.python.org/3/tutorial/",
+  "notes": [
+   "Correct: .get returns the supplied default when the key is missing.",
+   "Only os.environ['DD_SITE'] with brackets raises KeyError; .get never does.",
+   "None is returned only when .get is called without a default."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "fund-060",
+  "topic": "Computing Fundamentals",
+  "subtopic": "Python & Shell Scripts",
+  "difficulty": "medium",
+  "q": "A script runs these commands. What does cat f.txt print?\necho a > f.txt\necho b >> f.txt\necho c > f.txt",
+  "options": [
+   "c",
+   "a, b and c on separate lines",
+   "a and b on separate lines"
+  ],
+  "answer": 0,
+  "explanation": "> truncates and overwrites the file, while >> appends. The last command uses >, so it replaces the a and b lines with c.",
+  "ref": "https://www.gnu.org/software/bash/manual/bash.html",
+  "notes": [
+   "Correct: the final > truncates the file and writes only c.",
+   "That would need >> on the last command; > overwrites.",
+   "The last > replaced a and b; the file holds only c."
+  ],
+  "verified": "2026-10"
+ }
+]

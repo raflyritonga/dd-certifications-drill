@@ -1,0 +1,2522 @@
+[
+ {
+  "id": "viz-001",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Format Rules",
+  "difficulty": "easy",
+  "q": "Which of the following tag strings breaks Datadog's rule for the first character of a tag?",
+  "options": [
+   "2026release:true",
+   "region:us-east-1",
+   "team:payments"
+  ],
+  "answer": 0,
+  "explanation": "Tags must start with a letter. '2026release:true' starts with a digit; the other two start with letters and use only allowed characters.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/",
+  "notes": [
+   "Correct: tags must start with a letter, and this one starts with a digit.",
+   "Valid: starts with a letter and uses allowed characters (letters, digits, hyphens, colon).",
+   "Valid: starts with a letter and is a normal key:value tag."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-002",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Format Rules",
+  "difficulty": "easy",
+  "q": "What is the maximum length of a single tag in Datadog (key, colon and value combined)?",
+  "options": [
+   "100 characters",
+   "256 characters",
+   "200 characters"
+  ],
+  "answer": 2,
+  "explanation": "Tags can be up to 200 characters long, and the key, the colon and the value all count toward that limit.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/",
+  "notes": [
+   "100 characters is too low; the documented maximum is 200.",
+   "256 characters is not the tag limit; tags are capped at 200.",
+   "Correct: tags can be up to 200 characters, counting key, colon and value."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-003",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Format Rules",
+  "difficulty": "medium",
+  "q": "An application submits a metric through DogStatsD with the tag 'Env:Production'. How is this tag stored on the metric?",
+  "options": [
+   "Env:Production, with case preserved",
+   "env:production",
+   "It is dropped, because metric tags must already be lowercase"
+  ],
+  "answer": 1,
+  "explanation": "Metric tags (and span tags) are normalized to lowercase, so the tag becomes env:production. That is why camel case in tag keys should be avoided.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/",
+  "notes": [
+   "Metric tags are not case preserved; they are normalized to lowercase.",
+   "Correct: metric and span tags are converted to lowercase.",
+   "Uppercase tags are not dropped; they are lowercased and kept."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-004",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Format Rules",
+  "difficulty": "medium",
+  "q": "A host is tagged 'env:staging:east'. How does Datadog interpret this tag?",
+  "options": [
+   "Key 'env:staging' with value 'east'",
+   "It is rejected because a tag may contain only one colon",
+   "Key 'env' with value 'staging:east'"
+  ],
+  "answer": 2,
+  "explanation": "In key:value tags, the key is everything before the FIRST colon, so the key is env and the value is staging:east. Colons are allowed characters in tags.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/",
+  "notes": [
+   "The key ends at the first colon, not the last one.",
+   "Colons are allowed characters, so the tag is not rejected.",
+   "Correct: the key is everything before the first colon; the rest is the value."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-005",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Format Rules",
+  "difficulty": "medium",
+  "q": "The following is set in datadog.yaml:\ntags:\n  - role:web server\nWhich tag will appear on the host's metrics?",
+  "options": [
+   "role:web_server",
+   "role:webserver",
+   "role:web-server"
+  ],
+  "answer": 0,
+  "explanation": "Characters that are not allowed in tags, including spaces, are converted to underscores, giving role:web_server. (DD_TAGS is the exception: it splits on whitespace.)",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/",
+  "notes": [
+   "Correct: unsupported characters such as spaces are converted to underscores.",
+   "Spaces are not removed; they become underscores.",
+   "Spaces become underscores, not hyphens."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-006",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Format Rules",
+  "difficulty": "hard",
+  "q": "A container is started with:\nDD_TAGS=\"team:core region:us east\"\nWhich tags does the Agent apply?",
+  "options": [
+   "team:core and region:us_east",
+   "team:core, region:us, and east",
+   "team:core and 'region:us east' with the space preserved"
+  ],
+  "answer": 1,
+  "explanation": "DD_TAGS separates tags on whitespace, so the value is split into three tags: team:core, region:us and east. To keep a space in a value, set tags in YAML, which converts the space to an underscore.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/assigning_tags/",
+  "notes": [
+   "Spaces in DD_TAGS are not converted to underscores; they split tags.",
+   "Correct: DD_TAGS splits on whitespace, producing team:core, region:us and east.",
+   "DD_TAGS cannot keep a space inside a value; whitespace is the separator."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-007",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Format Rules",
+  "difficulty": "easy",
+  "q": "Which tag format does Datadog recommend for the best functionality?",
+  "options": [
+   "key=value",
+   "key:value",
+   "key/value"
+  ],
+  "answer": 1,
+  "explanation": "Datadog recommends key:value tags. A slash is an allowed character, but 'key/value' is treated as a single value-only tag, not a key and value.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/",
+  "notes": [
+   "Datadog tags use a colon, not '=', to separate key and value.",
+   "Correct: Datadog recommends the key:value format for richer querying and grouping.",
+   "A slash is allowed but makes a value-only tag, not a key and value."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-008",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Format Rules",
+  "difficulty": "hard",
+  "q": "A metric is tagged 'app:payments__api' (two consecutive underscores). How is the tag normalized?",
+  "options": [
+   "app:payments__api, unchanged",
+   "app:paymentsapi",
+   "app:payments_api"
+  ],
+  "answer": 2,
+  "explanation": "Datadog collapses consecutive underscores into one and strips leading and trailing underscores, so the result is app:payments_api.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/",
+  "notes": [
+   "Consecutive underscores are not kept; they collapse into one.",
+   "Underscores are not deleted entirely; they collapse to a single underscore.",
+   "Correct: consecutive underscores collapse into a single underscore."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-009",
+  "topic": "Tagging & Search",
+  "subtopic": "Reserved Tags",
+  "difficulty": "medium",
+  "q": "Which of these tag keys is NOT one of Datadog's reserved tag keys?",
+  "options": [
+   "source",
+   "region",
+   "version"
+  ],
+  "answer": 1,
+  "explanation": "Reserved keys are host, device, source, service, env, version and team. 'region' is a common custom tag but has no reserved meaning.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/",
+  "notes": [
+   "source is a reserved tag key.",
+   "Correct: region is a common custom tag but not reserved.",
+   "version is a reserved tag key used by unified service tagging."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-010",
+  "topic": "Tagging & Search",
+  "subtopic": "Reserved Tags",
+  "difficulty": "easy",
+  "q": "Which reserved tag key is intended to assign ownership of resources to a group of people?",
+  "options": [
+   "team",
+   "owner",
+   "service"
+  ],
+  "answer": 0,
+  "explanation": "'team' is the reserved tag key for ownership. 'service' scopes application data across metrics, traces and logs; 'owner' is not reserved.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/",
+  "notes": [
+   "Correct: team is the reserved key for ownership.",
+   "owner is not a reserved tag key.",
+   "service is reserved, but it scopes application data, not ownership."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-011",
+  "topic": "Tagging & Search",
+  "subtopic": "Unified Service Tagging",
+  "difficulty": "easy",
+  "q": "Which environment variables configure unified service tagging for an instrumented application?",
+  "options": [
+   "DD_TAGS, DD_HOSTNAME and DD_SITE",
+   "DD_ENVIRONMENT, DD_SERVICE_NAME and DD_APP_VERSION",
+   "DD_ENV, DD_SERVICE and DD_VERSION"
+  ],
+  "answer": 2,
+  "explanation": "Unified service tagging uses the reserved env, service and version tags, set with DD_ENV, DD_SERVICE and DD_VERSION.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/",
+  "notes": [
+   "DD_TAGS sets host tags, DD_HOSTNAME the hostname and DD_SITE the Datadog site.",
+   "These variable names do not exist; the real ones are DD_ENV, DD_SERVICE and DD_VERSION.",
+   "Correct: DD_ENV, DD_SERVICE and DD_VERSION set the env, service and version tags."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-012",
+  "topic": "Tagging & Search",
+  "subtopic": "Unified Service Tagging",
+  "difficulty": "medium",
+  "q": "To set unified service tags on a Docker container through labels, which label keys are used?",
+  "options": [
+   "com.datadoghq.ad.env, com.datadoghq.ad.service, com.datadoghq.ad.version",
+   "com.datadoghq.tags.env, com.datadoghq.tags.service, com.datadoghq.tags.version",
+   "tags.datadoghq.com/env, tags.datadoghq.com/service, tags.datadoghq.com/version"
+  ],
+  "answer": 1,
+  "explanation": "Docker uses com.datadoghq.tags.<env|service|version> labels. tags.datadoghq.com/* is the Kubernetes label form, and com.datadoghq.ad.* labels are Autodiscovery templates.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/",
+  "notes": [
+   "com.datadoghq.ad.* labels hold Autodiscovery check templates.",
+   "Correct: Docker uses com.datadoghq.tags.env, .service and .version labels.",
+   "tags.datadoghq.com/* is the Kubernetes label format."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-013",
+  "topic": "Tagging & Search",
+  "subtopic": "Unified Service Tagging",
+  "difficulty": "medium",
+  "q": "In Kubernetes, which labels on the Deployment and pod template set unified service tags?",
+  "options": [
+   "tags.datadoghq.com/env, tags.datadoghq.com/service, tags.datadoghq.com/version",
+   "ad.datadoghq.com/env, ad.datadoghq.com/service, ad.datadoghq.com/version",
+   "com.datadoghq.tags.env, com.datadoghq.tags.service, com.datadoghq.tags.version"
+  ],
+  "answer": 0,
+  "explanation": "Kubernetes uses the tags.datadoghq.com/<env|service|version> labels. ad.datadoghq.com/ annotations hold Autodiscovery check templates.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/",
+  "notes": [
+   "Correct: Kubernetes uses tags.datadoghq.com/env, /service and /version labels.",
+   "ad.datadoghq.com/ is the Autodiscovery annotation prefix.",
+   "com.datadoghq.tags.* is the Docker label format."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-014",
+  "topic": "Tagging & Search",
+  "subtopic": "Unified Service Tagging",
+  "difficulty": "medium",
+  "q": "A team wants to compare error rates in traces and logs before and after each deployment of the checkout service. Which unified service tag makes this possible?",
+  "options": [
+   "env",
+   "service",
+   "version"
+  ],
+  "answer": 2,
+  "explanation": "The version tag identifies the deployed release, so telemetry can be compared across deployments. env and service stay the same across deploys of the same service.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/",
+  "notes": [
+   "env stays the same across deployments of a service in one environment.",
+   "service stays the same across deployments of the same service.",
+   "Correct: version identifies each deployment, so telemetry can be compared across releases."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-015",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Assignment",
+  "difficulty": "easy",
+  "q": "According to Datadog, what is the most efficient way to assign tags across your infrastructure?",
+  "options": [
+   "Rely on integration inheritance, such as tags on AWS instances or Chef recipes",
+   "Add tags manually to each host in the UI",
+   "Add every tag to each DogStatsD call in application code"
+  ],
+  "answer": 0,
+  "explanation": "Datadog calls integration inheritance the most efficient method: tags on cloud resources and configuration-management integrations flow automatically to hosts and metrics.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/assigning_tags/",
+  "notes": [
+   "Correct: Datadog calls integration inheritance the most efficient tagging method.",
+   "Manual UI tagging works but doesn't scale across infrastructure.",
+   "Tagging every DogStatsD call is per-metric and error-prone, not the most efficient method."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-016",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Assignment",
+  "difficulty": "medium",
+  "q": "Which of these is valid syntax for host tags in an Agent v7 datadog.yaml?",
+  "options": [
+   "tags = [\"env:prod\", \"role:db\"]",
+   "tags: env:prod, role:db",
+   "tags:\n  - \"env:prod\"\n  - \"role:db\""
+  ],
+  "answer": 2,
+  "explanation": "In Agent v6/v7, tags is a YAML list (block or bracketed form). A comma-separated string was the Agent v5 datadog.conf format, and '=' is not YAML.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/assigning_tags/",
+  "notes": [
+   "Brackets with '=' is not YAML for this key; '=' is not valid here.",
+   "A comma-separated string was the Agent v5 datadog.conf format.",
+   "Correct: Agent v6/v7 uses a YAML list of strings under tags."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-017",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Assignment",
+  "difficulty": "medium",
+  "q": "A user adds a host tag in the Datadog UI. How quickly should the change be expected to apply?",
+  "options": [
+   "Instantly, on the next 15-second check run",
+   "It can take up to five minutes",
+   "Only after the Agent on that host is restarted"
+  ],
+  "answer": 1,
+  "explanation": "Datadog notes that UI changes to host tags can take up to five minutes to apply. No Agent restart is needed because the tag is set in Datadog, not in the Agent's config.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/assigning_tags/",
+  "notes": [
+   "UI tag changes are not instant; they may take up to five minutes.",
+   "Correct: Datadog says UI host tag changes can take up to five minutes to apply.",
+   "No Agent restart is needed because the tag is set in Datadog, not in the Agent config."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-018",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Assignment",
+  "difficulty": "medium",
+  "q": "A host has 'team:dba' set in datadog.yaml. The MySQL integration runs on the same host with no tags in mysql.d/conf.yaml. Which statement is true?",
+  "options": [
+   "MySQL metrics carry team:dba through host-tag inheritance",
+   "MySQL metrics carry team:dba only if it is repeated in mysql.d/conf.yaml",
+   "Integration metrics never carry host tags, only check-level tags"
+  ],
+  "answer": 0,
+  "explanation": "Metrics, logs and traces sent through the Agent inherit the host's tags, so the MySQL metrics are tagged team:dba. Instance-level 'tags' in conf.yaml add tags to that check only.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/assigning_tags/",
+  "notes": [
+   "Correct: host tags from datadog.yaml apply to everything the Agent forwards.",
+   "Repeating the tag isn't needed; host tags are already inherited.",
+   "Integration metrics sent through the Agent do carry host tags."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-019",
+  "topic": "Tagging & Search",
+  "subtopic": "Tag Assignment",
+  "difficulty": "medium",
+  "q": "You want the tag 'cluster:orders' on the Postgres integration's metrics only, not on every metric from the host. Where should it be set?",
+  "options": [
+   "Under 'tags' in datadog.yaml",
+   "In DD_TAGS on the Agent container",
+   "Under 'tags' in the instance section of conf.d/postgres.d/conf.yaml"
+  ],
+  "answer": 2,
+  "explanation": "Each integration configuration file accepts instance-level tags that apply only to that check. Tags in datadog.yaml or DD_TAGS are host-level and apply to everything the Agent sends.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/assigning_tags/",
+  "notes": [
+   "datadog.yaml tags are host tags applied to all Agent data.",
+   "DD_TAGS sets host tags on everything the Agent sends.",
+   "Correct: tags in the integration's conf.yaml apply only to that check."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-020",
+  "topic": "Tagging & Search",
+  "subtopic": "Tagging Best Practices",
+  "difficulty": "easy",
+  "q": "Which tag would Datadog advise AGAINST adding to a custom metric?",
+  "options": [
+   "env:prod",
+   "service:checkout",
+   "user_id:48291"
+  ],
+  "answer": 2,
+  "explanation": "Tags shouldn't come from unbounded sources such as user IDs, request IDs or epoch timestamps. Each new value creates a new timeseries and drives up custom metric counts.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/",
+  "notes": [
+   "env:prod is a bounded, recommended tag.",
+   "service:checkout is a bounded, reserved tag.",
+   "Correct: user IDs are unbounded and create a new timeseries per user."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-021",
+  "topic": "Tagging & Search",
+  "subtopic": "Tagging Best Practices",
+  "difficulty": "medium",
+  "q": "Why is adding a 'request_id' tag to a high-traffic custom metric a bad idea?",
+  "options": [
+   "Each unique tag value combination becomes a new custom metric, so cardinality and cost grow without bound",
+   "Tags longer than 36 characters are truncated, so request IDs become unreadable",
+   "DogStatsD rejects any tag whose value is numeric"
+  ],
+  "answer": 0,
+  "explanation": "A custom metric is a unique combination of metric name and tag values. An unbounded tag like request_id creates a new timeseries for nearly every request.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/",
+  "notes": [
+   "Correct: each unique tag value creates a new timeseries, so cardinality grows without bound.",
+   "There is no 36-character truncation; tags can be up to 200 characters.",
+   "Numeric tag values are allowed; the problem is cardinality, not format."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-022",
+  "topic": "Tagging & Search",
+  "subtopic": "Tagging Best Practices",
+  "difficulty": "hard",
+  "q": "A gauge 'api.latency' is reported from 5 hosts, each tagged with one of 4 'endpoint' values on every host (all combinations occur). A 'region' tag is then added, but each host is always in exactly one region. How many custom metrics does this produce?",
+  "options": [
+   "25",
+   "20",
+   "40"
+  ],
+  "answer": 1,
+  "explanation": "5 hosts x 4 endpoints = 20 unique combinations. Because region is fully determined by host, it adds no new combinations, so the count stays at 20.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/",
+  "notes": [
+   "25 wrongly adds region values as if they created new combinations.",
+   "Correct: 5 hosts x 4 endpoints = 20; region depends on host and adds nothing.",
+   "40 wrongly doubles the count; region never creates new host combinations."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-023",
+  "topic": "Tagging & Search",
+  "subtopic": "Metric Query Syntax",
+  "difficulty": "easy",
+  "q": "In the query avg:system.cpu.user{env:prod,role:db}, what does the comma inside the braces mean?",
+  "options": [
+   "OR: sources with either tag",
+   "AND: only sources with both tags",
+   "The second tag is used for grouping"
+  ],
+  "answer": 1,
+  "explanation": "A comma inside the scope braces is a logical AND, so only sources tagged both env:prod and role:db are included. Grouping uses 'by {}'.",
+  "ref": "https://docs.datadoghq.com/metrics/advanced-filtering/",
+  "notes": [
+   "A comma is not OR; use IN or OR for that.",
+   "Correct: a comma inside the scope means AND.",
+   "Grouping is done with 'by {}', not with a comma in the scope."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-024",
+  "topic": "Tagging & Search",
+  "subtopic": "Metric Query Syntax",
+  "difficulty": "medium",
+  "q": "Which query returns CPU for hosts in EITHER the prod or the staging environment?",
+  "options": [
+   "avg:system.cpu.user{env:prod,env:staging}",
+   "avg:system.cpu.user{env IN (prod, staging)}",
+   "avg:system.cpu.user{env:prod} by {env:staging}"
+  ],
+  "answer": 1,
+  "explanation": "The IN operator matches any listed value, the same as env:prod OR env:staging. The comma form is AND, which needs both values on the same source.",
+  "ref": "https://docs.datadoghq.com/metrics/advanced-filtering/",
+  "notes": [
+   "The comma form is AND, so a source would need both env values.",
+   "Correct: IN matches any listed value, like env:prod OR env:staging.",
+   "'by' groups results; it does not add a second filter value."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-025",
+  "topic": "Tagging & Search",
+  "subtopic": "Metric Query Syntax",
+  "difficulty": "medium",
+  "q": "You want disk usage per device but must exclude loop devices such as /dev/loop0 and /dev/loop1. Which scope works?",
+  "options": [
+   "{!device:/dev/loop*}",
+   "{device:-/dev/loop*}",
+   "{device!=/dev/loop*}"
+  ],
+  "answer": 0,
+  "explanation": "Prefixing a tag with ! excludes it, and the wildcard matches every loop device: avg:system.disk.in_use{!device:/dev/loop*} by {device}.",
+  "ref": "https://docs.datadoghq.com/metrics/advanced-filtering/",
+  "notes": [
+   "Correct: ! excludes the tag, and the wildcard matches every loop device.",
+   "'-' after the colon is not metric exclusion syntax.",
+   "!= is not valid metric scope syntax."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-026",
+  "topic": "Tagging & Search",
+  "subtopic": "Metric Query Syntax",
+  "difficulty": "hard",
+  "q": "Which of these metric queries is INVALID?",
+  "options": [
+   "avg:mymetric{env:prod AND NOT region:us-east}",
+   "avg:mymetric{env:prod,!region:us-east}",
+   "avg:mymetric{env:prod AND !region:us-east}"
+  ],
+  "answer": 2,
+  "explanation": "Datadog doesn't allow mixing the symbolic ! with Boolean operators like AND in the same filter. Use AND NOT, or the comma with !.",
+  "ref": "https://docs.datadoghq.com/metrics/advanced-filtering/",
+  "notes": [
+   "Valid: AND NOT uses only functional Boolean syntax.",
+   "Valid: comma with ! uses only symbolic syntax.",
+   "Correct: symbolic ! cannot be mixed with functional operators like AND."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-027",
+  "topic": "Tagging & Search",
+  "subtopic": "Metric Query Syntax",
+  "difficulty": "easy",
+  "q": "Which scope matches all hosts whose names begin with 'web-'?",
+  "options": [
+   "{host:web-*}",
+   "{host:web-%}",
+   "{host:^web-.*}"
+  ],
+  "answer": 0,
+  "explanation": "Metric queries support * wildcards for prefix, suffix and substring matches. % and regular expressions are not scope syntax.",
+  "ref": "https://docs.datadoghq.com/metrics/advanced-filtering/",
+  "notes": [
+   "Correct: metric scopes support * wildcards for prefix matches.",
+   "% is not a wildcard in metric queries.",
+   "Regular expressions are not supported in metric scopes."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-028",
+  "topic": "Tagging & Search",
+  "subtopic": "Metric Query Syntax",
+  "difficulty": "medium",
+  "q": "What does 'by {host}' do in avg:system.load.1{env:prod} by {host}?",
+  "options": [
+   "Filters the query to a host called 'host'",
+   "Averages all hosts into a single line",
+   "Draws one series per host, each averaged within its group"
+  ],
+  "answer": 2,
+  "explanation": "'by {tag}' groups results so there is one series per tag value, here one line per host. Without 'by', all matching sources are combined into one series.",
+  "ref": "https://docs.datadoghq.com/dashboards/querying/",
+  "notes": [
+   "'by' groups by the tag key; it doesn't filter to a host named 'host'.",
+   "Without 'by' all hosts would be combined into one line; 'by' does the opposite.",
+   "Correct: 'by {host}' draws one series per host."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-029",
+  "topic": "Tagging & Search",
+  "subtopic": "Metric Query Syntax",
+  "difficulty": "medium",
+  "q": "Which query shows production CPU for every location EXCEPT atlanta and seattle?",
+  "options": [
+   "avg:system.cpu.user{env:prod AND location NOT IN (atlanta,seattle)}",
+   "avg:system.cpu.user{env:prod,location:!(atlanta,seattle)}",
+   "avg:system.cpu.user{env:prod} NOT by {location:atlanta,seattle}"
+  ],
+  "answer": 0,
+  "explanation": "NOT IN excludes every listed value of a tag key and can be combined with AND. The other two forms aren't valid filter syntax.",
+  "ref": "https://docs.datadoghq.com/metrics/advanced-filtering/",
+  "notes": [
+   "Correct: NOT IN excludes every listed value and can be combined with AND.",
+   "location:!(...) is not valid filter syntax.",
+   "'NOT by' is not valid query syntax."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-030",
+  "topic": "Tagging & Search",
+  "subtopic": "Metric Query Syntax",
+  "difficulty": "hard",
+  "q": "What does this query graph?\nsum:kubernetes.pods.running{service:*-canary} by {service}",
+  "options": [
+   "One line per service whose name ends in '-canary', showing the summed number of running pods",
+   "Total running pods across all services, as one line",
+   "Running pods for a single service literally named '*-canary'"
+  ],
+  "answer": 0,
+  "explanation": "The suffix wildcard matches every service ending in -canary, 'sum' adds pod counts across sources, and 'by {service}' draws one line per matching service.",
+  "ref": "https://docs.datadoghq.com/metrics/advanced-filtering/",
+  "notes": [
+   "Correct: the suffix wildcard matches every *-canary service and 'by' splits them.",
+   "'by {service}' produces one line per service, not a single total.",
+   "* is a wildcard here, not a literal character."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-031",
+  "topic": "Tagging & Search",
+  "subtopic": "Log Search Syntax",
+  "difficulty": "easy",
+  "q": "In the Log Explorer, how do you search on a log attribute named http.status_code for the value 500?",
+  "options": [
+   "#http.status_code:500",
+   "@http.status_code:500",
+   "attr.http.status_code:500"
+  ],
+  "answer": 1,
+  "explanation": "Log attributes are searched with the @ prefix, for example @http.status_code:500. Tags and reserved attributes such as service or status don't need it.",
+  "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/",
+  "notes": [
+   "# is not used to search log attributes.",
+   "Correct: log attributes are searched with the @ prefix.",
+   "attr. is not a log search prefix."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-032",
+  "topic": "Tagging & Search",
+  "subtopic": "Log Search Syntax",
+  "difficulty": "medium",
+  "q": "Which log query matches every 4xx status code (the attribute is a facet)?",
+  "options": [
+   "@http.status_code:{400..499}",
+   "@http.status_code:400-499",
+   "@http.status_code:[400 TO 499]"
+  ],
+  "answer": 2,
+  "explanation": "Numeric ranges in log search use [min TO max]. Range and comparison searches work only on numeric attributes that have been added as facets (measures).",
+  "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/",
+  "notes": [
+   "{a..b} is not log range syntax.",
+   "A hyphenated range is not valid; it is not interpreted as a range.",
+   "Correct: numeric ranges use [min TO max] on a faceted numeric attribute."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-033",
+  "topic": "Tagging & Search",
+  "subtopic": "Log Search Syntax",
+  "difficulty": "medium",
+  "q": "You want logs from service 'web' but NOT those with status 'info'. Which query does this?",
+  "options": [
+   "service:web EXCEPT status:info",
+   "service:web -status:info",
+   "service:web status:!=info"
+  ],
+  "answer": 1,
+  "explanation": "A leading '-' (or NOT) excludes matching logs. EXCEPT and != are not log search operators.",
+  "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/",
+  "notes": [
+   "EXCEPT is not a log search operator.",
+   "Correct: a leading - excludes logs matching the term.",
+   "!= is not a log search operator."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-034",
+  "topic": "Tagging & Search",
+  "subtopic": "Facets & Measures",
+  "difficulty": "hard",
+  "q": "Logs contain a numeric attribute 'duration', but the search @duration:>500 returns nothing. What should be done FIRST?",
+  "options": [
+   "Add @duration as a facet (measure) so numeric operators can be used",
+   "Quote the value: @duration:\">500\"",
+   "Set logs_enabled: true in datadog.yaml and restart the Agent"
+  ],
+  "answer": 0,
+  "explanation": "Numeric comparisons and ranges need the attribute to be added as a facet first. Quoting the value makes it a literal string match, and logs are clearly already being collected.",
+  "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/",
+  "notes": [
+   "Correct: numeric operators like > need the attribute added as a facet first.",
+   "Quoting makes it a literal string match, not a numeric comparison.",
+   "Logs are already arriving; the issue is the missing facet, not collection."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-035",
+  "topic": "Tagging & Search",
+  "subtopic": "Facets & Measures",
+  "difficulty": "medium",
+  "q": "Which statement about searching log attributes is correct?",
+  "options": [
+   "A facet must exist before an attribute can be searched at all",
+   "Only tags can be searched; attributes are for display only",
+   "Attributes can be searched without a facet, but numeric operators and ranges need a facet"
+  ],
+  "answer": 2,
+  "explanation": "Datadog says you don't need a facet to search attributes and tags. Facets are needed for numeric searches and to filter or group from the facet panel.",
+  "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/",
+  "notes": [
+   "Facets are not required to search attributes; only for numeric operators and ranges.",
+   "Attributes can be searched with @, not just displayed.",
+   "Correct: attributes are searchable without a facet, but numeric searches need one."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-036",
+  "topic": "Tagging & Search",
+  "subtopic": "Facets & Measures",
+  "difficulty": "medium",
+  "q": "An analyst wants to graph the average of the 'response_time_ms' log attribute and filter logs where it is above 2000. How should the attribute be defined?",
+  "options": [
+   "As a qualitative facet",
+   "As a reserved tag",
+   "As a measure (quantitative facet)"
+  ],
+  "answer": 2,
+  "explanation": "Measures are quantitative facets with integer or double values, used for aggregations such as averages or sums and for range filtering. Qualitative facets (dimensions) are for filtering and grouping on discrete values like status or country.",
+  "ref": "https://docs.datadoghq.com/logs/explorer/facets/",
+  "notes": [
+   "Qualitative facets (dimensions) filter and group discrete values; they don't aggregate numbers.",
+   "Reserved tags are host, service, env and so on; they aren't for numeric attributes.",
+   "Correct: measures are quantitative facets used for averages, sums and range filters."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-037",
+  "topic": "Tagging & Search",
+  "subtopic": "Live Tail & Patterns",
+  "difficulty": "easy",
+  "q": "An exclusion filter keeps debug logs out of your index. Where can you still see those debug logs as they arrive?",
+  "options": [
+   "Log Explorer search over the past 15 minutes",
+   "Live Tail",
+   "Metrics Explorer"
+  ],
+  "answer": 1,
+  "explanation": "Live Tail streams both indexed and non-indexed logs in near real time. The Log Explorer search only returns indexed logs.",
+  "ref": "https://docs.datadoghq.com/logs/explorer/live_tail/",
+  "notes": [
+   "The Log Explorer only searches indexed logs, so excluded logs don't appear.",
+   "Correct: Live Tail shows both indexed and non-indexed logs in real time.",
+   "Metrics Explorer graphs metrics, not individual log events."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-038",
+  "topic": "Tagging & Search",
+  "subtopic": "Live Tail & Patterns",
+  "difficulty": "easy",
+  "q": "There are thousands of error logs that differ only in IDs and timestamps. Which Log Explorer feature groups them into a few clusters by message structure?",
+  "options": [
+   "Live Tail",
+   "Saved Views",
+   "Patterns"
+  ],
+  "answer": 2,
+  "explanation": "Patterns clusters logs with similar structure so you can see the few distinct message shapes behind a large volume.",
+  "ref": "https://docs.datadoghq.com/logs/explorer/analytics/patterns/",
+  "notes": [
+   "Live Tail streams logs in real time without clustering them.",
+   "Saved Views store a search and layout; they don't cluster logs.",
+   "Correct: Patterns groups logs with similar message structure into clusters."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-039",
+  "topic": "Tagging & Search",
+  "subtopic": "Log Search Syntax",
+  "difficulty": "medium",
+  "q": "A user searches the Log Explorer for \"*timeout*\" (with the double quotes). What happens?",
+  "options": [
+   "It matches any message containing 'timeout'",
+   "It is rejected as a syntax error",
+   "It matches the literal string *timeout*, because wildcards don't work inside quotes"
+  ],
+  "answer": 2,
+  "explanation": "Wildcards don't work inside double quotes, so \"*test*\" searches for the literal characters. Leave out the quotes to use * as a wildcard.",
+  "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/",
+  "notes": [
+   "Inside quotes * is literal, so it doesn't act as a wildcard.",
+   "It is valid syntax; it just searches for the literal string.",
+   "Correct: wildcards only work outside double quotes."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-040",
+  "topic": "Tagging & Search",
+  "subtopic": "Log Search Syntax",
+  "difficulty": "hard",
+  "q": "Logs have the attribute @user.name set to 'alice'. Which search will NOT match them?",
+  "options": [
+   "@user.name:Alice",
+   "@user.name:alice",
+   "@user.name:ali*"
+  ],
+  "answer": 0,
+  "explanation": "Attribute searches are case sensitive, so 'Alice' doesn't match 'alice'. A wildcard on the correct case does match; use full-text search for case-insensitive results.",
+  "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/",
+  "notes": [
+   "Correct: attribute searches are case sensitive, so 'Alice' doesn't match 'alice'.",
+   "Matches: exact value with the right case.",
+   "Matches: a wildcard on the correct case matches 'alice'."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-041",
+  "topic": "Tagging & Search",
+  "subtopic": "Log Search Syntax",
+  "difficulty": "easy",
+  "q": "In the log query service:web status:error, how are the two terms combined?",
+  "options": [
+   "OR",
+   "AND",
+   "The second term only sorts the results"
+  ],
+  "answer": 1,
+  "explanation": "AND is the default operator between log search terms, so this returns logs from service web that also have status error.",
+  "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/",
+  "notes": [
+   "OR must be written explicitly; it isn't the default.",
+   "Correct: AND is the default operator between terms.",
+   "Terms filter results; they don't sort them."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-042",
+  "topic": "Tagging & Search",
+  "subtopic": "Log Search Syntax",
+  "difficulty": "hard",
+  "q": "What is the difference between the log searches 'hello' and '*:hello'?",
+  "options": [
+   "They are identical",
+   "'hello' searches every attribute; '*:hello' searches only the message",
+   "'hello' searches the message (and a few error/title fields); '*:hello' searches all log attributes"
+  ],
+  "answer": 2,
+  "explanation": "Free-text 'hello' searches the message plus @title, @error.message and @error.stack. Full-text '*:hello' searches every log attribute, including the message.",
+  "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/",
+  "notes": [
+   "They differ in which fields are searched.",
+   "This reverses the two: free text is narrower than *:hello.",
+   "Correct: free text searches message, title and error fields; *:hello searches all attributes."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-043",
+  "topic": "Tagging & Search",
+  "subtopic": "Metrics Explorer & Summary",
+  "difficulty": "easy",
+  "q": "Where can you view a metric's metadata (type, unit, description) and its tags, and edit that metadata?",
+  "options": [
+   "Metrics Summary",
+   "Host Map",
+   "Live Tail"
+  ],
+  "answer": 0,
+  "explanation": "Metrics Summary lists the metrics reporting to Datadog. Its side panel shows metadata, tags and cardinality, and the metadata can be edited there.",
+  "ref": "https://docs.datadoghq.com/metrics/summary/",
+  "notes": [
+   "Correct: Metrics Summary shows metric metadata and tags and lets you edit most metadata.",
+   "Host Map visualizes hosts by metric; it doesn't edit metric metadata.",
+   "Live Tail streams logs, not metric metadata."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-044",
+  "topic": "Tagging & Search",
+  "subtopic": "Metrics Explorer & Summary",
+  "difficulty": "easy",
+  "q": "An engineer wants to quickly graph a metric ad hoc, try different scopes and groupings, and then export the graph to a dashboard. Which tool fits?",
+  "options": [
+   "Metrics Summary",
+   "Metrics Explorer",
+   "Software Catalog"
+  ],
+  "answer": 1,
+  "explanation": "Metrics Explorer is for ad-hoc exploration and graphing of metrics, and its graphs can be exported to dashboards or notebooks.",
+  "ref": "https://docs.datadoghq.com/metrics/explorer/",
+  "notes": [
+   "Metrics Summary lists metrics and metadata; it isn't for ad-hoc graphing.",
+   "Correct: Metrics Explorer is for ad-hoc graphing and can export to dashboards or notebooks.",
+   "Software Catalog shows services and ownership, not ad-hoc metric graphs."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-045",
+  "topic": "Tagging & Search",
+  "subtopic": "Metrics Explorer & Summary",
+  "difficulty": "medium",
+  "q": "With Metrics without Limits, where do you configure which tags stay queryable (indexed) for a custom metric?",
+  "options": [
+   "In the Agent's datadog.yaml with histogram_aggregates",
+   "On the Host Map with Group by",
+   "In Metrics Summary, using the metric's tag configuration"
+  ],
+  "answer": 2,
+  "explanation": "Metrics without Limits tag configuration is managed per metric from Metrics Summary. histogram_aggregates controls which histogram aggregations the Agent computes, not tag indexing.",
+  "ref": "https://docs.datadoghq.com/metrics/summary/",
+  "notes": [
+   "histogram_aggregates sets which histogram aggregations the Agent computes, not tag indexing.",
+   "Host Map Group by arranges hosts; it doesn't configure metric tags.",
+   "Correct: Manage Tags for Metrics without Limits is in Metrics Summary."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-046",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Query Processing Order",
+  "difficulty": "medium",
+  "q": "In what order does Datadog process a metric query to draw a graph?",
+  "options": [
+   "Scope by tags → time aggregation (rollup) → space aggregation → functions",
+   "Space aggregation → scope by tags → time aggregation → functions",
+   "Scope by tags → space aggregation → functions → time aggregation"
+  ],
+  "answer": 0,
+  "explanation": "Sources are first scoped by tags, each source is rolled up in time, the series are then aggregated across space (avg/sum/min/max by), and functions are applied last.",
+  "ref": "https://docs.datadoghq.com/dashboards/guide/query-to-the-graph/",
+  "notes": [
+   "Correct: scope, then time aggregation, then space aggregation, then functions.",
+   "Space aggregation happens after scoping and time aggregation.",
+   "Time aggregation comes before space aggregation, and functions run last."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-047",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Rollup & Points per Graph",
+  "difficulty": "hard",
+  "q": "A graph displays about 300 points. You graph 4 hours of a metric submitted every second (14,400 raw points). About how many raw points does each displayed point represent?",
+  "options": [
+   "48",
+   "300",
+   "240"
+  ],
+  "answer": 0,
+  "explanation": "14,400 / 300 = 48, so Datadog automatically rolls up about 48 raw points into each displayed point.",
+  "ref": "https://docs.datadoghq.com/dashboards/querying/",
+  "notes": [
+   "Correct: 14,400 / 300 = 48 raw points per displayed point.",
+   "300 is the number of displayed points, not raw points per point.",
+   "240 would be 14,400 / 60; the graph shows about 300 points, not 60."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-048",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Rollup & Points per Graph",
+  "difficulty": "easy",
+  "q": "When Datadog automatically rolls up points for a graph and no rollup method is specified, which aggregator does it use?",
+  "options": [
+   "sum",
+   "max",
+   "avg"
+  ],
+  "answer": 2,
+  "explanation": "The rollup aggregator defaults to avg. Use .rollup(sum, …) or .as_count() to sum within each time bucket.",
+  "ref": "https://docs.datadoghq.com/dashboards/functions/rollup/",
+  "notes": [
+   "sum is only used if you request it, for example with .rollup(sum) or .as_count().",
+   "max is not the default rollup aggregator.",
+   "Correct: the default rollup aggregator is avg."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-049",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Rollup & Points per Graph",
+  "difficulty": "medium",
+  "q": "What does appending .rollup(sum, 60) to a metric query do?",
+  "options": [
+   "Each displayed point is the sum of the values within a 60-second interval",
+   "The graph shows a 60-minute moving average",
+   "Only the last 60 points are summed into one value"
+  ],
+  "answer": 0,
+  "explanation": "rollup(<aggregator>, <interval in seconds>) sets the time aggregation, so each point is the sum over a 60-second bucket.",
+  "ref": "https://docs.datadoghq.com/dashboards/functions/rollup/",
+  "notes": [
+   "Correct: rollup(sum, 60) sums values within each 60-second bucket.",
+   "The interval is in seconds, and the method is sum, not a moving average.",
+   "Rollup buckets by time; it doesn't sum the last N points."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-050",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Rollup & Points per Graph",
+  "difficulty": "hard",
+  "q": "With no explicit rollup, what is the default rollup interval for a line graph over the past week?",
+  "options": [
+   "1 minute",
+   "1 hour",
+   "1 day"
+  ],
+  "answer": 1,
+  "explanation": "Default line-graph intervals are about 20 s for the past hour, 1 hour for the past week and 1 day for the past year, which keeps the number of points readable.",
+  "ref": "https://docs.datadoghq.com/dashboards/functions/rollup/",
+  "notes": [
+   "About 1 minute is too fine; the past hour uses about 20 seconds.",
+   "Correct: line graphs over the past week default to 1-hour rollups.",
+   "1 day is the default for the past year."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-051",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "as_count & as_rate",
+  "difficulty": "medium",
+  "q": "What does .as_count() do when applied to a COUNT metric?",
+  "options": [
+   "It converts the metric into a gauge",
+   "It sets the time aggregator to SUM and disables interpolation",
+   "It divides each point by the rollup interval to get a per-second rate"
+  ],
+  "answer": 1,
+  "explanation": "On COUNT metrics, .as_count() sets time aggregation to SUM and turns off interpolation, so each point is the total count in its bucket. Dividing by the interval is what .as_rate() does.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/type_modifiers/",
+  "notes": [
+   "as_count() doesn't change the metric type.",
+   "Correct: on COUNT metrics it sets time aggregation to SUM and disables interpolation.",
+   "Dividing by the interval is what .as_rate() does."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-052",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "as_count & as_rate",
+  "difficulty": "hard",
+  "q": "A RATE metric reports 0.5 per second, and the graph uses a 20-second rollup. What value does each point show with .as_count()?",
+  "options": [
+   "0.5",
+   "0.025",
+   "10"
+  ],
+  "answer": 2,
+  "explanation": "For RATE metrics, .as_count() sums and then multiplies by the sampling interval: 0.5/s x 20 s = 10. This matches the docs example where 0.05/s becomes 1 per 20-second point.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/type_modifiers/",
+  "notes": [
+   "0.5 is the raw per-second rate, not the count per bucket.",
+   "0.025 divides by the interval instead of multiplying.",
+   "Correct: 0.5/s x 20 s = 10 per point."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-053",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Space Aggregation",
+  "difficulty": "medium",
+  "q": "Three hosts of service 'api' each report requests per second: 100, 200 and 300. What does sum:app.requests{service:api} by {service} show?",
+  "options": [
+   "200",
+   "300",
+   "600"
+  ],
+  "answer": 2,
+  "explanation": "Space aggregation with sum adds the hosts together: 100 + 200 + 300 = 600. avg by would show 200, and max by would show 300.",
+  "ref": "https://docs.datadoghq.com/dashboards/querying/",
+  "notes": [
+   "200 is the average across hosts (avg by), not the sum.",
+   "300 is the maximum (max by), not the sum.",
+   "Correct: sum adds the hosts: 100 + 200 + 300 = 600."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-054",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Timeshift Functions",
+  "difficulty": "medium",
+  "q": "On a timeseries graph you want to overlay today's request rate with the same metric's values from exactly one week earlier, to spot unusual behavior. What should you add?",
+  "options": [
+   "A second query wrapped in a timeshift function such as week_before() (calendar_shift with \"-7d\")",
+   "The same query with .rollup(avg, 604800) appended",
+   "Nothing extra; set the dashboard time frame to 'Past 1 Week'"
+  ],
+  "answer": 0,
+  "explanation": "Timeshift functions graph a metric's values from an earlier period alongside the current ones. week_before() shifts by 7 days; Datadog now recommends calendar_shift() with \"-7d\" as its replacement.",
+  "ref": "https://docs.datadoghq.com/dashboards/functions/timeshift/",
+  "notes": [
+   "Correct: timeshift functions such as week_before() or calendar_shift(\"-7d\") graph last week's values.",
+   "rollup(avg, 604800) averages into one-week buckets; it doesn't overlay last week.",
+   "A one-week time frame shows recent values but doesn't overlay the same time last week."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-055",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Widget Selection",
+  "difficulty": "easy",
+  "q": "A wallboard should show just the current number of 5xx errors as one big number. Which widget fits?",
+  "options": [
+   "Timeseries",
+   "Query Value",
+   "Heatmap"
+  ],
+  "answer": 1,
+  "explanation": "The Query Value widget displays the current value of a metric query as a single number.",
+  "ref": "https://docs.datadoghq.com/dashboards/widgets/query_value/",
+  "notes": [
+   "Timeseries shows values over time, not a single number.",
+   "Correct: Query Value shows one aggregated value as a big number.",
+   "Heatmap shows the distribution of values over time."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-056",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Widget Selection",
+  "difficulty": "easy",
+  "q": "Which widget shows the 10 hosts with the highest CPU usage as a ranked list?",
+  "options": [
+   "Top List",
+   "Pie Chart",
+   "Heatmap"
+  ],
+  "answer": 0,
+  "explanation": "Top List ranks tag values such as host or service by a metric, showing the highest or lowest values.",
+  "ref": "https://docs.datadoghq.com/dashboards/widgets/top_list/",
+  "notes": [
+   "Correct: Top List ranks dimensions such as hosts by a metric.",
+   "Pie Chart shows proportions of a whole, not a ranked top 10.",
+   "Heatmap shows value distribution over time."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-057",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Widget Selection",
+  "difficulty": "medium",
+  "q": "You want to see whether hosts with high memory usage also have high CPU, with each host plotted by those two metrics. Which widget should you use?",
+  "options": [
+   "Change",
+   "Heatmap",
+   "Scatter Plot"
+  ],
+  "answer": 2,
+  "explanation": "A Scatter Plot plots a scope against two metrics, one on each axis, showing how they relate across hosts.",
+  "ref": "https://docs.datadoghq.com/dashboards/widgets/scatter_plot/",
+  "notes": [
+   "Change shows a metric's change versus an earlier period.",
+   "Heatmap shows the distribution of one metric over time.",
+   "Correct: Scatter Plot plots a scope against two metrics, one per axis."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-058",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Widget Selection",
+  "difficulty": "medium",
+  "q": "Which widget graphs the change in a metric's value compared with an hour, day, week or month earlier, as an absolute or relative (%) change?",
+  "options": [
+   "Change",
+   "Query Value",
+   "Top List"
+  ],
+  "answer": 0,
+  "explanation": "The Change widget compares the current value with the value from a chosen earlier period and shows absolute or percentage change.",
+  "ref": "https://docs.datadoghq.com/dashboards/widgets/change/",
+  "notes": [
+   "Correct: the Change widget compares now with an hour, day, week or month earlier.",
+   "Query Value shows the current aggregated value with no comparison.",
+   "Top List ranks dimensions by value."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-059",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Widget Selection",
+  "difficulty": "medium",
+  "q": "You want to see how request latency is spread across hundreds of containers OVER TIME, with darker cells where more values fall. Which widget fits?",
+  "options": [
+   "Distribution",
+   "Heatmap",
+   "Top List"
+  ],
+  "answer": 1,
+  "explanation": "A Heatmap shows the distribution of values over time. The Distribution widget shows a histogram with value on the x-axis instead of time.",
+  "ref": "https://docs.datadoghq.com/dashboards/widgets/heatmap/",
+  "notes": [
+   "Distribution shows a histogram with value on the x-axis, not time.",
+   "Correct: Heatmap shows how values are distributed over time.",
+   "Top List ranks dimensions; it doesn't show spread over time."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-060",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Widget Selection",
+  "difficulty": "hard",
+  "q": "Which widget shows a histogram of a metric aggregated across tags such as hosts, with the x-axis being the metric value rather than time?",
+  "options": [
+   "Heatmap",
+   "Timeseries",
+   "Distribution"
+  ],
+  "answer": 2,
+  "explanation": "The Distribution widget shows how values are spread across sources as a histogram; its x-axis is quantity, not time. A Heatmap keeps time on the x-axis.",
+  "ref": "https://docs.datadoghq.com/dashboards/widgets/distribution/",
+  "notes": [
+   "Heatmap keeps time on the x-axis.",
+   "Timeseries plots values over time.",
+   "Correct: the Distribution widget's x-axis is quantity, not time."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-061",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Widget Selection",
+  "difficulty": "medium",
+  "q": "A team lead wants a dashboard widget listing how many of the team's monitors are in Alert, Warn, No Data and OK. Which widget fits?",
+  "options": [
+   "Monitor Summary",
+   "SLO",
+   "Query Value"
+  ],
+  "answer": 0,
+  "explanation": "The Monitor Summary widget shows a summary of monitors (all or a filtered subset) broken down by status.",
+  "ref": "https://docs.datadoghq.com/dashboards/widgets/monitor_summary/",
+  "notes": [
+   "Correct: Monitor Summary shows counts of monitors by status.",
+   "The SLO widget shows SLO status and error budget, not monitor status counts.",
+   "Query Value shows a single metric value, not monitor statuses."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-062",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Timeboard vs Screenboard",
+  "difficulty": "medium",
+  "q": "During an incident, an engineer needs a dashboard where every graph shares the same time frame so spikes can be lined up across metrics. Which dashboard layout type fits?",
+  "options": [
+   "Screenboard",
+   "Timeboard",
+   "Host Map"
+  ],
+  "answer": 1,
+  "explanation": "Timeboards use an automatic layout where a single time setting (fixed or real-time) applies to the whole dashboard, which suits troubleshooting and correlation. Screenboards are free-form.",
+  "ref": "https://docs.datadoghq.com/dashboards/",
+  "notes": [
+   "Screenboards are free-form and suited to status boards, not one shared time frame.",
+   "Correct: Timeboards apply one time setting across the whole dashboard.",
+   "Host Map visualizes hosts; it isn't a dashboard layout type."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-063",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Timeboard vs Screenboard",
+  "difficulty": "medium",
+  "q": "A team wants a free-form status board for an office TV that mixes images, notes, graphs and monitor statuses, with widgets placed anywhere. Which dashboard layout type fits?",
+  "options": [
+   "Timeboard",
+   "Metrics Explorer",
+   "Screenboard"
+  ],
+  "answer": 2,
+  "explanation": "Screenboards are dashboards with free-form layouts that can mix images, graphs, logs and other objects, which suits status boards. Timeboards use an automatic layout.",
+  "ref": "https://docs.datadoghq.com/dashboards/",
+  "notes": [
+   "Timeboards use an automatic layout with one shared time frame.",
+   "Metrics Explorer is for ad-hoc graphing, not a status board.",
+   "Correct: Screenboards are free-form layouts that mix images, graphs and other objects."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-064",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Template Variables",
+  "difficulty": "easy",
+  "q": "Which dashboard feature lets viewers rescope every graph to a chosen environment from a dropdown, without editing each widget?",
+  "options": [
+   "Template variables",
+   "Widget groups",
+   "Saved views"
+  ],
+  "answer": 0,
+  "explanation": "Template variables add dropdowns that dynamically filter (or group) the widgets whose queries reference them.",
+  "ref": "https://docs.datadoghq.com/dashboards/template_variables/",
+  "notes": [
+   "Correct: template variables add dropdowns that filter or group widgets that use them.",
+   "Widget groups organize widgets visually; they don't rescope queries.",
+   "Saved views belong to explorers like the Log Explorer, not dashboard scoping."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-065",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Template Variables",
+  "difficulty": "medium",
+  "q": "A dashboard has a template variable named 'env' on the tag key env. How should a widget query reference it?",
+  "options": [
+   "avg:system.cpu.user{$env} by {host}",
+   "avg:system.cpu.user{%%env%%} by {host}",
+   "avg:system.cpu.user{{{env}}} by {host}"
+  ],
+  "answer": 0,
+  "explanation": "Template variables are referenced as $<name> in the query scope. %%var%% is Autodiscovery template syntax, and {{var}} is monitor message syntax.",
+  "ref": "https://docs.datadoghq.com/dashboards/template_variables/",
+  "notes": [
+   "Correct: template variables are referenced as $name in the query.",
+   "%%var%% is Autodiscovery template syntax.",
+   "{{var}} is monitor message template syntax."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-066",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Template Variables",
+  "difficulty": "medium",
+  "q": "A dashboard's template variable $service is changed to 'billing'. One widget's query is avg:system.cpu.user{env:prod}. What happens to that widget?",
+  "options": [
+   "It is filtered to service:billing automatically",
+   "It shows an error until $service is added",
+   "It is unchanged, because its query doesn't reference $service"
+  ],
+  "answer": 2,
+  "explanation": "Template variables only affect queries that include them. Widgets that don't reference the variable keep their original scope.",
+  "ref": "https://docs.datadoghq.com/dashboards/template_variables/",
+  "notes": [
+   "Only widgets whose queries use $service are rescoped.",
+   "Widgets don't error when they don't reference a variable.",
+   "Correct: the widget's query doesn't use $service, so it is unaffected."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-067",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Integration Dashboards",
+  "difficulty": "easy",
+  "q": "The Redis integration was just enabled and is reporting metrics. Where does a user find the out-of-the-box Redis dashboard?",
+  "options": [
+   "In the Dashboard List, where Datadog adds the integration's preset dashboard automatically",
+   "In conf.d/redisdb.d/ on the host, as a dashboard.json file to import",
+   "Nowhere until a user builds one from the Metrics Explorer"
+  ],
+  "answer": 0,
+  "explanation": "When you install an integration, Datadog automatically creates its out-of-the-box dashboard, listed under the All Integrations preset list in the Dashboard List.",
+  "ref": "https://docs.datadoghq.com/dashboards/list/",
+  "notes": [
+   "Correct: installing an integration automatically adds its out-of-the-box dashboard.",
+   "Integration dashboards are not files in conf.d to import.",
+   "Users don't need to build it; Datadog creates it automatically."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-068",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Host Map",
+  "difficulty": "easy",
+  "q": "By default, what does the color of each hexagon in the Host Map represent?",
+  "options": [
+   "Memory used",
+   "CPU utilization",
+   "Number of running containers"
+  ],
+  "answer": 1,
+  "explanation": "Fill by defaults to CPU usage. You can change it to another metric or signal.",
+  "ref": "https://docs.datadoghq.com/infrastructure/hostmap/",
+  "notes": [
+   "Memory is a selectable Fill by metric, not the default.",
+   "Correct: Fill by defaults to CPU usage.",
+   "Container count is not the default Host Map color."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-069",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Host Map",
+  "difficulty": "medium",
+  "q": "On the Host Map you want hosts clustered first by availability zone and then by instance type. What should you use?",
+  "options": [
+   "Group by with two tags: availability-zone, then instance-type",
+   "Filter by availability-zone AND instance-type",
+   "Size by availability-zone"
+  ],
+  "answer": 0,
+  "explanation": "Group by arranges hosts into clusters and supports multiple groupings, for example availability zone then instance type. Filter only limits which hosts are shown.",
+  "ref": "https://docs.datadoghq.com/infrastructure/hostmap/",
+  "notes": [
+   "Correct: Group by supports multiple tags, nesting zone then instance type.",
+   "Filter limits which hosts are shown; it doesn't cluster them.",
+   "Size by sets hexagon size from a metric, not grouping."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-070",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Host Map",
+  "difficulty": "easy",
+  "q": "On the Host Map you want to see only production hosts. Which control should you use?",
+  "options": [
+   "Group by env",
+   "Filter by env:prod",
+   "Fill by env"
+  ],
+  "answer": 1,
+  "explanation": "Filter limits the map to a subset of hosts (with AND, OR, NOT and wildcards). Group by only rearranges hosts and still shows all of them.",
+  "ref": "https://docs.datadoghq.com/infrastructure/hostmap/",
+  "notes": [
+   "Group by rearranges hosts but still shows all of them.",
+   "Correct: Filter limits the map to matching hosts.",
+   "Fill by sets color from a metric; it doesn't hide hosts."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-071",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Host Map",
+  "difficulty": "hard",
+  "q": "A Host Map is set to Filter by env:prod, Group by role, Fill by system.load.norm.1, Size by system.mem.used. Two hexagons in the 'db' group are the same color but one is much larger. What can you conclude?",
+  "options": [
+   "The larger host has higher normalized load",
+   "Both hosts have similar normalized load, and the larger one uses more memory",
+   "The larger host has more CPU cores"
+  ],
+  "answer": 1,
+  "explanation": "Color comes from Fill by (normalized load), so matching colors mean similar load. Size comes from Size by (memory used), so the larger host uses more RAM.",
+  "ref": "https://docs.datadoghq.com/infrastructure/hostmap/",
+  "notes": [
+   "Same color means similar load; size reflects memory, not load.",
+   "Correct: color comes from Fill by (load) and size from Size by (memory used).",
+   "Hexagon size here is memory used, not CPU core count."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-072",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Host List",
+  "difficulty": "medium",
+  "q": "By default, which hosts does the Host List (Infrastructure > Hosts, formerly called the Infrastructure List) show?",
+  "options": [
+   "Hosts with activity in the last 15 minutes",
+   "Hosts with activity in the last 2 hours",
+   "Every host that has ever reported"
+  ],
+  "answer": 0,
+  "explanation": "The Host List shows hosts with activity in the last 15 minutes by default.",
+  "ref": "https://docs.datadoghq.com/infrastructure/list/",
+  "notes": [
+   "Correct: the Host List shows hosts active in the last 15 minutes by default.",
+   "2 hours is not the Host List default.",
+   "Hosts that stopped reporting long ago are not shown by default."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-073",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Host List",
+  "difficulty": "medium",
+  "q": "An EC2 host is known as i-0abc123, ip-10-0-1-5 and db1.example.com. How does Datadog show this in the Host List?",
+  "options": [
+   "As three separate hosts, each billed separately",
+   "As the instance ID only; the other names are discarded",
+   "As one canonical hostname, with the other names listed as host aliases"
+  ],
+  "answer": 2,
+  "explanation": "When a host has several uniquely identifiable names, Datadog picks one canonical hostname and keeps the others as aliases, shown in the host's detail panel.",
+  "ref": "https://docs.datadoghq.com/agent/faq/how-datadog-agent-determines-the-hostname/",
+  "notes": [
+   "One host with several names is one host, not three billed hosts.",
+   "The other names are kept as aliases, not discarded.",
+   "Correct: Datadog picks one canonical hostname and lists the others as aliases."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-074",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "Software Catalog",
+  "difficulty": "easy",
+  "q": "Which Datadog feature provides a centralized, consolidated view of all discovered services along with their ownership and related telemetry?",
+  "options": [
+   "Host Map",
+   "Metrics Summary",
+   "Software Catalog"
+  ],
+  "answer": 2,
+  "explanation": "The Software Catalog (titled Catalog in the docs, under the Internal Developer Portal) gives a centralized view of services and other entities detected from telemetry, with ownership and observability context.",
+  "ref": "https://docs.datadoghq.com/software_catalog/",
+  "notes": [
+   "Host Map visualizes hosts by metric, not services and ownership.",
+   "Metrics Summary lists metrics and their metadata.",
+   "Correct: the Software Catalog is the centralized view of discovered services and ownership."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-075",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "System Metrics",
+  "difficulty": "easy",
+  "q": "What does system.cpu.system measure?",
+  "options": [
+   "Percent of time the CPU spent running user-space processes",
+   "Percent of time the CPU spent waiting for I/O to complete",
+   "Percent of time the CPU spent running the kernel"
+  ],
+  "answer": 2,
+  "explanation": "system.cpu.system is time spent in the kernel. User-space processes are system.cpu.user.",
+  "ref": "https://docs.datadoghq.com/integrations/system/",
+  "notes": [
+   "That is system.cpu.user.",
+   "That is system.cpu.iowait.",
+   "Correct: system.cpu.system is time spent running the kernel."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-076",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "System Metrics",
+  "difficulty": "medium",
+  "q": "On a cloud VM, system.cpu.stolen is consistently high. What is the most likely cause?",
+  "options": [
+   "The application is blocked waiting on disk reads",
+   "The hypervisor is serving other virtual CPUs, so this VM waits for physical CPU time",
+   "The kernel is handling many system calls"
+  ],
+  "answer": 1,
+  "explanation": "Stolen CPU is the time the virtual CPU waited for the hypervisor to service another virtual CPU, often from noisy neighbors. Disk waits show up as iowait.",
+  "ref": "https://docs.datadoghq.com/integrations/system/",
+  "notes": [
+   "Disk waits show up as system.cpu.iowait, not stolen time.",
+   "Correct: stolen time is the vCPU waiting for the hypervisor to serve other vCPUs.",
+   "Kernel time from system calls is system.cpu.system."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-077",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "System Metrics",
+  "difficulty": "medium",
+  "q": "A database host shows high system.cpu.iowait while user and system CPU are low. What does this indicate?",
+  "options": [
+   "The CPU is mostly waiting for I/O operations, such as disk, to complete",
+   "The host is out of swap space",
+   "Network packets are being dropped"
+  ],
+  "answer": 0,
+  "explanation": "iowait is the time the CPU spent waiting for I/O operations to complete, which points to a storage bottleneck rather than compute load.",
+  "ref": "https://docs.datadoghq.com/integrations/system/",
+  "notes": [
+   "Correct: iowait is CPU time spent waiting for I/O to complete.",
+   "Swap exhaustion shows in system.swap metrics, not iowait.",
+   "Dropped packets show in network metrics, not iowait."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-078",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "System Metrics",
+  "difficulty": "medium",
+  "q": "You want a threshold for disks that are 90% full using system.disk.in_use. What threshold value should you set?",
+  "options": [
+   "90",
+   "0.9",
+   "900"
+  ],
+  "answer": 1,
+  "explanation": "system.disk.in_use reports used space as a fraction of the total (0–1), so 90% is 0.9.",
+  "ref": "https://docs.datadoghq.com/integrations/disk/",
+  "notes": [
+   "90 would never trigger; the metric is a fraction between 0 and 1.",
+   "Correct: system.disk.in_use is a fraction, so 90% is 0.9.",
+   "900 is not a meaningful value for a fraction."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-079",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "System Metrics",
+  "difficulty": "hard",
+  "q": "A 4-core Linux host reports system.load.1 = 8. What would system.load.norm.1 be, and what does it suggest?",
+  "options": [
+   "8; the host is lightly loaded",
+   "0.5; the host is half used",
+   "2; there are about twice as many runnable/waiting processes as cores"
+  ],
+  "answer": 2,
+  "explanation": "system.load.norm.1 is the 1-minute load divided by the number of CPUs: 8 / 4 = 2. Above 1 means more processes are running or waiting than there are cores.",
+  "ref": "https://docs.datadoghq.com/integrations/system/",
+  "notes": [
+   "8 is the raw load, not the normalized value.",
+   "0.5 would be 4 / 8; normalization divides load by CPU count.",
+   "Correct: 8 / 4 cores = 2, meaning twice as many runnable processes as cores."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-080",
+  "topic": "Dashboards & Host Map",
+  "subtopic": "System Metrics",
+  "difficulty": "easy",
+  "q": "system.mem.usable is low and system.swap.used is climbing steadily. What is the most likely situation?",
+  "options": [
+   "The host doesn't have enough RAM and is paging to disk",
+   "The disk is almost full",
+   "CPU steal time is high"
+  ],
+  "answer": 0,
+  "explanation": "Swap is disk used as memory once RAM fills up. Low usable memory plus rising swap means RAM is insufficient, which slows the host.",
+  "ref": "https://docs.datadoghq.com/integrations/system/",
+  "notes": [
+   "Correct: low usable memory and rising swap mean RAM is insufficient.",
+   "Disk fullness shows in system.disk.in_use, not swap.",
+   "CPU steal is a hypervisor scheduling issue, unrelated to swap."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-081",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "easy",
+  "q": "You want to be notified when the Datadog Agent on any production host stops reporting. Which monitor type should you create?",
+  "options": [
+   "Host monitor",
+   "Log monitor",
+   "Process Check monitor"
+  ],
+  "answer": 0,
+  "explanation": "A Host monitor checks whether the Agent is still reporting its datadog.agent.up heartbeat, and alerts when a host stops reporting.",
+  "ref": "https://docs.datadoghq.com/monitors/types/host/",
+  "notes": [
+   "Correct: a Host monitor alerts when a host stops reporting.",
+   "Log monitors count logs; they don't track Agent reporting.",
+   "Process Check monitors watch process.up for specific processes."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-082",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "medium",
+  "q": "Which heartbeat does a Host monitor use to decide whether a host is still reporting?",
+  "options": [
+   "system.uptime",
+   "process.up",
+   "datadog.agent.up"
+  ],
+  "answer": 2,
+  "explanation": "Every Agent reports the datadog.agent.up heartbeat, which the Host monitor watches. process.up belongs to the process check.",
+  "ref": "https://docs.datadoghq.com/monitors/types/host/",
+  "notes": [
+   "system.uptime is a system metric, not the Host monitor's check.",
+   "process.up comes from the Agent's process check.",
+   "Correct: every Agent reports the datadog.agent.up service check."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-083",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "medium",
+  "q": "The Agent's process check (conf.d/process.d) is configured for nginx and reports the process.up service check. Which monitor type alerts on that status?",
+  "options": [
+   "Live Process monitor",
+   "Process Check monitor",
+   "Network monitor"
+  ],
+  "answer": 1,
+  "explanation": "Process Check monitors watch the process.up service check from the Agent's process check. Live Process monitors use Process Agent data instead.",
+  "ref": "https://docs.datadoghq.com/monitors/types/process_check/",
+  "notes": [
+   "Live Process monitors use Live Processes data, not process.up.",
+   "Correct: Process Check monitors watch the process.up service check.",
+   "Network monitors cover TCP and HTTP checks."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-084",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "medium",
+  "q": "Without setting up any Agent check, you want an alert when fewer than 2 processes matching 'java' are running across hosts tagged role:worker, using Live Processes data. Which monitor type fits?",
+  "options": [
+   "Live Process monitor",
+   "Process Check monitor",
+   "Host monitor"
+  ],
+  "answer": 0,
+  "explanation": "Live Process monitors are based on Live Processes data and alert on the count of matching processes across hosts or tags. Process Check monitors need the Agent's process.up check configured.",
+  "ref": "https://docs.datadoghq.com/monitors/types/process/",
+  "notes": [
+   "Correct: Live Process monitors count processes across hosts or tags using Live Processes data.",
+   "Process Check monitors need the Agent process check configured.",
+   "Host monitors check whether hosts report, not process counts."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-085",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "medium",
+  "q": "The Agent's HTTP check probes https://shop.example.com/health. Which monitor type alerts when the endpoint can't be reached?",
+  "options": [
+   "Forecast monitor",
+   "Network monitor",
+   "Event monitor"
+  ],
+  "answer": 1,
+  "explanation": "Network monitors cover the TCP and HTTP checks available in the Agent, so they alert when the HTTP check can't reach the endpoint.",
+  "ref": "https://docs.datadoghq.com/monitors/types/network/",
+  "notes": [
+   "Forecast monitors predict where a metric is heading.",
+   "Correct: Network monitors cover the Agent's TCP and HTTP checks.",
+   "Event monitors alert on events, not HTTP check status."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-086",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "medium",
+  "q": "Checkout traffic follows strong daily and weekly cycles. You want an alert when traffic is unusual for that time of day, not when it crosses a fixed number. Which monitor type fits?",
+  "options": [
+   "Outlier monitor",
+   "Forecast monitor",
+   "Anomaly monitor"
+  ],
+  "answer": 2,
+  "explanation": "Anomaly detection compares a metric with its own history, accounting for trends and daily or weekly seasonality.",
+  "ref": "https://docs.datadoghq.com/monitors/types/anomaly/",
+  "notes": [
+   "Outlier monitors compare group members with their peers.",
+   "Forecast monitors predict future values against a threshold.",
+   "Correct: Anomaly monitors account for trends and daily or weekly seasonality."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-087",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "medium",
+  "q": "Twelve web servers behind a load balancer should behave the same. You want an alert when one of them starts behaving differently from the others. Which monitor type fits?",
+  "options": [
+   "Outlier monitor",
+   "Anomaly monitor",
+   "Composite monitor"
+  ],
+  "answer": 0,
+  "explanation": "Outlier monitors detect when a member of a group, such as one web server in a pool, behaves differently from its peers. Anomaly monitors compare a metric with its own history.",
+  "ref": "https://docs.datadoghq.com/monitors/types/outlier/",
+  "notes": [
+   "Correct: Outlier monitors flag a group member behaving differently from its peers.",
+   "Anomaly monitors compare a metric with its own history, not its peers.",
+   "Composite monitors combine existing monitors with logic."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-088",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "easy",
+  "q": "You want a warning about a week before a database volume is expected to fill up, based on its current trend. Which monitor type fits?",
+  "options": [
+   "Change alert",
+   "Forecast monitor",
+   "Outlier monitor"
+  ],
+  "answer": 1,
+  "explanation": "Forecast monitors predict where a metric is heading and alert before it is expected to cross a threshold, as with disk usage.",
+  "ref": "https://docs.datadoghq.com/monitors/types/forecasts/",
+  "notes": [
+   "Change alerts compare with a past value; they don't predict.",
+   "Correct: Forecast monitors can alert, for example, a week before a disk fills.",
+   "Outlier monitors compare group members with peers."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-089",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "medium",
+  "q": "You want to be paged only when BOTH the 'high CPU' monitor and the 'high error rate' monitor are alerting at the same time. Which monitor type fits?",
+  "options": [
+   "Multi alert metric monitor",
+   "Outlier monitor",
+   "Composite monitor"
+  ],
+  "answer": 2,
+  "explanation": "Composite monitors combine existing monitors with logical operators such as && (AND), || (OR) and ! (NOT).",
+  "ref": "https://docs.datadoghq.com/monitors/types/composite/",
+  "notes": [
+   "Multi alert splits one monitor by group; it doesn't combine monitors.",
+   "Outlier monitors compare group members.",
+   "Correct: Composite monitors combine monitors with &&, || and !."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-090",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "hard",
+  "q": "A composite monitor uses the expression a && !b, where a = 'API latency high' and b = 'Scheduled batch job running'. When does it trigger?",
+  "options": [
+   "When either monitor is alerting",
+   "When latency is high AND the batch job monitor is NOT alerting",
+   "Only when both monitors are alerting"
+  ],
+  "answer": 1,
+  "explanation": "&& is AND and ! negates, so the composite triggers when a alerts and b doesn't, suppressing latency alerts caused by the batch job.",
+  "ref": "https://docs.datadoghq.com/monitors/types/composite/",
+  "notes": [
+   "Either-monitor behavior would be a || b.",
+   "Correct: a && !b triggers when a alerts and b does not.",
+   "Both alerting would be a && b; !b requires b NOT to alert."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-091",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "easy",
+  "q": "You want an alert when more than 100 logs with status:error from service:payments are received in 5 minutes. Which monitor type fits?",
+  "options": [
+   "Log monitor",
+   "Metric monitor on system.cpu.user",
+   "Process Check monitor"
+  ],
+  "answer": 0,
+  "explanation": "Log monitors alert when the count of logs matching a search query crosses a threshold within the evaluation window.",
+  "ref": "https://docs.datadoghq.com/monitors/types/log/",
+  "notes": [
+   "Correct: Log monitors alert when matching log counts cross a threshold.",
+   "A CPU metric monitor doesn't count error logs.",
+   "Process Check monitors watch process.up."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-092",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "medium",
+  "q": "A custom Agent check submits a service check with status OK, WARNING or CRITICAL. Which monitor type alerts on that status?",
+  "options": [
+   "Event monitor",
+   "Forecast monitor",
+   "Service Check monitor"
+  ],
+  "answer": 2,
+  "explanation": "Service Check monitors evaluate the status of any service check submitted to Datadog, including those from custom Agent checks.",
+  "ref": "https://docs.datadoghq.com/monitors/types/service_check/",
+  "notes": [
+   "Event monitors alert on events, not service check status.",
+   "Forecast monitors predict metric values.",
+   "Correct: Service Check monitors cover custom checks sent by the Agent, DogStatsD or API."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-093",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Types",
+  "difficulty": "medium",
+  "q": "You want an alert when a queue length metric increases by more than 50% compared with its value one hour earlier, whatever the absolute value. Which option fits?",
+  "options": [
+   "Outlier monitor",
+   "Metric monitor using Change alert detection",
+   "Forecast monitor"
+  ],
+  "answer": 1,
+  "explanation": "A metric monitor with Change detection compares the current value with a past value and can use absolute or percentage change.",
+  "ref": "https://docs.datadoghq.com/monitors/types/metric/",
+  "notes": [
+   "Outlier monitors compare peers, not a value with its own past.",
+   "Correct: Change detection compares now with N minutes ago, as absolute or percentage.",
+   "Forecast monitors predict future values."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-094",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Simple vs Multi Alert",
+  "difficulty": "easy",
+  "q": "A multi alert monitor uses avg:system.cpu.user{env:prod} by {host} with a threshold of 90. Of 20 hosts, 3 go above 90. How many alerts are triggered?",
+  "options": [
+   "1",
+   "3",
+   "20"
+  ],
+  "answer": 1,
+  "explanation": "Multi alert triggers separate notifications for each group (here, each host) that crosses the threshold, so there are 3 alerts.",
+  "ref": "https://docs.datadoghq.com/monitors/configuration/",
+  "notes": [
+   "One alert would be simple alert behavior.",
+   "Correct: multi alert notifies separately for each host above the threshold.",
+   "Only hosts crossing the threshold alert, not all 20."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-095",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Simple vs Multi Alert",
+  "difficulty": "medium",
+  "q": "A metric monitor's query has no 'by' grouping. Which alert mode does it use?",
+  "options": [
+   "Simple alert",
+   "Multi alert by host",
+   "Composite alert"
+  ],
+  "answer": 0,
+  "explanation": "If the query has no grouping, it defaults to Simple Alert: one alert based on the value aggregated across all reporting sources.",
+  "ref": "https://docs.datadoghq.com/monitors/configuration/",
+  "notes": [
+   "Correct: a query with no grouping defaults to Simple Alert.",
+   "Multi alert needs a 'by' grouping in the query.",
+   "Composite is a separate monitor type, not an alert mode."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-096",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Simple vs Multi Alert",
+  "difficulty": "hard",
+  "q": "A simple alert monitor on avg:system.cpu.user{role:web} (alert above 80) covers 4 hosts at 95, 20, 20 and 25. What is the monitor's state?",
+  "options": [
+   "Alert, because one host is above 80",
+   "Warn, because one of four hosts is high",
+   "OK, because the aggregated average (40) is below 80"
+  ],
+  "answer": 2,
+  "explanation": "A simple alert aggregates over all sources before comparing: (95+20+20+25)/4 = 40, which is below 80. Use multi alert by host to catch the single hot host.",
+  "ref": "https://docs.datadoghq.com/monitors/configuration/",
+  "notes": [
+   "Simple alert compares the aggregated value, not each host.",
+   "There is no warning threshold, and the average is below 80.",
+   "Correct: (95+20+20+25)/4 = 40, below the 80 threshold."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-097",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Thresholds & Evaluation",
+  "difficulty": "medium",
+  "q": "A monitor has an alert threshold of 90 and a warning threshold of 80 (above). The evaluated value is 85. What is the monitor's state?",
+  "options": [
+   "OK",
+   "Warn",
+   "Alert"
+  ],
+  "answer": 1,
+  "explanation": "85 is above the warning threshold (80) but below the alert threshold (90), so the monitor is in Warn.",
+  "ref": "https://docs.datadoghq.com/monitors/configuration/",
+  "notes": [
+   "85 is above the 80 warning threshold, so it is not OK.",
+   "Correct: 85 is between the warning (80) and alert (90) thresholds.",
+   "85 is below the 90 alert threshold."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-098",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Thresholds & Evaluation",
+  "difficulty": "hard",
+  "q": "A monitor alerts above 90 and has an alert recovery threshold of 70. It is in Alert at 95, then the value drops to 80. What happens?",
+  "options": [
+   "It stays in Alert until the value goes below the 70 recovery threshold",
+   "It recovers to OK because 80 is below 90",
+   "It changes to No Data"
+  ],
+  "answer": 0,
+  "explanation": "A recovery threshold adds a condition for recovering, so the monitor stays in Alert until the value crosses 70. Without it, the monitor would recover as soon as the value fell below 90.",
+  "ref": "https://docs.datadoghq.com/monitors/configuration/",
+  "notes": [
+   "Correct: with a recovery threshold, the monitor stays in Alert until below 70.",
+   "That would be true without a recovery threshold.",
+   "No Data is for missing data; the metric is still reporting."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-099",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Thresholds & Evaluation",
+  "difficulty": "hard",
+  "q": "You want a metric monitor to alert only if EVERY point in the 10-minute evaluation window is above the threshold. Which aggregation should you choose?",
+  "options": [
+   "max (at least once)",
+   "avg (on average)",
+   "min (at all times)"
+  ],
+  "answer": 2,
+  "explanation": "With min, the alert fires only when all points in the window cross the threshold. With max, a single point crossing is enough.",
+  "ref": "https://docs.datadoghq.com/monitors/types/metric/",
+  "notes": [
+   "max alerts if any single point crosses the threshold.",
+   "avg alerts on the window's average.",
+   "Correct: min alerts only if all points in the window cross the threshold."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-100",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Thresholds & Evaluation",
+  "difficulty": "easy",
+  "q": "In a monitor condition such as 'avg of the query over the last 5 minutes is above 80', what does 'the last 5 minutes' set?",
+  "options": [
+   "The evaluation window: the time range of data checked against the threshold",
+   "How long notifications are muted after an alert",
+   "How often the Agent sends the metric"
+  ],
+  "answer": 0,
+  "explanation": "The evaluation window sets how much data is aggregated and compared to the threshold each time the monitor runs.",
+  "ref": "https://docs.datadoghq.com/monitors/configuration/",
+  "notes": [
+   "Correct: the evaluation window is the time range checked against the threshold.",
+   "Muting notifications is done with downtimes, not the evaluation window.",
+   "The Agent's reporting interval is unrelated to the evaluation window."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-101",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor States",
+  "difficulty": "easy",
+  "q": "Which of the following is NOT a standard Datadog monitor status?",
+  "options": [
+   "No Data",
+   "Degraded",
+   "Warn"
+  ],
+  "answer": 1,
+  "explanation": "The main monitor statuses are OK, Warn, Alert and No Data. 'Degraded' isn't a monitor status.",
+  "ref": "https://docs.datadoghq.com/monitors/configuration/",
+  "notes": [
+   "No Data is a monitor status.",
+   "Correct: Degraded is not a monitor status.",
+   "Warn is a monitor status."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-102",
+  "topic": "Monitors & Alerts",
+  "subtopic": "No Data",
+  "difficulty": "easy",
+  "q": "A metric is expected to report continuously. You want a notification if it stops arriving. Which 'If data is missing' option should you choose?",
+  "options": [
+   "Show NO DATA",
+   "Show NO DATA and notify",
+   "Show OK"
+  ],
+  "answer": 1,
+  "explanation": "Show NO DATA and notify sets the monitor to NO DATA and sends a notification when data stops. Show NO DATA changes the status without notifying, and Show OK treats missing data as healthy.",
+  "ref": "https://docs.datadoghq.com/monitors/configuration/",
+  "notes": [
+   "Show NO DATA changes the status but doesn't send a notification.",
+   "Correct: Show NO DATA and notify sets NO DATA and sends a notification.",
+   "Show OK treats missing data as healthy, so nobody is notified."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-103",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Sparse Metrics",
+  "difficulty": "hard",
+  "q": "A metric 'disk.controller.errors' is only submitted in the minutes right before a disk controller fails; otherwise nothing is reported. How should a metric monitor on it be configured?",
+  "options": [
+   "Alert when the max (at least once) over the window is above the threshold, and do NOT notify on missing data",
+   "Alert when the min (at all times) over the window is above the threshold, and do NOT notify on missing data",
+   "Alert when the max (at least once) over the window is above the threshold, and notify on missing data"
+  ],
+  "answer": 0,
+  "explanation": "With max, a single point crossing the threshold triggers the alert, which suits a metric that appears only briefly. Missing data is the normal healthy state here, so notifying on it would page constantly.",
+  "ref": "https://docs.datadoghq.com/monitors/guide/monitoring-sparse-metrics/",
+  "notes": [
+   "Correct: max fires on one point, and missing data is the normal healthy state.",
+   "min needs every point above threshold, which a brief sparse metric rarely gives.",
+   "Max is right, but notifying on missing data would page constantly."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-104",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Renotification",
+  "difficulty": "medium",
+  "q": "A P1 monitor should keep notifying every 30 minutes while unresolved, and escalations should include '@pagerduty-oncall-manager'. Which setup does this?",
+  "options": [
+   "Enable renotify every 30 minutes and put the manager handle inside {{#is_renotify}} … {{/is_renotify}}",
+   "Set the evaluation window to 30 minutes and add the handle outside any block",
+   "Create a downtime that repeats every 30 minutes"
+  ],
+  "answer": 0,
+  "explanation": "Renotify re-sends the notification while the monitor stays in alert. {{#is_renotify}} limits the escalation handle to those re-notifications.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/",
+  "notes": [
+   "Correct: renotify plus an {{#is_renotify}} block sends escalations every 30 minutes.",
+   "The evaluation window doesn't control renotification.",
+   "Downtimes silence notifications; they don't escalate."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-105",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Renotification",
+  "difficulty": "hard",
+  "q": "In this message, when is '@slack-ops-alerts' notified?\n{{^is_renotify}}\nNew incident @slack-ops-alerts\n{{/is_renotify}}",
+  "options": [
+   "Only on renotifications",
+   "On every notification, including renotifications",
+   "Only on the first notification, not on renotifications"
+  ],
+  "answer": 2,
+  "explanation": "^ inverts the condition, so the block shows only when the event is NOT a renotification, which is the first notification.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/variables/",
+  "notes": [
+   "The ^ inverts the block, so it is skipped on renotifications.",
+   "The block is skipped when is_renotify is true.",
+   "Correct: {{^is_renotify}} shows only on the first notification."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-106",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Message Template Variables",
+  "difficulty": "easy",
+  "q": "Given this monitor message, when is 'CPU critical on {{host.name}}' sent?\n{{#is_alert}}\nCPU critical on {{host.name}} @slack-ops\n{{/is_alert}}",
+  "options": [
+   "Only when the monitor goes into Alert",
+   "On every state change, including recovery",
+   "Only when the monitor recovers"
+  ],
+  "answer": 0,
+  "explanation": "Text and handles inside {{#is_alert}} … {{/is_alert}} are sent only when the monitor transitions to Alert.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/variables/",
+  "notes": [
+   "Correct: {{#is_alert}} content is sent only on transitions to Alert.",
+   "Recovery would need {{#is_recovery}} or text outside blocks.",
+   "Recovery-only text uses {{#is_recovery}}."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-107",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Message Template Variables",
+  "difficulty": "easy",
+  "q": "Which conditional variable should wrap text sent only when the monitor goes into the WARN state?",
+  "options": [
+   "{{#is_alert}}",
+   "{{#is_warning}}",
+   "{{#is_recovery}}"
+  ],
+  "answer": 1,
+  "explanation": "{{#is_warning}} … {{/is_warning}} shows its content only when the monitor warns.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/variables/",
+  "notes": [
+   "{{#is_alert}} is for the Alert state.",
+   "Correct: {{#is_warning}} shows only when the monitor warns.",
+   "{{#is_recovery}} is for recoveries."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-108",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Message Template Variables",
+  "difficulty": "medium",
+  "q": "When is the text inside {{^is_alert}} … {{/is_alert}} included in a notification?",
+  "options": [
+   "Only when the monitor alerts",
+   "Never; ^ comments out the block",
+   "Whenever the monitor is NOT alerting, for example on warning or recovery"
+  ],
+  "answer": 2,
+  "explanation": "Using ^ instead of # creates an inverted block that shows when the condition is false, in this case any notification that isn't an alert.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/variables/",
+  "notes": [
+   "Alert-only text uses {{#is_alert}}.",
+   "^ inverts the condition; it doesn't comment out the block.",
+   "Correct: {{^is_alert}} shows whenever the monitor is not alerting."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-109",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Message Template Variables",
+  "difficulty": "medium",
+  "q": "In a metric monitor message, what does {{value}} display?",
+  "options": [
+   "The value that breached the alert threshold",
+   "The configured alert threshold",
+   "The number of hosts in the monitor scope"
+  ],
+  "answer": 0,
+  "explanation": "{{value}} is the value that breached the threshold. The configured thresholds are {{threshold}} and {{warn_threshold}}.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/variables/",
+  "notes": [
+   "Correct: {{value}} is the value that breached the threshold.",
+   "The alert threshold is {{threshold}}.",
+   "No standard variable gives host count here; {{value}} is the metric value."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-110",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Message Template Variables",
+  "difficulty": "medium",
+  "q": "A message reads: 'Disk at {{value}} (warning level: ___)'. Which variable fills the blank with the configured warning threshold?",
+  "options": [
+   "{{threshold}}",
+   "{{warn_threshold}}",
+   "{{ok_threshold}}"
+  ],
+  "answer": 1,
+  "explanation": "{{warn_threshold}} is the warning threshold and {{threshold}} is the alert threshold. {{ok_threshold}} applies to Service Check monitor recovery.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/variables/",
+  "notes": [
+   "{{threshold}} is the alert threshold.",
+   "Correct: {{warn_threshold}} is the warning threshold.",
+   "{{ok_threshold}} is the value that recovered a Service Check monitor."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-111",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Message Template Variables",
+  "difficulty": "hard",
+  "q": "A monitor on avg:system.cpu.user{env:prod} (no grouping) has the message 'High CPU on {{host.name}}', but notifications show no host name. Why?",
+  "options": [
+   "{{host.name}} only works in Log monitors",
+   "Tag variables must be written as {{$host.name}}",
+   "{{host.name}} is only available when the monitor is grouped by host (multi alert)"
+  ],
+  "answer": 2,
+  "explanation": "{{host.name}} is a tag variable that only gets a value when the monitor is grouped by host. A simple alert aggregates all hosts, so there is no single host to name.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/variables/",
+  "notes": [
+   "{{host.name}} works in any monitor grouped by host, not only Log monitors.",
+   "Tag variables don't use a $ prefix in monitor messages.",
+   "Correct: host tag variables only have values when the monitor is grouped by host."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-112",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Message Template Variables",
+  "difficulty": "medium",
+  "q": "You want the on-call PagerDuty service paged ONLY when a monitor recovers from ALERT to OK, not when it recovers from WARNING. Which block fits?",
+  "options": [
+   "{{#is_recovery}}",
+   "{{#is_alert_recovery}}",
+   "{{#is_warning_recovery}}"
+  ],
+  "answer": 1,
+  "explanation": "{{#is_alert_recovery}} covers only ALERT → OK. {{#is_recovery}} also fires on recovery from WARNING, UNKNOWN or NO DATA.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/variables/",
+  "notes": [
+   "{{#is_recovery}} also fires on recovery from WARNING, UNKNOWN or NO DATA.",
+   "Correct: {{#is_alert_recovery}} covers only ALERT to OK.",
+   "{{#is_warning_recovery}} covers only WARNING to OK."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-113",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Message Template Variables",
+  "difficulty": "hard",
+  "q": "Who is notified when this monitor RECOVERS?\n{{#is_alert}}Disk almost full @pagerduty-ops{{/is_alert}}\n{{#is_warning}}Disk filling up @slack-ops-alerts{{/is_warning}}\n@ops-team@example.com",
+  "options": [
+   "@pagerduty-ops and @ops-team@example.com",
+   "Only @ops-team@example.com",
+   "@slack-ops-alerts and @ops-team@example.com"
+  ],
+  "answer": 1,
+  "explanation": "Handles outside conditional blocks are notified on every state transition, including recovery. Handles inside {{#is_alert}} or {{#is_warning}} are notified only for those states.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/variables/",
+  "notes": [
+   "@pagerduty-ops is inside {{#is_alert}}, so it isn't notified on recovery.",
+   "Correct: only handles outside conditional blocks are notified on recovery.",
+   "@slack-ops-alerts is inside {{#is_warning}}, so it isn't notified on recovery."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-114",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Message Template Variables",
+  "difficulty": "hard",
+  "q": "A multi alert monitor is grouped by env, which has the values prod and preprod. You want a block that shows ONLY for env 'prod'. Which conditional is correct?",
+  "options": [
+   "{{#is_match \"env\" \"prod\"}}",
+   "{{#is_exact_match \"env\" \"prod\"}}",
+   "{{#is_alert \"env\" \"prod\"}}"
+  ],
+  "answer": 1,
+  "explanation": "is_match checks for a substring, so 'prod' would also match 'preprod'. is_exact_match needs the whole value to match.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/variables/",
+  "notes": [
+   "is_match is a substring check, so 'prod' also matches 'preprod'.",
+   "Correct: is_exact_match requires the whole value to equal 'prod'.",
+   "is_alert doesn't take tag and value arguments."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-115",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Notification Handles",
+  "difficulty": "easy",
+  "q": "Which handle in a monitor message notifies the Slack channel 'ops-alerts' (with the Slack integration configured)?",
+  "options": [
+   "#slack-ops-alerts",
+   "slack:ops-alerts",
+   "@slack-ops-alerts"
+  ],
+  "answer": 2,
+  "explanation": "Notifications are sent with @-handles, and Slack uses @slack-<channel> (or @slack-<account>-<channel>).",
+  "ref": "https://docs.datadoghq.com/monitors/notify/",
+  "notes": [
+   "# is not the notification prefix.",
+   "slack:ops-alerts is not a notification handle format.",
+   "Correct: Slack channels are notified with @slack-<channel>."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-116",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Notification Handles",
+  "difficulty": "medium",
+  "q": "A team has configured a webhook named 'deploy-bot' in the Webhooks integration. How do they send monitor notifications to it?",
+  "options": [
+   "Add webhook: deploy-bot to datadog.yaml",
+   "Use @webhook-deploy-bot in the monitor message",
+   "Use {{#webhook}}deploy-bot{{/webhook}} in the message"
+  ],
+  "answer": 1,
+  "explanation": "Webhooks are notified with @webhook-<name> in the monitor message, the same @-handle pattern as email, Slack and PagerDuty.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/",
+  "notes": [
+   "Webhooks aren't configured as notification targets in datadog.yaml.",
+   "Correct: webhooks are notified with @webhook-<name>.",
+   "{{#webhook}} is not a valid conditional block."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-117",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Downtimes",
+  "difficulty": "easy",
+  "q": "Database servers will be patched tonight from 01:00 to 03:00, and their monitors shouldn't page anyone. What is the recommended approach?",
+  "options": [
+   "Delete the monitors and recreate them after the patch",
+   "Schedule a downtime for the affected monitors/scope",
+   "Raise all thresholds temporarily"
+  ],
+  "answer": 1,
+  "explanation": "Downtimes silence notifications during planned maintenance without changing or deleting the monitors.",
+  "ref": "https://docs.datadoghq.com/monitors/downtimes/",
+  "notes": [
+   "Deleting monitors loses configuration and history.",
+   "Correct: downtimes silence notifications during planned maintenance.",
+   "Raising thresholds is error-prone and can hide real problems."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-118",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Downtimes",
+  "difficulty": "medium",
+  "q": "What happens to monitors covered by an active downtime?",
+  "options": [
+   "They keep evaluating and can change state, but notifications are silenced",
+   "They stop evaluating entirely until the downtime ends",
+   "They are automatically resolved to OK"
+  ],
+  "answer": 0,
+  "explanation": "Downtimes silence alerts and notifications but don't prevent state transitions, so the monitor keeps evaluating.",
+  "ref": "https://docs.datadoghq.com/monitors/downtimes/",
+  "notes": [
+   "Correct: monitors keep evaluating and changing state, but notifications are silenced.",
+   "Downtimes don't stop evaluation.",
+   "Downtimes don't resolve monitors to OK."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-119",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Downtimes",
+  "difficulty": "hard",
+  "q": "A downtime expires at its scheduled end while a covered monitor is still in ALERT. With default settings, what happens?",
+  "options": [
+   "Nothing; alerts that started during a downtime are discarded",
+   "The monitor is forced back to OK",
+   "A new notification is sent, because the monitor is still in an alert-worthy state"
+  ],
+  "answer": 2,
+  "explanation": "By default, if a monitor is in ALERT, WARNING or NO DATA when a downtime expires, Datadog sends a new notification. A manually cancelled downtime doesn't send one.",
+  "ref": "https://docs.datadoghq.com/monitors/downtimes/",
+  "notes": [
+   "Alert-worthy states are not discarded when a downtime expires.",
+   "Downtimes don't force monitors back to OK.",
+   "Correct: by default a new notification is sent if the monitor is still alert-worthy."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "viz-120",
+  "topic": "Monitors & Alerts",
+  "subtopic": "Monitor Priority",
+  "difficulty": "easy",
+  "q": "What is the range of priority values you can set on a Datadog monitor?",
+  "options": [
+   "P0 (highest) to P3",
+   "Sev1 to Sev4",
+   "P1 (highest) to P5 (lowest)"
+  ],
+  "answer": 2,
+  "explanation": "Monitor priority runs from P1 (highest) to P5 (lowest). It can be used in messages with {{#is_priority 'P1'}} and overridden with {{override_priority 'Pi'}}.",
+  "ref": "https://docs.datadoghq.com/monitors/notify/",
+  "notes": [
+   "Datadog monitor priority has no P0; it starts at P1.",
+   "Sev1 to Sev4 resembles incident severity, not monitor priority.",
+   "Correct: monitor priority ranges from P1 (highest) to P5 (lowest)."
+  ],
+  "verified": "2026-10"
+ }
+]

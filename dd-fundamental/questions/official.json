@@ -1,0 +1,527 @@
+[
+ {
+  "id": "official-01",
+  "topic": "Official practice set",
+  "subtopic": "Agent Supported Platforms",
+  "difficulty": "",
+  "q": "Can the Datadog Agent be installed and run on any operating system?",
+  "options": [
+   "No, it only supports running on Linux based operating systems.",
+   "No, you need to check the version of your operating system to ensure its compatibility.",
+   "Yes, it can run on any version of an operating system without issue"
+  ],
+  "answer": 1,
+  "explanation": "The Agent runs on Linux, Windows, macOS, containers and more, but each platform has minimum supported versions, so you must confirm your OS version is supported before installing.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/",
+  "notes": [
+   "The Agent also supports Windows, macOS, containers and other platforms, not only Linux.",
+   "Correct: the supported platforms list gives minimum (and some maximum) OS versions, so compatibility must be checked.",
+   "Not every OS version works; old releases such as Windows Server 2008 R2 need older Agent versions or are unsupported."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-02",
+  "topic": "Official practice set",
+  "subtopic": "Cloud Integration Billing",
+  "difficulty": "",
+  "q": "Which of the following is a correct statement?",
+  "options": [
+   "No one is billed twice if they are running the Agent on an AWS EC2 instance that is also picked up by the Datadog AWS integration.",
+   "Host level metrics can be obtained with almost no delay by relying on those provided by cloud services for a cloud based host.",
+   "Host level metrics can be obtained with a higher resolution by using those provided by cloud services instead of the Datadog Agent."
+  ],
+  "answer": 0,
+  "explanation": "Datadog's AWS billing docs state you are not billed twice for an EC2 instance that runs the Agent and is also picked up by the AWS integration. Cloud provider metrics arrive with minutes of delay and lower resolution than the Agent's 15-second collection. Current docs: deduplication relies on EC2 instance metadata, so with IMDSv2-only instances use Agent 7.64.0+ or set ec2_prefer_imdsv2: true.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/aws/",
+  "notes": [
+   "Correct: Datadog does not bill twice for an EC2 host that runs the Agent and is also seen by the AWS integration.",
+   "CloudWatch data arrives with several minutes of delay; the Agent gives system metrics with virtually zero delay.",
+   "Cloud provider metrics are coarser (per minute or more); the Agent collects every 15 seconds."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-03",
+  "topic": "Official practice set",
+  "subtopic": "Autodiscovery",
+  "difficulty": "",
+  "q": "Which of the following is a valid data source to populate an integration template when using the Datadog Agent's Autodiscovery feature in a Docker environment?",
+  "options": [
+   "Key-value stores",
+   "Helm Chart",
+   "ConfigMap"
+  ],
+  "answer": 0,
+  "explanation": "In Docker, Autodiscovery integration templates can come from Docker labels, local configuration files, or a key-value store (Consul, etcd or ZooKeeper). Helm charts and ConfigMaps are Kubernetes mechanisms, not Docker template sources.",
+  "ref": "https://docs.datadoghq.com/containers/docker/integrations/",
+  "notes": [
+   "Correct: key-value stores such as Consul, etcd and ZooKeeper are a documented Autodiscovery template source in Docker.",
+   "Helm is a Kubernetes package manager used to deploy the Agent, not a Docker template source.",
+   "ConfigMaps are a Kubernetes object; Docker environments use labels, files or key-value stores."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-04",
+  "topic": "Official practice set",
+  "subtopic": "DogStatsD",
+  "difficulty": "",
+  "q": "Dogstatsd uses UDP instead of TCP because",
+  "options": [
+   "it is very reliable given it guarantees the delivery of applications metric data to DogstatsD.",
+   "it is a connection-oriented protocol so the application will wait to transmit data in case DogStatsD isn't available.",
+   "it allows the application to send metrics to DogStatsD and resume its work without waiting for a response."
+  ],
+  "answer": 2,
+  "explanation": "DogStatsD uses UDP, which is fire-and-forget: the application sends the metric and resumes work without waiting for a response, so an Agent outage does not block the app. UDP does not guarantee delivery and is connectionless.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "UDP does not guarantee delivery; that is a TCP property.",
+   "UDP is connectionless; TCP is connection-oriented and would make the app wait.",
+   "Correct: with UDP the application sends metrics and resumes work without waiting for a response."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-05",
+  "topic": "Official practice set",
+  "subtopic": "Integration Types",
+  "difficulty": "",
+  "q": "Datadog Authentication (crawler) based integrations",
+  "options": [
+   "use credentials provided by the user in Datadog for obtaining metrics with the API.",
+   "are installed with the Datadog Agent and use a Python class method called check to define the metrics to collect.",
+   "use the Datadog API to allow monitoring of applications based on the language they are written in."
+  ],
+  "answer": 0,
+  "explanation": "Authentication (crawler) based integrations are set up in Datadog by providing credentials, which Datadog uses to pull metrics through the provider's API (for example AWS, Azure, Slack, PagerDuty).",
+  "ref": "https://docs.datadoghq.com/getting_started/integrations/",
+  "notes": [
+   "Correct: crawler integrations use credentials you provide in Datadog to obtain metrics through an API.",
+   "That describes Agent-based integrations, which use a Python check method.",
+   "That describes library integrations, which instrument applications by language."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-06",
+  "topic": "Official practice set",
+  "subtopic": "Metric Timestamps",
+  "difficulty": "",
+  "q": "In Datadog, metrics submitted with a fractions of a second timestamp",
+  "options": [
+   "are rounded to the nearest whole second.",
+   "are stored in milliseconds to account for the fraction.",
+   "are rejected by the metrics endpoint upon submission."
+  ],
+  "answer": 0,
+  "explanation": "Datadog stores metric points with second-level timestamps; any point submitted with a fractional-second timestamp is rounded to the nearest second, and points with the same timestamp overwrite earlier ones.",
+  "ref": "https://docs.datadoghq.com/metrics/",
+  "notes": [
+   "Correct: the Metrics docs say fractional-second timestamps are rounded to the nearest second.",
+   "Datadog does not store millisecond precision for metric timestamps; API timestamps are POSIX seconds.",
+   "Fractional timestamps are not rejected; they are rounded."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-07",
+  "topic": "Official practice set",
+  "subtopic": "Linux Basics",
+  "difficulty": "",
+  "q": "Which of the following commands will display the distribution and version of a Linux host?",
+  "options": [
+   "cat /etc/os*",
+   "uname -n",
+   "hostname"
+  ],
+  "answer": 0,
+  "explanation": "cat /etc/os* prints files such as /etc/os-release, which contain the distribution name and version (NAME, VERSION_ID). uname -n and hostname both print only the host name.",
+  "ref": "https://www.freedesktop.org/software/systemd/man/latest/os-release.html",
+  "notes": [
+   "Correct: the glob matches /etc/os-release, which holds the distribution name and version.",
+   "uname -n prints the network node hostname, not the distribution.",
+   "hostname prints the host name, not the distribution or version."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-08",
+  "topic": "Official practice set",
+  "subtopic": "Configuration Management",
+  "difficulty": "",
+  "q": "When wanting to install the Datadog Agent on 10 hosts by using a new Ansible server, the Ansible server has been set up, hosts have been added to the inventory file, and the necessary connectivity has been verified. Which step should be taken NEXT on the Ansible server?",
+  "options": [
+   "Run the Datadog Agent installation command.",
+   "Install the Datadog role from Ansible Galaxy.",
+   "In the ansible.cfg file, set the host_key_checking variable to False."
+  ],
+  "answer": 1,
+  "explanation": "After the Ansible server, inventory and connectivity are ready, the next step is to install Datadog's Ansible content from Ansible Galaxy so a playbook can use it to install the Agent. Current docs: the datadog.dd collection (ansible-galaxy collection install datadog.dd) is now recommended, and the standalone datadog.datadog role is labeled legacy.",
+  "ref": "https://docs.datadoghq.com/agent/guide/ansible_standalone_role/",
+  "notes": [
+   "The Agent cannot be installed through Ansible until the Datadog role or collection is available on the Ansible server.",
+   "Correct: install the Datadog role from Ansible Galaxy next; current docs recommend the datadog.dd collection instead.",
+   "Disabling host key checking is an optional SSH convenience, not a required Datadog install step."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-09",
+  "topic": "Official practice set",
+  "subtopic": "DogStatsD Configuration",
+  "difficulty": "",
+  "q": "When a user wants to instrument an application to send custom metrics to Datadog, how should they edit the Agent configuration file?",
+  "options": [
+   "Un-comment the use_dogstatsd and dogstatsd_port parameters.",
+   "Un-comment the use_dogstatsd parameter and set it to true.",
+   "Un-comment the dogstatsd_port parameter and set it to 8125."
+  ],
+  "answer": 0,
+  "explanation": "The exam expects you to uncomment use_dogstatsd and dogstatsd_port in datadog.yaml to enable DogStatsD on its port. Current docs: DogStatsD is enabled by default over UDP port 8125 in Agent v6+, so no edit is needed unless you want to change dogstatsd_port (then restart the Agent).",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "Correct per the exam: uncommenting both parameters enables DogStatsD and sets its port; in Agent 6+ both are already the defaults.",
+   "Setting only use_dogstatsd leaves the port to its default; the exam expects both parameters.",
+   "Setting only dogstatsd_port does not explicitly enable DogStatsD in the exam's expected answer."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-10",
+  "topic": "Official practice set",
+  "subtopic": "Custom Metrics",
+  "difficulty": "",
+  "q": "Which feature allows the ability to submit custom metrics programmatically to Datadog?",
+  "options": [
+   "Datadog Agent",
+   "DogStatsD",
+   "Datadog API"
+  ],
+  "answer": 1,
+  "explanation": "DogStatsD is the metrics aggregation service, bundled with the Agent, that applications use to submit custom metrics programmatically through client libraries. Current docs: custom metrics can also be posted directly to the HTTP API (POST /api/v2/series), but the exam expects DogStatsD.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "The Agent is the overall collector; programmatic custom-metric submission goes through its DogStatsD server.",
+   "Correct: DogStatsD client libraries let applications submit custom metrics programmatically.",
+   "The API can also accept metrics, but the exam's expected answer is DogStatsD, the purpose-built feature."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-11",
+  "topic": "Official practice set",
+  "subtopic": "Linux Basics",
+  "difficulty": "",
+  "q": "What is the main difference between Linux OS and Windows?",
+  "options": [
+   "Linux is a free open source OS while Windows is a proprietary OS.",
+   "Linux is a free OS while Windows is a paying OS.",
+   "Linux is more secure than Windows"
+  ],
+  "answer": 0,
+  "explanation": "Linux is free and open source (GPL), so its code can be read, modified and shared, while Windows is proprietary closed-source software. Some Linux distributions (such as RHEL subscriptions) are paid, so price alone is not the main difference.",
+  "ref": "https://en.wikipedia.org/wiki/Linux",
+  "notes": [
+   "Correct: the key difference is open source (Linux) versus proprietary (Windows).",
+   "Some Linux distributions are sold with paid subscriptions, so free versus paid is not the defining difference.",
+   "Security depends on configuration and patching; it is not the defining difference between the two OSes."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-12",
+  "topic": "Official practice set",
+  "subtopic": "Unified Service Tagging",
+  "difficulty": "",
+  "q": "Unified service tagging is a best practice that ties Datadog telemetry together through the use of which three standard tags?",
+  "options": [
+   "host, service, and source",
+   "service, device, and version",
+   "env, service, and version"
+  ],
+  "answer": 2,
+  "explanation": "Unified service tagging ties traces, metrics and logs together with three reserved tags: env, service and version.",
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/",
+  "notes": [
+   "host and source are reserved tags but not part of unified service tagging.",
+   "device is a reserved tag for devices, not one of the three unified service tags.",
+   "Correct: env, service and version are the three unified service tags."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-13",
+  "topic": "Official practice set",
+  "subtopic": "Agent Commands",
+  "difficulty": "",
+  "q": "To run an agent subcommand, this syntax must be used: <AGENT_BINARY><SUB_COMMAND> <OPTIONS>\nIn order to get all the configurations loaded and resolved, which of the following subcommands should be used?",
+  "options": [
+   "diagnose",
+   "configcheck",
+   "check"
+  ],
+  "answer": 1,
+  "explanation": "The configcheck subcommand prints all configurations loaded and resolved by a running Agent, including Autodiscovery-resolved templates.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "diagnose runs a connectivity diagnosis, not a configuration dump.",
+   "Correct: configcheck prints the configurations loaded and resolved by a running Agent.",
+   "check runs a single named check once and prints its output."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-14",
+  "topic": "Official practice set",
+  "subtopic": "Dashboards",
+  "difficulty": "",
+  "q": "Once an integration is enabled/configured, the out of box dashboards are",
+  "options": [
+   "to be cloned and used as templates.",
+   "the source of truth for all metrics collected for the integration.",
+   "empty until new widgets are created."
+  ],
+  "answer": 0,
+  "explanation": "Integration (preset) dashboards are created automatically when you install an integration; the recommended way to customize one is to clone it and edit the copy. The docs note that cloning a preset dashboard is the fastest way to get widgets relevant to your data.",
+  "ref": "https://docs.datadoghq.com/dashboards/widgets/",
+  "notes": [
+   "Correct: out-of-the-box dashboards are meant to be cloned and used as templates for your own dashboards.",
+   "OOTB dashboards show a curated subset of metrics; Metrics Summary is where you see everything collected.",
+   "OOTB dashboards come pre-populated with widgets for the integration's metrics."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-15",
+  "topic": "Official practice set",
+  "subtopic": "Agent Log Level",
+  "difficulty": "",
+  "q": "To configure the Agent log level to collect critical, error, and warn logs only, how should the local datadog.yaml file be modified?",
+  "options": [
+   "Replace # log_level: INFO with log_level: CRITICAL.",
+   "Replace # log_level: INFO with log_level: ERROR.",
+   "Replace # log_level: INFO with log_level: WARN."
+  ],
+  "answer": 2,
+  "explanation": "The Agent logs the configured level and every more severe level. Setting log_level: WARN therefore keeps WARN, ERROR and CRITICAL messages; the change requires an Agent restart.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/debug_mode/",
+  "notes": [
+   "CRITICAL would log only critical messages, dropping errors and warnings.",
+   "ERROR would log errors and critical messages but drop warnings.",
+   "Correct: WARN logs warnings plus everything more severe (ERROR and CRITICAL)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-16",
+  "topic": "Official practice set",
+  "subtopic": "Hostname Detection",
+  "difficulty": "",
+  "q": "For a host running in AWS, how does the Datadog agent determine the hostname?",
+  "options": [
+   "The hostname must be configured in the agent's datadog.yaml file.",
+   "The agent automatically discovers the EC2 instance id.",
+   "The agent uses the IP address."
+  ],
+  "answer": 1,
+  "explanation": "On EC2, the Agent can reach the instance metadata endpoint and uses the EC2 instance ID as the canonical hostname when no custom hostname is set and the DNS hostname is an EC2 default such as ip-10-0-0-1. Current docs: a hostname set in datadog.yaml or a non-default DNS hostname takes precedence over the instance ID.",
+  "ref": "https://docs.datadoghq.com/agent/faq/how-datadog-agent-determines-the-hostname/",
+  "notes": [
+   "A hostname can be set in datadog.yaml, but it is not required; the Agent detects one automatically.",
+   "Correct: the Agent discovers the EC2 instance ID from instance metadata and uses it as the hostname.",
+   "The IP address is not used as the hostname; EC2 default names like ip-10-0-0-1 are replaced by the instance ID."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-17",
+  "topic": "Official practice set",
+  "subtopic": "API and Application Keys",
+  "difficulty": "",
+  "q": "When a Datadog user account is disabled, what happens to the API and application keys that were created by this account?",
+  "options": [
+   "API keys created by the disabled account remain valid. Application keys created by the disabled account are revoked.",
+   "API keys created by the disabled account remain valid. Application keys are transferred to the admin account that created the disabled account. If this admin account is also disabled, the application keys are revoked.",
+   "API and application keys created by the disabled account are revoked."
+  ],
+  "answer": 0,
+  "explanation": "API keys belong to the organization, so those created by a disabled user stay valid. Application keys are tied to the user who created them and are revoked when that user is disabled; Datadog does not transfer them to another user.",
+  "ref": "https://docs.datadoghq.com/account_management/api-app-keys/",
+  "notes": [
+   "Correct: API keys from the disabled account remain valid; its application keys are revoked.",
+   "Datadog does not transfer application keys from one user to another.",
+   "API keys are organization-level and are not revoked when their creator is disabled."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-18",
+  "topic": "Official practice set",
+  "subtopic": "Agent Configuration",
+  "difficulty": "",
+  "q": "When a user is making configuration changes in a datadog.yaml file, which of the following is true?",
+  "options": [
+   "The Datadog Agent must be restarted to apply changes made to datadog.yaml.",
+   "The Datadog Agent must be stopped before making any changes to datadog.yaml. Changes at runtime may result in an error.",
+   "Changes can be made dynamically in datadog.yaml."
+  ],
+  "answer": 0,
+  "explanation": "The Agent reads datadog.yaml at startup, so edits take effect only after the Agent is restarted. You can edit the file while the Agent runs.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/debug_mode/",
+  "notes": [
+   "Correct: restart the Agent to apply changes made to datadog.yaml.",
+   "Editing the file while the Agent runs is safe; it simply is not read until the next start.",
+   "datadog.yaml is not reloaded dynamically; a restart is needed."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-19",
+  "topic": "Official practice set",
+  "subtopic": "Custom Metrics",
+  "difficulty": "",
+  "q": "Which of the following BEST describes custom metrics in Datadog?",
+  "options": [
+   "All non-Agent metrics, such as those submitted by an integration, are considered custom metrics.",
+   "Any metric submitted using DogStatsD or a custom Agent Check is a considered a custom metric.",
+   "All metrics that are submitted by a community integration are considered custom metric"
+  ],
+  "answer": 1,
+  "explanation": "Any metric submitted through DogStatsD or a custom Agent check is a custom metric. Metrics from Datadog's standard integrations generally are not. Current docs: metrics from Marketplace integrations and from integrations outside Datadog's catalog also count as custom.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/",
+  "notes": [
+   "Metrics from Datadog's standard integrations are generally not custom metrics.",
+   "Correct: metrics submitted with DogStatsD or a custom Agent check are custom metrics.",
+   "Being a community integration is not the defining rule; DogStatsD and custom checks are the general case."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-20",
+  "topic": "Official practice set",
+  "subtopic": "Configuration Management",
+  "difficulty": "",
+  "q": "Which of the following is a deployment tool?",
+  "options": [
+   "Kubernetes",
+   "Red Hat Enterprise Linux",
+   "Ansible"
+  ],
+  "answer": 2,
+  "explanation": "Ansible is a configuration management and deployment tool that can install the Agent across many hosts. Kubernetes is a container orchestrator and Red Hat Enterprise Linux is an operating system.",
+  "ref": "https://docs.datadoghq.com/agent/basic_agent_usage/ansible/",
+  "notes": [
+   "Kubernetes is a container orchestration platform, not the deployment tool the exam means.",
+   "Red Hat Enterprise Linux is an operating system.",
+   "Correct: Ansible is a deployment/configuration management tool; Datadog provides the datadog.dd collection for it."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-21",
+  "topic": "Official practice set",
+  "subtopic": "Agent Configuration",
+  "difficulty": "",
+  "q": "After making configuration changes to datadog.yaml while the Agent is running, the Agent will apply the changes",
+  "options": [
+   "the next time it starts.",
+   "during the next check cycle.",
+   "when it receives the reload command."
+  ],
+  "answer": 0,
+  "explanation": "datadog.yaml is read when the Agent starts, so changes apply the next time the Agent starts (after a restart). Current docs: a few settings such as log_level can also be changed at runtime with datadog-agent config set, but file edits still need a restart.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/debug_mode/",
+  "notes": [
+   "Correct: datadog.yaml changes apply when the Agent next starts.",
+   "Check cycles rerun checks; they do not reload datadog.yaml.",
+   "The Agent has no reload command for datadog.yaml; it must be restarted."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-22",
+  "topic": "Official practice set",
+  "subtopic": "Autodiscovery",
+  "difficulty": "",
+  "q": "What is the purpose of the auto_conf.yaml file in an integration's conf.d directory?",
+  "options": [
+   "It is an example configuration template for the integration.",
+   "It allows the agent to AutoDiscover services and monitor them using the integration.",
+   "It configures the integration to run automatically."
+  ],
+  "answer": 1,
+  "explanation": "auto_conf.yaml holds a default Autodiscovery template for the integration, letting the Agent automatically detect matching containers and monitor them. conf.yaml.example is the example template.",
+  "ref": "https://docs.datadoghq.com/containers/guide/auto_conf/",
+  "notes": [
+   "The example configuration file is conf.yaml.example, not auto_conf.yaml.",
+   "Correct: auto_conf.yaml is the Autodiscovery template that lets the Agent discover and monitor services.",
+   "auto_conf.yaml applies only through Autodiscovery when a matching container is found; it does not simply enable the check."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-23",
+  "topic": "Official practice set",
+  "subtopic": "Metric Types",
+  "difficulty": "",
+  "q": "An application is instrumented to send custom metrics via StatsD. What needs to be done in order to send histogram metrics?",
+  "options": [
+   "Use StatsD to send histogram metric types.",
+   "Add DogstatsD instrumentation to send histogram metric types.",
+   "Calculate histogram values in the application and use StatsD to send them as metrics."
+  ],
+  "answer": 1,
+  "explanation": "The HISTOGRAM metric type is specific to DogStatsD, a Datadog extension of StatsD, so the application needs DogStatsD instrumentation to send histograms. Each histogram produces aggregates such as .count, .avg, .median, .max and .95percentile.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/dogstatsd_metrics_submission/",
+  "notes": [
+   "Standard StatsD has no histogram type; it is a DogStatsD extension.",
+   "Correct: add DogStatsD instrumentation, since HISTOGRAM is specific to DogStatsD.",
+   "Pre-computing values loses the server-side aggregations DogStatsD histograms provide; use DogStatsD instead."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-24",
+  "topic": "Official practice set",
+  "subtopic": "Agent Commands",
+  "difficulty": "",
+  "q": "The agent on an Ubuntu host has been temporarily stopped in order to edit a configuration file, but needs to started again. What is the command to run?",
+  "options": [
+   "sudo datadog-agent restart",
+   "sudo service datadog-agent restart",
+   "sudo service datadog-agent start"
+  ],
+  "answer": 2,
+  "explanation": "The Agent was stopped, so it should be started with sudo service datadog-agent start. Restart is meant for a running Agent, and on Linux the Agent service is managed through the service manager rather than the datadog-agent binary. Current docs: on systemd hosts the documented command is sudo systemctl start datadog-agent.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/linux/",
+  "notes": [
+   "On Linux the Agent service is controlled through the service manager (service or systemctl), not a datadog-agent restart command.",
+   "restart is for a running Agent; the Agent is stopped, so start is the correct action.",
+   "Correct: sudo service datadog-agent start starts a stopped Agent (systemctl start on systemd hosts)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "official-25",
+  "topic": "Official practice set",
+  "subtopic": "Agent Configuration",
+  "difficulty": "",
+  "q": "For a Datadog Agent running on a host, what is the definitive method for determining its default configuration values?",
+  "options": [
+   "Examine its original datadog.yaml file.",
+   "Read the Agent documentation on docs.datadoghq.com.",
+   "Run the command datadog-agent configcheck."
+  ],
+  "answer": 0,
+  "explanation": "The datadog.yaml installed with the Agent is generated from its configuration template and lists every option with its default value in comments, so it is the definitive record for that Agent version. Current docs: the per-OS example files (such as datadog.yaml.example) carry the same defaults, and datadog-agent config shows the runtime configuration.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "Correct: the original datadog.yaml lists each option with its default for that installed Agent version.",
+   "Online docs describe the latest Agent and may not match the installed version's defaults.",
+   "configcheck shows loaded check (integration) configurations, not datadog.yaml defaults."
+  ],
+  "verified": "2026-10"
+ }
+]

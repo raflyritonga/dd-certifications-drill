@@ -1,0 +1,602 @@
+<div class="sheet">
+  <div class="stack" style="gap:8px">
+    <h2 style="font-size:1.5rem">Cheat sheet</h2>
+    <p class="hint">Everything the exam guide lists, on one page. Checked against the live Datadog docs and pricing pages, <span id="checked"></span>. Each section ends with links to its sources. Sections marked <span class="badge">Exam-heavy</span> come up most.</p>
+    <div class="toc" aria-label="Jump to section">
+      <button data-jumpto="cs-ports">Ports</button>
+      <button data-jumpto="cs-dsd">DogStatsD</button>
+      <button data-jumpto="cs-types">Metric types</button>
+      <button data-jumpto="cs-allot">Allotments &amp; billing</button>
+      <button data-jumpto="cs-cm">Custom metrics</button>
+      <button data-jumpto="cs-agent">Agent files &amp; commands</button>
+      <button data-jumpto="cs-keys">Keys &amp; API</button>
+      <button data-jumpto="cs-int">Integrations &amp; Autodiscovery</button>
+      <button data-jumpto="cs-tags">Tags &amp; search</button>
+      <button data-jumpto="cs-viz">Graphs &amp; dashboards</button>
+      <button data-jumpto="cs-mon">Monitors</button>
+      <button data-jumpto="cs-basics">Computing &amp; networking</button>
+    </div>
+  </div>
+
+  <!-- PORTS -->
+  <section class="panel" id="cs-ports">
+    <div class="cs-head"><h2>Ports and network</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">The Agent always opens the connection. Datadog never connects in to your hosts, so no inbound rule from Datadog is needed. All Agent traffic is encrypted (SSL/TLS).</p>
+    <h3>Outbound: Agent to Datadog</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Port</th><th>Protocol</th><th>Used for</th></tr></thead>
+      <tbody>
+        <tr><td>443</td><td>TCP</td><td>Nearly everything: metrics, events, service checks, APM traces, live processes and containers, profiles, Cloud Network Monitoring, flares, and logs over HTTPS (default since Agent 6.19 / 7.19)</td></tr>
+        <tr><td>10516</td><td>TCP + TLS</td><td>Old log shipping over TCP to <code>agent-intake.logs.datadoghq.com</code> (US1). Deprecated, no delivery guarantee</td></tr>
+        <tr><td>10514</td><td>TCP, no TLS</td><td>Old unencrypted log shipping over TCP (US1). Deprecated</td></tr>
+        <tr><td>123</td><td>UDP</td><td>NTP time sync. The NTP check goes critical when the clock is off by more than 60 s</td></tr>
+        <tr><td>8443</td><td>TCP</td><td>Custom Agent Autoscaling</td></tr>
+        <tr><td>8042</td><td>TCP</td><td>Remote Configuration connectivity test (only when Remote Config is on; config itself is pulled over 443 from <code>config.&lt;site&gt;</code>)</td></tr>
+      </tbody>
+    </table></div>
+    <h3>Local: ports the Agent listens on</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Port</th><th>Protocol</th><th>Service</th><th>Setting</th></tr></thead>
+      <tbody>
+        <tr><td>8125</td><td>UDP</td><td>DogStatsD (custom metrics, events, service checks)</td><td><code>dogstatsd_port</code>, <code>dogstatsd_non_local_traffic</code> / <code>DD_DOGSTATSD_NON_LOCAL_TRAFFIC</code></td></tr>
+        <tr><td>8126</td><td>TCP</td><td>APM trace receiver (tracers and profiler)</td><td><code>apm_config.receiver_port</code> / <code>DD_APM_RECEIVER_PORT</code>, <code>DD_APM_NON_LOCAL_TRAFFIC</code></td></tr>
+        <tr><td>5000</td><td>TCP</td><td>go_expvar server (Agent internal metrics)</td><td><code>expvar_port</code></td></tr>
+        <tr><td>5001</td><td>TCP</td><td>IPC API used by the Agent CLI</td><td><code>cmd_port</code></td></tr>
+        <tr><td>5002</td><td>TCP</td><td>Agent GUI (on by default on Windows and macOS, off on Linux)</td><td><code>GUI_port</code> (<code>-1</code> disables)</td></tr>
+        <tr><td>5012</td><td>TCP</td><td>APM go_expvar server</td><td></td></tr>
+        <tr><td>6062</td><td>TCP</td><td>Process Agent debug endpoints</td><td></td></tr>
+        <tr><td>6162</td><td>TCP</td><td>Process Agent runtime configuration</td><td></td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Where data goes</h3>
+        <ul class="notes">
+          <li>Metrics, events, service checks: <code>&lt;version&gt;-app.agent.&lt;site&gt;</code>. Allowlist <code>*.agent.&lt;site&gt;</code></li>
+          <li>Traces: <code>trace.agent.&lt;site&gt;</code></li>
+          <li>Live processes, containers, CNM: <code>process.&lt;site&gt;</code></li>
+          <li>Flares: <code>&lt;version&gt;-flare.agent.&lt;site&gt;</code></li>
+          <li>API calls: <code>api.&lt;site&gt;</code></li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Sites (<code>site:</code> / <code>DD_SITE</code>)</h3>
+        <ul class="notes">
+          <li>US1 <code>datadoghq.com</code> (the default)</li>
+          <li>US3 <code>us3.datadoghq.com</code> · US5 <code>us5.datadoghq.com</code></li>
+          <li>EU1 <code>datadoghq.eu</code></li>
+          <li>AP1 <code>ap1.datadoghq.com</code> · AP2 <code>ap2.datadoghq.com</code></li>
+          <li>US1-FED <code>ddog-gov.com</code></li>
+          <li>Keys belong to one site. A wrong site means no data shows up.</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="notes hint">
+      <li><b>IP ranges</b>: <code>https://ip-ranges.datadoghq.com/</code> lists the IPs Datadog uses to receive data, as JSON (<code>prefixes_ipv4</code>, <code>prefixes_ipv6</code> per section: agents, api, apm, logs, process, webhooks…). Allowlist every range; the active subset changes.</li>
+      <li><b>Proxy</b>: <code>proxy: https: / http: / no_proxy:</code> in datadog.yaml, or <code>DD_PROXY_HTTPS</code>. Environment variables override the file.</li>
+      <li><b>Connectivity lost</b>: metrics wait in a memory queue (<code>forwarder_retry_queue_payloads_max_size</code>) and are dropped when it is full. Agent 7.27+ can also buffer to disk.</li>
+      <li><b>Test connectivity</b>: <code>datadog-agent diagnose</code>.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/agent/configuration/network/" target="_blank" rel="noopener">Network traffic</a> <a href="https://docs.datadoghq.com/logs/log_collection/" target="_blank" rel="noopener">Log collection endpoints</a> <a href="https://docs.datadoghq.com/agent/configuration/proxy/" target="_blank" rel="noopener">Proxy</a> <a href="https://docs.datadoghq.com/getting_started/site/" target="_blank" rel="noopener">Datadog sites</a> <a href="https://ip-ranges.datadoghq.com/" target="_blank" rel="noopener">IP ranges JSON</a> <a href="https://docs.datadoghq.com/integrations/ntp/" target="_blank" rel="noopener">NTP check</a></p>
+  </section>
+
+  <!-- DOGSTATSD -->
+  <section class="panel" id="cs-dsd">
+    <div class="cs-head"><h2>DogStatsD</h2><span class="badge">Exam-heavy</span></div>
+    <p>A metrics aggregation server bundled with the Agent (v6+). Apps send it custom metrics, events and service checks; it aggregates them and the Agent forwards them to Datadog over HTTPS 443.</p>
+    <div class="facts">
+      <div><span class="label">Port</span><b>8125/UDP</b><span>Bound to localhost by default</span></div>
+      <div><span class="label">Flush interval</span><b>10 s</b><span>One point per metric per interval (Agent checks run every 15 s)</span></div>
+      <div><span class="label">Enabled</span><b>By default</b><span><code>use_dogstatsd: true</code>, <code>dogstatsd_port: 8125</code></span></div>
+      <div><span class="label">Billing</span><b>Custom metrics</b><span>Everything sent through DogStatsD counts as custom</span></div>
+    </div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Why UDP</h3>
+        <ul class="notes">
+          <li>Fire-and-forget: the app sends and moves on without waiting for a reply.</li>
+          <li>If DogStatsD is down, the app isn't blocked or slowed; packets are just lost.</li>
+          <li>Trade-off: no delivery guarantee. Use a Unix Domain Socket (<code>dogstatsd_socket</code>, <code>DD_DOGSTATSD_SOCKET</code>) to avoid network loss between containers that share a volume.</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>What it adds to plain StatsD</h3>
+        <ul class="notes">
+          <li>Tags</li>
+          <li>Histograms and distributions (timers are implemented as histograms)</li>
+          <li>Events and service checks</li>
+          <li>Any StatsD client can send to it but loses these extras. Use a DogStatsD client to get histograms and tags.</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Datagram format</h3>
+    <pre class="code">&lt;METRIC_NAME&gt;:&lt;VALUE&gt;|&lt;TYPE&gt;|@&lt;SAMPLE_RATE&gt;|#&lt;TAG_KEY&gt;:&lt;TAG_VALUE&gt;,&lt;TAG2&gt;
+
+page.views:1|c|#env:prod,page:home      # count
+queue.depth:42|g|#env:prod              # gauge
+api.latency:250|ms|@0.5|#service:cart   # timer (histogram), sampled at 50%
+users.online:1043|s                     # set (counts unique values)
+request.size:512|d|#env:prod            # distribution
+
+_e{5,12}:Alert|Disk is full|t:error     # event: _e{title length,text length}:title|text
+_sc|app.can_connect|2|#env:prod         # service check: 0 OK, 1 WARNING, 2 CRITICAL, 3 UNKNOWN</pre>
+    <div class="tbl"><table>
+      <thead><tr><th>Type</th><th>Char</th><th>In one flush interval</th><th>Stored in-app as</th></tr></thead>
+      <tbody>
+        <tr><td>COUNT</td><td><code>c</code></td><td>Sums the values (<code>increment</code>/<code>decrement</code>)</td><td>RATE (per second), so decimals can appear</td></tr>
+        <tr><td>GAUGE</td><td><code>g</code></td><td>Keeps the last value</td><td>GAUGE</td></tr>
+        <tr><td>SET</td><td><code>s</code></td><td>Counts unique values (101, 102, 101 → 2)</td><td>GAUGE</td></tr>
+        <tr><td>HISTOGRAM</td><td><code>h</code></td><td>Agent computes <code>.avg .count .median .95percentile .max</code> per host</td><td>GAUGE, with <code>.count</code> as RATE</td></tr>
+        <tr><td>TIMER</td><td><code>ms</code></td><td>Same as HISTOGRAM, for durations</td><td>GAUGE + RATE</td></tr>
+        <tr><td>DISTRIBUTION</td><td><code>d</code></td><td>Raw values sent to Datadog and aggregated server-side across all hosts</td><td>GAUGE + COUNT (enables global percentiles)</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li><b>Sample rate</b> <code>@0.25</code>: the client sends about 1 in 4 events and DogStatsD multiplies counts by 1/0.25. Receiving 10 packets reports 40.</li>
+      <li><b>Histogram vs distribution</b>: histogram percentiles are computed per Agent, so averaging p95 across hosts is wrong. Use a DISTRIBUTION for a fleet-wide p95/p99.</li>
+      <li>Change histogram outputs with <code>histogram_aggregates</code> (default <code>max, median, avg, count</code>; add <code>min</code>, <code>sum</code>) and <code>histogram_percentiles</code> (default <code>0.95</code>).</li>
+    </ul>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Receiving from other hosts or containers</h3>
+        <ul class="notes">
+          <li>Host Agent: <code>dogstatsd_non_local_traffic: true</code>, then restart, and allow UDP 8125 in to the Agent host.</li>
+          <li>Agent container: <code>-e DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true -p 8125:8125/udp</code>. <b>The <code>/udp</code> matters</b>; Docker publishes TCP by default.</li>
+          <li>In an app container, <code>localhost</code> is the app itself. Point the client at the Agent's address.</li>
+          <li>Kubernetes: set <code>DD_AGENT_HOST</code> from <code>status.hostIP</code> (Downward API) so pods send to the Agent on their node. Helm: <code>dogstatsd.useHostPort</code>, <code>nonLocalTraffic</code>.</li>
+          <li>Change the port with <code>dogstatsd_port</code> / <code>DD_DOGSTATSD_PORT</code>, and update every client to match.</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Clients and testing</h3>
+        <ul class="notes">
+          <li>Python <code>datadog</code> · Ruby <code>dogstatsd-ruby</code> · Go <code>datadog-go</code> · Java <code>java-dogstatsd-client</code> · PHP <code>php-datadogstatsd</code> · .NET <code>DogStatsD-CSharp-Client</code>. (<code>ddtrace</code> is APM tracing, not metrics.)</li>
+          <li>Origin detection (Agent 6.10+) adds container/pod tags to the metrics.</li>
+        </ul>
+        <pre class="code">from datadog import initialize, statsd
+initialize(statsd_host="127.0.0.1", statsd_port=8125)
+statsd.increment("page.views", tags=["env:prod"])
+statsd.gauge("queue.depth", 42)
+statsd.histogram("request.latency", 0.23)</pre>
+        <pre class="code">echo -n "custom.metric:60|g|#shell" | nc -4u -w0 127.0.0.1 8125</pre>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/developers/dogstatsd/" target="_blank" rel="noopener">DogStatsD</a> <a href="https://docs.datadoghq.com/developers/dogstatsd/datagram_shell/" target="_blank" rel="noopener">Datagram format</a> <a href="https://docs.datadoghq.com/metrics/custom_metrics/dogstatsd_metrics_submission/" target="_blank" rel="noopener">Submitting metrics</a> <a href="https://docs.datadoghq.com/developers/dogstatsd/unix_socket/" target="_blank" rel="noopener">Unix Domain Socket</a> <a href="https://docs.datadoghq.com/containers/docker/" target="_blank" rel="noopener">Docker setup</a></p>
+  </section>
+
+  <!-- METRIC TYPES -->
+  <section class="panel" id="cs-types">
+    <h2>Metric types and timeseries</h2>
+    <p class="hint">Values <code>[1,1,1,2,2,2,3,3]</code> received in a 10-second flush interval:</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Type</th><th>Result</th><th>Use it for</th></tr></thead>
+      <tbody>
+        <tr><td>COUNT</td><td>15 (sum)</td><td>Number of events in the interval: requests handled, errors</td></tr>
+        <tr><td>RATE</td><td>1.5 per second (15 / 10 s)</td><td>Events per second</td></tr>
+        <tr><td>GAUGE</td><td>Last value received</td><td>A snapshot: queue depth, memory used, temperature</td></tr>
+        <tr><td>HISTOGRAM</td><td>avg 1.88 · count 0.8 · median 2 · p95 3 · max 3</td><td>Per-host statistics: latency on one host</td></tr>
+        <tr><td>DISTRIBUTION</td><td>Raw values kept; avg, count, min, max, sum and optional p50/p75/p90/p95/p99 across all hosts</td><td>Fleet-wide percentiles</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>A metric = name + value + timestamp + tags (+ type, + interval for COUNT/RATE). Values are 32-bit, not dates.</li>
+      <li>Timestamps: up to 10 minutes in the future and 1 hour in the past. Fractions of a second are rounded to the nearest second.</li>
+      <li>Names: start with a letter, ASCII letters, digits, <code>_</code> and <code>.</code> only (others become <code>_</code>), max 200 characters, case-sensitive.</li>
+      <li>Retention: 15 months. A metric sent with no type shows as "Not Assigned".</li>
+      <li>Values sent straight to the API are stored as-is; the Agent and DogStatsD aggregate per flush interval first.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/metrics/types/" target="_blank" rel="noopener">Metric types</a> <a href="https://docs.datadoghq.com/metrics/" target="_blank" rel="noopener">Metrics overview</a> <a href="https://docs.datadoghq.com/metrics/distributions/" target="_blank" rel="noopener">Distributions</a> <a href="https://docs.datadoghq.com/metrics/custom_metrics/" target="_blank" rel="noopener">Custom metrics rules</a> <a href="https://docs.datadoghq.com/developers/guide/data-collection-resolution-retention/" target="_blank" rel="noopener">Resolution and retention</a></p>
+  </section>
+
+  <!-- ALLOTMENTS -->
+  <section class="panel" id="cs-allot">
+    <div class="cs-head"><h2>Allotments and billing</h2><span class="badge">Exam-heavy</span></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Parent unit</th><th>Included</th></tr></thead>
+      <tbody>
+        <tr><td>Infra Pro / host</td><td>100 custom metrics · 5 containers (per hour) · 500 custom events/month</td></tr>
+        <tr><td>Infra Enterprise / host</td><td>200 custom metrics · 10 containers (per hour) · 1,000 custom events/month</td></tr>
+        <tr><td>DevSecOps Pro / Enterprise</td><td>Same as Infra Pro / Enterprise</td></tr>
+        <tr><td>APM host (all tiers)</td><td>1,000,000 indexed spans/month (≈1,370/hour) · 150 GB ingested spans/month</td></tr>
+        <tr><td>APM Pro / Enterprise</td><td>+1 Data Streams Monitoring host per APM host</td></tr>
+        <tr><td>APM Enterprise</td><td>+1 Continuous Profiler host and 4 profiled containers per APM host</td></tr>
+        <tr><td>Profiler host</td><td>4 profiled containers (pooled; $2 per extra container)</td></tr>
+        <tr><td>Database Monitoring host</td><td>200 normalized queries</td></tr>
+        <tr><td>Serverless function</td><td>5 custom metrics per function · per app instance: 20</td></tr>
+        <tr><td>Serverless APM / 1M invocations</td><td>300,000 indexed spans · 50 GB ingested spans</td></tr>
+        <tr><td>CI committer</td><td>400,000 pipeline spans · 1,000,000 test spans per month</td></tr>
+        <tr><td>CSM Pro / Enterprise host</td><td>5 / 20 containers · Workload Protection host: 4</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>How billing works</h3>
+        <ul class="notes">
+          <li><b>Pooled</b>: allotments add up across the account. 3 Pro hosts = 300 custom metrics, usable in any split.</li>
+          <li><b>Hosts</b> (High Watermark Plan): counted hourly; bill = 99th percentile, so the top 1% of hours (about 7 in a 720-hour month) are dropped. Alternative: Hybrid Monthly/Hourly Plan.</li>
+          <li><b>Containers</b>: counted every 5 minutes, hourly allotment only, billed on fractional hours.</li>
+          <li><b>Custom metrics</b>: monthly average of distinct metrics per hour.</li>
+          <li><b>Indexed spans</b>: summed over the month.</li>
+          <li><b>Hourly on-demand</b>: allotment subtracted every hour. <b>Monthly on-demand</b>: subtracted once at month end.</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Units and rules</h3>
+        <ul class="notes">
+          <li>Logs: per GB ingested, per million events indexed.</li>
+          <li>Synthetics: API tests per 10,000 runs, browser tests per 1,000.</li>
+          <li>RUM: per 1,000 sessions. A session ends after 15 min idle or 4 h of activity.</li>
+          <li>CI Visibility: per committer (3+ commits in the month).</li>
+          <li>A host with the Agent that the AWS integration also sees is billed once.</li>
+          <li>Usage page: Admin role or <code>usage_read</code> permission. Don't estimate billing from the Host List.</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Worked examples</h3>
+    <div class="tbl plain"><table>
+      <thead><tr><th>Scenario</th><th>Answer</th></tr></thead>
+      <tbody>
+        <tr><td>5 Pro hosts + 1,000 committed custom metrics</td><td>1,500 included per hour</td></tr>
+        <tr><td>3 Enterprise hosts, 750 custom metrics on average</td><td>600 included → 150 overage</td></tr>
+        <tr><td>4 Enterprise hosts; host A sends 700, three others 50 each</td><td>850 vs 800 pooled → 50 overage</td></tr>
+        <tr><td>2 Pro hosts running 12 containers for an hour</td><td>10 included → 2 billable</td></tr>
+        <tr><td>4 APM hosts, 5,500,000 spans indexed in a month</td><td>4,000,000 included → 1,500,000 billable</td></tr>
+        <tr><td>3 APM Enterprise hosts profiling 15 containers</td><td>12 included → 3 billable</td></tr>
+        <tr><td>100 hosts all month, 400 hosts for a 5-hour load test</td><td>Billed for 100 (those 5 hours fall in the dropped top 1%)</td></tr>
+      </tbody>
+    </table></div>
+    <p class="src"><span>Sources:</span> <a href="https://www.datadoghq.com/pricing/allotments/" target="_blank" rel="noopener">Allotments (pricing)</a> <a href="https://docs.datadoghq.com/account_management/billing/pricing/" target="_blank" rel="noopener">Billing methodology</a> <a href="https://docs.datadoghq.com/account_management/billing/" target="_blank" rel="noopener">Billing FAQ</a> <a href="https://docs.datadoghq.com/account_management/billing/aws/" target="_blank" rel="noopener">AWS billing</a></p>
+  </section>
+
+  <!-- CUSTOM METRICS -->
+  <section class="panel" id="cs-cm">
+    <div class="cs-head"><h2>Custom metrics</h2><span class="badge">Exam-heavy</span></div>
+    <p><b>One custom metric = metric name + one unique combination of tag values, host included.</b></p>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>What counts as custom</h3>
+        <ul class="notes">
+          <li>Anything sent through DogStatsD or a custom Agent check.</li>
+          <li>Marketplace integrations and integrations outside Datadog's 1,000+.</li>
+          <li>Some standard integrations: Java-JMX, ActiveMQ XML, Go-Expvar (capped at 350 by default); Prometheus/OpenMetrics, Nagios, WMI, PDH, Windows performance counters (no cap); custom queries in MySQL, Postgres, Oracle, SQL Server.</li>
+          <li>Not custom: the documented standard metrics of an integration (<code>system.cpu.user</code>, <code>aws.ec2.cpuutilization</code>).</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Counting per tag combination</h3>
+        <div class="tbl"><table style="min-width:0">
+          <tbody>
+            <tr><td>Gauge, count, rate</td><td>1</td></tr>
+            <tr><td>Histogram (default)</td><td>5</td></tr>
+            <tr><td>Distribution</td><td>5, or 10 with percentiles</td></tr>
+          </tbody>
+        </table></div>
+        <p class="hint">Example: <code>request.Latency</code> tagged endpoint (X, Y) × status (200, 400) = 4 combinations → gauge 4, histogram 20, distribution 20 (40 with percentiles).</p>
+      </div>
+    </div>
+    <ul class="notes hint">
+      <li>Sending more often doesn't add metrics. Reordering tags doesn't either. A tag that adds no new granularity (adding <code>state</code> when <code>city</code> exists) doesn't either.</li>
+      <li>Unbounded tag values (<code>user_id</code>, <code>request_id</code>, timestamps) multiply the count: 4 endpoints × 50,000 users = 200,000 metrics.</li>
+      <li><b>Metrics without Limits</b>: <i>ingested</i> = everything sent; <i>indexed</i> = what stays queryable after the tag allowlist. Unconfigured metrics are billed on indexed only. Ingested overage: $0.10 per 100.</li>
+      <li>See near-real-time counts for one metric in Metrics Summary; account totals on the Usage page.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/account_management/billing/custom_metrics/" target="_blank" rel="noopener">Custom metrics billing</a> <a href="https://docs.datadoghq.com/metrics/custom_metrics/" target="_blank" rel="noopener">Custom metrics</a> <a href="https://docs.datadoghq.com/metrics/summary/" target="_blank" rel="noopener">Metrics Summary</a></p>
+  </section>
+
+  <!-- AGENT -->
+  <section class="panel" id="cs-agent">
+    <h2>Agent: files, commands, logs</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>OS</th><th>datadog.yaml</th><th>Integration configs</th><th>Logs</th></tr></thead>
+      <tbody>
+        <tr><td>Linux</td><td><code>/etc/datadog-agent/datadog.yaml</code></td><td><code>/etc/datadog-agent/conf.d/</code></td><td><code>/var/log/datadog/</code></td></tr>
+        <tr><td>macOS</td><td><code>/opt/datadog-agent/etc/datadog.yaml</code></td><td><code>/opt/datadog-agent/etc/conf.d/</code></td><td><code>/opt/datadog-agent/logs/</code></td></tr>
+        <tr><td>Windows</td><td><code>%ProgramData%\Datadog\datadog.yaml</code></td><td><code>%ProgramData%\Datadog\conf.d\</code></td><td><code>C:\ProgramData\Datadog\logs\</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Config rules</h3>
+        <ul class="notes">
+          <li>Each integration has <code>conf.d/&lt;name&gt;.d/</code>. Rename <code>conf.yaml.example</code> to <code>conf.yaml</code> to enable it.</li>
+          <li><code>conf.yaml.default</code> turns on core checks (cpu, disk, memory); ignored if other config exists.</li>
+          <li><code>auto_conf.yaml</code> is an Autodiscovery template. <code>metrics.yaml</code> lists JMX beans.</li>
+          <li>Custom check: <code>checks.d/my_check.py</code> + <code>conf.d/my_check.yaml</code>, and <b>the names must match</b>. Prefix with <code>custom_</code> to avoid clashing with real integrations.</li>
+          <li><b>Restart the Agent after editing</b> datadog.yaml or a check config. Changes apply the next time it starts. (A few settings such as <code>log_level</code> can be changed live with <code>datadog-agent config set</code>.)</li>
+          <li>The example file <code>datadog.yaml.example</code> lists every option with its default, commented out.</li>
+          <li>YAML: spaces only, never tabs.</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Key settings</h3>
+        <ul class="notes">
+          <li><code>api_key</code>, <code>site</code>, <code>hostname</code>, <code>tags</code>, <code>env</code></li>
+          <li><code>logs_enabled: true</code> to collect logs</li>
+          <li><code>apm_config.enabled</code> (on by default)</li>
+          <li><code>use_dogstatsd</code>, <code>dogstatsd_port</code>, <code>dogstatsd_non_local_traffic</code></li>
+          <li><code>log_level</code>: trace · debug · <b>info (default)</b> · warn · error · critical · off. Each level logs itself plus everything more severe, so <code>warn</code> = warn + error + critical.</li>
+          <li>Containers: <code>DD_API_KEY</code> (required), <code>DD_SITE</code>, <code>DD_HOSTNAME</code>, <code>DD_TAGS</code> (space-separated), <code>DD_LOGS_ENABLED</code>, <code>DD_LOG_LEVEL</code>.</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Commands</h3>
+    <div class="tbl wrapmono"><table>
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>sudo systemctl start|stop|restart datadog-agent</td><td>Linux (systemd). Older hosts: <code>sudo service datadog-agent start</code>. After a stop, use <code>start</code>, not <code>restart</code></td></tr>
+        <tr><td>sudo datadog-agent status</td><td>Overall health: running checks, forwarder, DogStatsD, logs, APM. Check this first when data is missing</td></tr>
+        <tr><td>sudo -u dd-agent -- datadog-agent check &lt;name&gt;</td><td>Runs one check once and prints its metrics and errors</td></tr>
+        <tr><td>datadog-agent configcheck</td><td>Prints every configuration loaded and resolved, including Autodiscovery</td></tr>
+        <tr><td>datadog-agent diagnose</td><td>Tests connectivity to Datadog</td></tr>
+        <tr><td>datadog-agent flare &lt;case_id&gt;</td><td>Sends logs and configs (secrets scrubbed) to Support</td></tr>
+        <tr><td>datadog-agent hostname</td><td>Prints the hostname the Agent uses</td></tr>
+        <tr><td>datadog-agent health · version · launch-gui · stream-logs · jmx · config</td><td>Health check, version, open the GUI (port 5002), live log stream, JMX troubleshooting, runtime config</td></tr>
+        <tr><td>agent.exe start-service · restart-service · stopservice</td><td>Windows only (<code>%ProgramFiles%\Datadog\Datadog Agent\bin\</code>)</td></tr>
+        <tr><td>sudo launchctl kickstart [-k] system/com.datadoghq.agent</td><td>macOS start (<code>-k</code> restarts); stop with <code>launchctl kill SIGTERM system/com.datadoghq.agent</code></td></tr>
+        <tr><td>docker exec -it &lt;container&gt; agent status</td><td>Docker. Kubernetes: <code>kubectl exec -it &lt;pod&gt; -- agent status</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Install</h3>
+        <ul class="notes">
+          <li>Check that the OS and version are supported first.</li>
+          <li>One-line script with <code>DD_API_KEY</code> and <code>DD_SITE</code>.</li>
+          <li>Ansible: install from Ansible Galaxy first (<code>datadog.dd</code> collection; the <code>datadog.datadog</code> role is legacy), then run the playbook. Also Chef, Puppet, SaltStack.</li>
+          <li>Docker: <code>registry.datadoghq.com/agent:7</code>, mounting <code>/var/run/docker.sock</code> (Docker API), <code>/proc/</code>, <code>/sys/fs/cgroup/</code>.</li>
+          <li>Kubernetes: Helm chart or Datadog Operator (DaemonSet).</li>
+          <li>Host Agent + Docker integration: <code>usermod -a -G docker dd-agent</code>.</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Hostname and architecture</h3>
+        <ul class="notes">
+          <li>A <code>hostname</code> set in config wins. On EC2 with a default <code>ip-10-…</code> OS hostname, the Agent uses the <b>instance ID</b>.</li>
+          <li>Several names for one host (instance ID, <code>ip-…</code>, FQDN) → one canonical name; the rest become <b>host aliases</b>.</li>
+          <li>Containers (Agent 7.40+) exit if the hostname can't be found. Fix access to kubelet or cloud metadata, or set <code>DD_HOSTNAME</code>.</li>
+          <li>Components: collector (checks every 15 s), forwarder (HTTPS out), DogStatsD, trace-agent (APM), process-agent (built into the core Agent on Linux 7.65+).</li>
+          <li>Runs as user <code>dd-agent</code> on Linux. It needs read access to any log file it tails.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/agent/configuration/agent-configuration-files/" target="_blank" rel="noopener">Config files</a> <a href="https://docs.datadoghq.com/agent/configuration/agent-commands/" target="_blank" rel="noopener">Agent commands</a> <a href="https://docs.datadoghq.com/agent/configuration/agent-log-files/" target="_blank" rel="noopener">Agent log files</a> <a href="https://docs.datadoghq.com/agent/troubleshooting/debug_mode/" target="_blank" rel="noopener">Debug mode</a> <a href="https://docs.datadoghq.com/agent/faq/how-datadog-agent-determines-the-hostname/" target="_blank" rel="noopener">Hostname</a> <a href="https://docs.datadoghq.com/agent/supported_platforms/linux/" target="_blank" rel="noopener">Linux install</a> <a href="https://docs.datadoghq.com/agent/supported_platforms/ansible/" target="_blank" rel="noopener">Ansible</a> <a href="https://docs.datadoghq.com/agent/troubleshooting/" target="_blank" rel="noopener">Troubleshooting</a></p>
+  </section>
+
+  <!-- KEYS & API -->
+  <section class="panel" id="cs-keys">
+    <h2>Keys and API</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Key</th><th>Belongs to</th><th>Used for</th><th>If the creator is disabled</th></tr></thead>
+      <tbody>
+        <tr><td>API key</td><td>The organization</td><td>The Agent, and <b>sending</b> data (metrics, events, logs). 50 per org by default; restorable for 7 days after revoking</td><td><b>Stays valid</b></td></tr>
+        <tr><td>Application key</td><td>A user or service account; inherits their permissions unless scoped</td><td>With the API key, <b>reading and managing</b>: query metrics, create dashboards and monitors. Revoking is permanent</td><td><b>Revoked</b>. Use a service account for automation</td></tr>
+        <tr><td>Client token</td><td>The organization</td><td>Browser and mobile apps (RUM, browser logs), where an API key would be exposed</td><td>Stays active</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Endpoint</th><th>Purpose</th><th>Keys</th></tr></thead>
+      <tbody>
+        <tr><td>POST /api/v2/series</td><td>Submit metrics (type 0 unspecified, 1 count, 2 rate, 3 gauge). Returns 202</td><td>API</td></tr>
+        <tr><td>GET /api/v1/query</td><td>Query timeseries</td><td>API + application</td></tr>
+        <tr><td>GET /api/v1/validate</td><td>Check an API key</td><td>API</td></tr>
+        <tr><td>POST /api/v1/events</td><td>Post an event</td><td>API</td></tr>
+        <tr><td>POST http-intake.logs.&lt;site&gt;/api/v2/logs</td><td>Send logs without the Agent</td><td>API</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>Base URL depends on the site: <code>https://api.datadoghq.com</code>, <code>https://api.datadoghq.eu</code>… Headers <code>DD-API-KEY</code> and <code>DD-APPLICATION-KEY</code>.</li>
+      <li>403 = authentication error (bad key or wrong site). 429 = rate limited (<code>X-RateLimit-*</code> headers).</li>
+      <li>Key leaked: revoke it, remove it from code and history, create a new one, update services, audit the account.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/account_management/api-app-keys/" target="_blank" rel="noopener">API and application keys</a> <a href="https://docs.datadoghq.com/api/latest/metrics/" target="_blank" rel="noopener">Metrics API</a> <a href="https://docs.datadoghq.com/api/latest/authentication/" target="_blank" rel="noopener">API authentication</a> <a href="https://docs.datadoghq.com/api/latest/rate-limits/" target="_blank" rel="noopener">Rate limits</a> <a href="https://docs.datadoghq.com/account_management/org_settings/service_accounts/" target="_blank" rel="noopener">Service accounts</a></p>
+  </section>
+
+  <!-- INTEGRATIONS -->
+  <section class="panel" id="cs-int">
+    <h2>Integrations and Autodiscovery</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Type</th><th>How it works</th><th>Examples</th></tr></thead>
+      <tbody>
+        <tr><td>Agent-based</td><td>Installed with the Agent; a Python check class with a <code>check</code> method, configured in <code>conf.d</code></td><td>nginx, Redis, MySQL, Docker</td></tr>
+        <tr><td>Authentication (crawler)</td><td>You give Datadog credentials in the UI and Datadog pulls metrics from the provider's API. Slower and coarser than the Agent (CloudWatch: minutes of delay, 1–5 min granularity vs 15 s)</td><td>AWS, Azure, Google Cloud, Slack, PagerDuty</td></tr>
+        <tr><td>Library</td><td>Code in your application, by language</td><td>APM tracers such as <code>ddtrace</code></td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>Enabling an integration adds its out-of-the-box dashboard to the Dashboard List. Clone it to customize.</li>
+      <li>Community integrations: <code>datadog-agent integration install -t datadog-&lt;name&gt;==&lt;version&gt;</code>.</li>
+      <li>A custom check is a user-written Python check the Agent runs to collect data no integration covers. <code>min_collection_interval</code> changes its schedule (default 15 s).</li>
+    </ul>
+    <h3>Autodiscovery template sources</h3>
+    <div class="tbl plain"><table>
+      <thead><tr><th>Source</th><th>Docker</th><th>Kubernetes</th></tr></thead>
+      <tbody>
+        <tr><td>Container labels <code>com.datadoghq.ad.checks</code> (Agent 7.36+; older: <code>check_names</code>, <code>init_configs</code>, <code>instances</code>)</td><td>Yes</td><td>-</td></tr>
+        <tr><td>Pod annotations <code>ad.datadoghq.com/&lt;container_name&gt;.checks</code> (name must match the container)</td><td>-</td><td>Yes</td></tr>
+        <tr><td><code>auto_conf.yaml</code> files (applied automatically by image, e.g. redis)</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Key-value stores: etcd, Consul, ZooKeeper</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>ConfigMaps</td><td>-</td><td>Yes</td></tr>
+      </tbody>
+    </table></div>
+    <p class="hint">Template variables: <code>%%host%%</code> container IP · <code>%%port%%</code> highest exposed port (<code>%%port_&lt;N&gt;%%</code> for another) · <code>%%env_&lt;VAR&gt;%%</code> environment variable as seen by the Agent · <code>%%pid%%</code> · <code>%%hostname%%</code>.</p>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/getting_started/integrations/" target="_blank" rel="noopener">Integrations intro</a> <a href="https://docs.datadoghq.com/developers/custom_checks/write_agent_check/" target="_blank" rel="noopener">Writing a custom check</a> <a href="https://docs.datadoghq.com/containers/docker/integrations/" target="_blank" rel="noopener">Docker Autodiscovery</a> <a href="https://docs.datadoghq.com/containers/kubernetes/integrations/" target="_blank" rel="noopener">Kubernetes Autodiscovery</a> <a href="https://docs.datadoghq.com/containers/guide/template_variables/" target="_blank" rel="noopener">Template variables</a> <a href="https://docs.datadoghq.com/containers/guide/auto_conf/" target="_blank" rel="noopener">auto_conf files</a> <a href="https://docs.datadoghq.com/integrations/guide/cloud-metric-delay/" target="_blank" rel="noopener">Cloud metric delay</a></p>
+  </section>
+
+  <!-- TAGS & SEARCH -->
+  <section class="panel" id="cs-tags">
+    <h2>Tags and search</h2>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Tag rules</h3>
+        <ul class="notes">
+          <li><code>key:value</code> recommended. The key is everything before the first colon.</li>
+          <li>Must start with a letter, max 200 characters, lowercased.</li>
+          <li>Allowed: letters, digits, <code>_ - : . /</code>. Others, including spaces, become <code>_</code>.</li>
+          <li>Reserved: <code>host</code>, <code>device</code>, <code>source</code>, <code>service</code>, <code>env</code>, <code>version</code>, <code>team</code>.</li>
+          <li>Set in config files, the UI, the API, or DogStatsD; integrations inherit host tags.</li>
+          <li>Avoid unbounded values (IDs, timestamps).</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Unified service tagging</h3>
+        <div class="tbl"><table style="min-width:0">
+          <tbody>
+            <tr><td>Env vars</td><td><code>DD_ENV</code>, <code>DD_SERVICE</code>, <code>DD_VERSION</code></td></tr>
+            <tr><td>Docker labels</td><td><code>com.datadoghq.tags.env|service|version</code></td></tr>
+            <tr><td>Kubernetes labels</td><td><code>tags.datadoghq.com/env|service|version</code></td></tr>
+          </tbody>
+        </table></div>
+        <p class="hint"><code>env</code>, <code>service</code>, <code>version</code> link metrics, traces and logs, and let you compare deployments.</p>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Metric query syntax</h3>
+        <pre class="code">avg:system.cpu.user{env:prod,role:db} by {host}
+{env:prod AND location NOT IN (atlanta,seattle)}
+{!device:/dev/loop*}      exclude
+{host:web-*}              wildcard</pre>
+        <p class="hint">Comma inside <code>{}</code> means AND. Also <code>OR</code>, <code>IN</code>, <code>NOT IN</code>.</p>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Log search syntax</h3>
+        <pre class="code">service:web status:error         two terms = AND
+service:web -status:info         exclude
+@http.status_code:[400 TO 499]   attribute range
+@user.name:ali*                  wildcard</pre>
+        <p class="hint">Tags have no prefix; attributes start with <code>@</code>. Attribute values are case-sensitive. <b>Facets</b> are for filtering and grouping (qualitative); <b>measures</b> for ranges and math (quantitative). Live Tail shows logs as they arrive, even ones excluded from indexes.</p>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/getting_started/tagging/" target="_blank" rel="noopener">Tagging</a> <a href="https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/" target="_blank" rel="noopener">Unified service tagging</a> <a href="https://docs.datadoghq.com/getting_started/tagging/assigning_tags/" target="_blank" rel="noopener">Assigning tags</a> <a href="https://docs.datadoghq.com/metrics/advanced-filtering/" target="_blank" rel="noopener">Metric filtering</a> <a href="https://docs.datadoghq.com/logs/explorer/search_syntax/" target="_blank" rel="noopener">Log search syntax</a> <a href="https://docs.datadoghq.com/logs/explorer/facets/" target="_blank" rel="noopener">Facets</a></p>
+  </section>
+
+  <!-- VIZ -->
+  <section class="panel" id="cs-viz">
+    <h2>Graphs, dashboards and the Host Map</h2>
+    <h3>How a query becomes a graph</h3>
+    <ol class="notes">
+      <li><b>Scope</b>: pick the sources that match the tags (<code>{env:prod}</code>, or <code>{*}</code> for all).</li>
+      <li><b>Time aggregation (rollup)</b>: reduce each source to one value per time bucket (default avg; about 300 points per graph). <code>.rollup(sum, 60)</code> sums 60-second buckets.</li>
+      <li><b>Space aggregation</b>: combine sources (avg, sum, min, max). <code>by {host}</code> keeps one line per host.</li>
+      <li><b>Functions</b> and arithmetic are applied last. <code>.as_count()</code> / <code>.as_rate()</code> for counts; <code>calendar_shift("-7d")</code> overlays last week (<code>week_before()</code> is deprecated).</li>
+    </ol>
+    <div class="tbl plain"><table>
+      <thead><tr><th>You want to show</th><th>Widget</th></tr></thead>
+      <tbody>
+        <tr><td>A metric over time, or this week vs last week</td><td>Timeseries</td></tr>
+        <tr><td>One current number</td><td>Query Value</td></tr>
+        <tr><td>Top 10 hosts by CPU</td><td>Top List</td></tr>
+        <tr><td>Change vs an hour, day, week or month ago</td><td>Change</td></tr>
+        <tr><td>Two metrics per host against each other</td><td>Scatter Plot</td></tr>
+        <tr><td>Distribution of values over time</td><td>Heatmap (Distribution for one moment)</td></tr>
+        <tr><td>Counts of monitors in Alert, Warn, No Data, OK</td><td>Monitor Summary</td></tr>
+        <tr><td>Your hosts as tiles colored by a metric</td><td>Host Map</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li><b>Template variables</b> (<code>$env</code>) rescope every widget that uses them.</li>
+      <li>Layouts: Dashboards (grid), Timeboards (automatic layout, shared time frame, good for troubleshooting), Screenboards (free-form, status boards).</li>
+      <li><b>Host Map</b>: one tile per host. <b>Filter by</b> tags, <b>Group by</b> tags (e.g. availability zone, then instance type), <b>Fill by</b> a metric (color, default CPU), <b>Size by</b> a metric.</li>
+      <li><b>Host List</b> (Infrastructure > Hosts, formerly Infrastructure List): hosts active in the last 15 minutes by default, with aliases, tags and integrations.</li>
+      <li><b>Software Catalog</b> (now titled "Catalog"): one view of every discovered service.</li>
+      <li>System metrics: <code>system.cpu.user</code> app code · <code>system.cpu.system</code> kernel · <code>system.cpu.iowait</code> waiting on disk · <code>system.cpu.stolen</code> hypervisor · <code>system.load.1/5/15</code> · <code>system.mem.usable</code> · <code>system.swap.used</code> · <code>system.disk.in_use</code> (fraction).</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/dashboards/guide/query-to-the-graph/" target="_blank" rel="noopener">Query to the graph</a> <a href="https://docs.datadoghq.com/dashboards/querying/" target="_blank" rel="noopener">Querying</a> <a href="https://docs.datadoghq.com/dashboards/functions/rollup/" target="_blank" rel="noopener">Rollup</a> <a href="https://docs.datadoghq.com/dashboards/functions/timeshift/" target="_blank" rel="noopener">Timeshift</a> <a href="https://docs.datadoghq.com/dashboards/widgets/" target="_blank" rel="noopener">Widgets</a> <a href="https://docs.datadoghq.com/dashboards/template_variables/" target="_blank" rel="noopener">Template variables</a> <a href="https://docs.datadoghq.com/infrastructure/hostmap/" target="_blank" rel="noopener">Host Map</a> <a href="https://docs.datadoghq.com/infrastructure/list/" target="_blank" rel="noopener">Host List</a> <a href="https://docs.datadoghq.com/integrations/system/" target="_blank" rel="noopener">System metrics</a></p>
+  </section>
+
+  <!-- MONITORS -->
+  <section class="panel" id="cs-mon">
+    <h2>Monitors and alerts</h2>
+    <div class="tbl plain"><table>
+      <thead><tr><th>You want to know when…</th><th>Monitor type</th></tr></thead>
+      <tbody>
+        <tr><td>A host or its Agent stops reporting</td><td>Host (<code>datadog.agent.up</code>)</td></tr>
+        <tr><td>A process stops running</td><td>Process Check (<code>process.up</code>) or Live Process</td></tr>
+        <tr><td>A URL or TCP port is unreachable</td><td>Network (HTTP / TCP check)</td></tr>
+        <tr><td>A metric crosses a fixed threshold</td><td>Metric, threshold alert</td></tr>
+        <tr><td>A metric moves by X% vs earlier</td><td>Metric, change alert</td></tr>
+        <tr><td>A metric behaves unusually for its history</td><td>Anomaly</td></tr>
+        <tr><td>One host behaves unlike its peers</td><td>Outlier</td></tr>
+        <tr><td>A metric will cross a threshold soon (disk full)</td><td>Forecast</td></tr>
+        <tr><td>Several monitors alert together</td><td>Composite (<code>a &amp;&amp; b</code>, <code>||</code>, <code>!</code>)</td></tr>
+        <tr><td>Too many matching logs</td><td>Logs</td></tr>
+        <tr><td>A custom check reports CRITICAL</td><td>Service Check</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Configuration</h3>
+        <ul class="notes">
+          <li><b>Simple alert</b>: one alert for the whole query. <b>Multi alert</b>: one per group (<code>by {host}</code>).</li>
+          <li>Thresholds: alert, warning, and recovery for each. Value 85 with warn 80 / alert 90 = <b>Warn</b>.</li>
+          <li>States: OK, Warn, Alert, No Data.</li>
+          <li>If data is missing: show OK, show No Data, or show No Data and notify.</li>
+          <li><b>Sparse metric</b> (reports only right before a failure): alert on max ("at least once") over the window, and don't notify on missing data.</li>
+          <li>Renotify while still alerting; priority P1–P5.</li>
+          <li><b>Downtimes</b> silence notifications during planned maintenance. Don't delete monitors.</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Message template</h3>
+        <pre class="code">{{#is_alert}}Disk {{value}}% on {{host.name}} @pagerduty-ops{{/is_alert}}
+{{#is_warning}}Disk filling up @slack-ops{{/is_warning}}
+{{#is_recovery}}Recovered{{/is_recovery}}
+{{^is_alert}}Not in alert{{/is_alert}}
+@ops-team@example.com</pre>
+        <ul class="notes hint">
+          <li><code>{{value}}</code> is the value that breached; <code>{{threshold}}</code>; <code>{{host.name}}</code> in multi alerts by host.</li>
+          <li>Handles: <code>@email</code>, <code>@slack-&lt;channel&gt;</code>, <code>@pagerduty-&lt;service&gt;</code>, <code>@webhook-&lt;name&gt;</code>.</li>
+          <li>A handle inside <code>{{#is_alert}}</code> isn't notified on recovery; handles outside any block always are.</li>
+          <li>Also <code>{{#is_no_data}}</code>, <code>{{^is_renotify}}</code> (first notification only).</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/monitors/types/" target="_blank" rel="noopener">Monitor types</a> <a href="https://docs.datadoghq.com/monitors/configuration/" target="_blank" rel="noopener">Configuration</a> <a href="https://docs.datadoghq.com/monitors/notify/variables/" target="_blank" rel="noopener">Notification variables</a> <a href="https://docs.datadoghq.com/monitors/downtimes/" target="_blank" rel="noopener">Downtimes</a> <a href="https://docs.datadoghq.com/monitors/guide/monitoring-sparse-metrics/" target="_blank" rel="noopener">Sparse metrics</a> <a href="https://docs.datadoghq.com/monitors/types/composite/" target="_blank" rel="noopener">Composite monitors</a></p>
+  </section>
+
+  <!-- BASICS -->
+  <section class="panel" id="cs-basics">
+    <h2>Computing and networking basics</h2>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Hardware</h3>
+        <ul class="notes">
+          <li><b>CPU</b> runs instructions. Load average = processes running or waiting; compare it to the core count.</li>
+          <li><b>RAM</b> is volatile and holds the apps and data in use now.</li>
+          <li><b>Swap</b> is disk used as RAM when RAM is full (slow). Many page faults mean too little RAM.</li>
+          <li><b>Storage</b> is persistent. SSD beats HDD on latency and IOPS. A disk can run out of inodes while it still has space.</li>
+          <li>Bits vs bytes: 100 Mbps ÷ 8 = 12.5 MB/s.</li>
+        </ul>
+        <h3>Linux</h3>
+        <ul class="notes">
+          <li><code>cat /etc/os-release</code> (or <code>/etc/os*</code>) distro and version · <code>uname -r</code> kernel · <code>hostname</code> / <code>uname -n</code></li>
+          <li><code>top</code>, <code>ps aux</code>, <code>free -m</code>, <code>df -h</code>, <code>du -sh</code>, <code>tail -f</code>, <code>journalctl</code>, <code>systemctl</code></li>
+          <li><code>chmod 640</code> = owner rw, group r, others none · <code>chown</code> · <code>sudo</code></li>
+          <li><code>apt</code> (Debian/Ubuntu) vs <code>yum</code>/<code>dnf</code> (RHEL/CentOS/Amazon Linux)</li>
+          <li><code>/etc</code> config · <code>/var/log</code> logs · <code>/proc</code> kernel pseudo-filesystem · <code>/opt</code> add-on software</li>
+          <li>Linux is free and open source; Windows is proprietary.</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Networking</h3>
+        <ul class="notes">
+          <li><b>TCP</b>: connection-oriented, handshake (SYN, SYN-ACK, ACK), reliable and ordered. <b>UDP</b>: connectionless, faster, less reliable.</li>
+          <li>A <b>port</b> is an endpoint that identifies a service on a host, so many services can share one IP.</li>
+          <li>HTTP 80 · HTTPS 443 · SSH 22 · DNS 53 · NTP 123/UDP · SNMP 161 (traps 162) · syslog 514 · SMTP 25</li>
+          <li>Private ranges: <code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>, <code>192.168.0.0/16</code>. Loopback <code>127.0.0.1</code>.</li>
+          <li><code>/24</code> = mask 255.255.255.0 (256 addresses). <code>192.168.1.1/16</code> and <code>192.168.2.1/16</code> share a subnet; with <code>/24</code> they don't.</li>
+          <li>HTTP codes: 2xx success · 3xx redirect · 401 unauthenticated · 403 forbidden · 404 · 429 too many requests · 5xx server error.</li>
+          <li>Tools: <code>curl</code>, <code>ping</code>, <code>traceroute</code>, <code>dig</code>/<code>nslookup</code>, <code>nc -zv host port</code>, <code>ss -tulpn</code>.</li>
+          <li>Cloud Network Monitoring graphs throughput, TCP retransmits and latency between services.</li>
+        </ul>
+        <h3>File formats</h3>
+        <ul class="notes">
+          <li><b>YAML</b>: indentation with spaces (no tabs) sets nesting; <code>-</code> for lists; <code>#</code> comments.</li>
+          <li><b>JSON</b>: double quotes only, no comments, no trailing commas.</li>
+          <li><b>Shell</b>: <code>#!/bin/bash</code> picks the interpreter · <code>&gt;</code> overwrites, <code>&gt;&gt;</code> appends · <code>2&gt;&amp;1</code> sends errors to the same place · <code>&amp;&amp;</code> runs the next command only on success · <code>$?</code> is the last exit code.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/integrations/system/" target="_blank" rel="noopener">System metrics</a> <a href="https://en.wikipedia.org/wiki/Memory_paging" target="_blank" rel="noopener">Memory paging</a> <a href="https://www.freedesktop.org/software/systemd/man/latest/os-release.html" target="_blank" rel="noopener">os-release</a> <a href="https://man7.org/linux/man-pages/man1/chmod.1.html" target="_blank" rel="noopener">chmod</a> <a href="https://www.gnu.org/software/bash/manual/bash.html" target="_blank" rel="noopener">Bash manual</a> <a href="https://yaml.org/spec/1.2.2/" target="_blank" rel="noopener">YAML spec</a> <a href="https://www.json.org/json-en.html" target="_blank" rel="noopener">JSON</a> <a href="https://docs.datadoghq.com/network_monitoring/cloud_network_monitoring/network_analytics/" target="_blank" rel="noopener">Cloud Network Monitoring</a></p>
+  </section>
+</div>

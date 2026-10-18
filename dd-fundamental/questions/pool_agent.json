@@ -1,0 +1,1892 @@
+[
+ {
+  "id": "agent-001",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "easy",
+  "q": "A team plans to roll the Datadog Agent out to a fleet that includes several legacy Linux distribution releases. What should they do before installing?",
+  "options": [
+   "Nothing, because the Agent 7 package runs on every Linux release without issue",
+   "Confirm that each OS distribution and version is supported by the Agent version they plan to install",
+   "Install the Agent only on the newest hosts, because the Agent is supported on a single Linux distribution"
+  ],
+  "answer": 1,
+  "explanation": "Agent support depends on the operating system and its version, so compatibility must be checked against the supported platforms list before installing.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/",
+  "notes": [
+   "Agent packages support specific OS distributions and versions, so not every release is supported.",
+   "Correct: the supported platforms tables list OS, version and Agent major version, so check them first.",
+   "The Agent supports many Linux distributions (Ubuntu, Debian, RHEL, SUSE, Amazon Linux and more)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-002",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "medium",
+  "q": "An engineer runs the following on a new host:\n\nDD_API_KEY=<KEY> DD_SITE=\"datadoghq.eu\" bash -c \"$(curl -L https://install.datadoghq.com/scripts/install_script_agent7.sh)\"\n\nWhat does DD_SITE=\"datadoghq.eu\" accomplish?",
+  "options": [
+   "It configures the Agent to send its data to the EU1 Datadog site",
+   "It downloads the Agent package from an EU mirror but still sends data to US1",
+   "It adds a region:eu host tag while data still goes to the default site"
+  ],
+  "answer": 0,
+  "explanation": "DD_SITE sets the site option written to datadog.yaml, which determines the Datadog intake the Agent reports to; without it the default is datadoghq.com (US1).",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/site/",
+  "notes": [
+   "Correct: DD_SITE is written to the site setting, which selects the EU1 intake (datadoghq.eu).",
+   "The site setting controls where data is sent, not only where packages come from.",
+   "DD_SITE does not add tags; host tags are set with DD_TAGS or the tags option."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-003",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "medium",
+  "q": "On a new Ansible control node, which command installs Datadog's recommended Ansible collection from Ansible Galaxy so its Agent role can be used in a playbook?",
+  "options": [
+   "ansible-galaxy collection install datadog.dd",
+   "ansible-playbook install datadog.dd",
+   "pip install datadog"
+  ],
+  "answer": 0,
+  "explanation": "Datadog now recommends the datadog.dd collection, installed with ansible-galaxy collection install datadog.dd, and referenced as the datadog.dd.agent role. The standalone datadog.datadog role is legacy; pip install datadog installs the Python API client.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/ansible/",
+  "notes": [
+   "Correct: datadog.dd is the recommended collection, installed with ansible-galaxy collection install.",
+   "ansible-playbook runs playbooks; it does not install roles or collections.",
+   "pip install datadog installs the Datadog Python API client, not Ansible content."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-004",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "medium",
+  "q": "This playbook uses the standalone datadog.datadog role. It installs the Agent, but the organization is hosted on the EU1 site and no data appears:\n\n- hosts: servers\n  roles:\n    - { role: datadog.datadog, become: yes }\n  vars:\n    datadog_api_key: \"<API_KEY>\"\n\nWhich variable should be added under vars?",
+  "options": [
+   "datadog_hostname: \"datadoghq.eu\"",
+   "datadog_app_key: \"<EU_APP_KEY>\"",
+   "datadog_site: \"datadoghq.eu\""
+  ],
+  "answer": 2,
+  "explanation": "The role's datadog_site variable sets the intake site and defaults to datadoghq.com; an EU organization must set it to datadoghq.eu. Application keys are not used by the Agent.",
+  "ref": "https://docs.datadoghq.com/agent/guide/ansible_standalone_role/",
+  "notes": [
+   "The hostname variable sets the host's name, not the Datadog site.",
+   "The Agent uses only the API key; application keys are for API read/manage access.",
+   "Correct: datadog_site defaults to datadoghq.com and must be datadoghq.eu for an EU1 org."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-005",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "easy",
+  "q": "Which of the following is a configuration management tool that Datadog supports for deploying the Agent across many hosts?",
+  "options": [
+   "Kibana",
+   "Chef",
+   "Nagios"
+  ],
+  "answer": 1,
+  "explanation": "Datadog provides integrations for deploying the Agent with configuration management tools such as Ansible, Chef, Puppet and SaltStack. Kibana and Nagios are visualization/monitoring tools, not deployment tools.",
+  "ref": "https://docs.datadoghq.com/agent/",
+  "notes": [
+   "Kibana is a visualization tool for Elasticsearch, not an Agent deployment tool.",
+   "Correct: Chef is listed with Ansible, Puppet, SaltStack and SCCM for deploying the Agent.",
+   "Nagios is a monitoring system; Datadog can ingest from it but does not deploy the Agent with it."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-006",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "easy",
+  "q": "When starting the containerized Agent with docker run, which environment variable is REQUIRED?",
+  "options": [
+   "DD_SITE",
+   "DD_HOSTNAME",
+   "DD_API_KEY"
+  ],
+  "answer": 2,
+  "explanation": "DD_API_KEY has no default and is required; DD_SITE defaults to datadoghq.com and DD_HOSTNAME is autodetected.",
+  "ref": "https://docs.datadoghq.com/containers/docker/",
+  "notes": [
+   "DD_SITE is optional and defaults to datadoghq.com.",
+   "DD_HOSTNAME is optional; the Agent autodetects the hostname.",
+   "Correct: DD_API_KEY has no default and is required to submit data."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-007",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "medium",
+  "q": "The standard docker run command for the Agent includes:\n\n-v /var/run/docker.sock:/var/run/docker.sock:ro\n\nWhat is this mount for?",
+  "options": [
+   "It exposes the Unix socket that application containers use to send DogStatsD custom metrics to the Agent",
+   "It gives the Agent access to the Docker API for container discovery and metrics",
+   "It persists the Agent's datadog.yaml and check configurations across container restarts"
+  ],
+  "answer": 1,
+  "explanation": "The Docker socket gives the Agent read access to the Docker API for container discovery, metadata and metrics. /proc and /sys/fs/cgroup are mounted for host and cgroup metrics.",
+  "ref": "https://docs.datadoghq.com/containers/docker/",
+  "notes": [
+   "DogStatsD uses UDP 8125 or its own dsd socket, not the Docker daemon socket.",
+   "Correct: the Docker socket gives the Agent read access to the Docker API for discovery and metrics.",
+   "Configuration persistence uses other mounts; docker.sock is the Docker daemon API socket."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-008",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "hard",
+  "q": "Which DD_TAGS value correctly assigns the two host tags env:prod and team:web to a containerized Agent?",
+  "options": [
+   "DD_TAGS=\"env:prod;team:web\"",
+   "DD_TAGS=\"env:prod team:web\"",
+   "DD_TAGS=\"[env:prod; team:web]\""
+  ],
+  "answer": 1,
+  "explanation": "DD_TAGS takes host tags separated by spaces, for example key1:value1 key2:value2.",
+  "ref": "https://docs.datadoghq.com/containers/docker/",
+  "notes": [
+   "Semicolons are not a DD_TAGS separator.",
+   "Correct: DD_TAGS takes space-separated key:value host tags.",
+   "DD_TAGS is not a bracketed list with semicolons."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-009",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "medium",
+  "q": "Application containers on the same Docker host send custom metrics to the Agent container, but none arrive. Which environment variable on the Agent container allows it to accept those packets?",
+  "options": [
+   "DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true",
+   "DD_APM_NON_LOCAL_TRAFFIC=true",
+   "DD_LOGS_ENABLED=true"
+  ],
+  "answer": 0,
+  "explanation": "DogStatsD only listens for local traffic by default; DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true is required to receive metrics from other containers. DD_APM_NON_LOCAL_TRAFFIC does the same for traces on 8126, not metrics.",
+  "ref": "https://docs.datadoghq.com/containers/docker/",
+  "notes": [
+   "Correct: DogStatsD listens only locally unless non-local traffic is allowed.",
+   "DD_APM_NON_LOCAL_TRAFFIC opens the trace receiver (8126), not DogStatsD.",
+   "DD_LOGS_ENABLED turns on log collection, not metric intake."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-010",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "easy",
+  "q": "Which methods does Datadog provide for deploying the Agent on a Kubernetes cluster?",
+  "options": [
+   "The Ansible Galaxy role run against each Kubernetes node",
+   "The one-line install script executed inside each application pod",
+   "The Datadog Helm chart or the Datadog Operator"
+  ],
+  "answer": 2,
+  "explanation": "Datadog supports installing the Agent on Kubernetes with the Datadog Operator, the Helm chart, or raw manifests, which deploy it as a DaemonSet on every node.",
+  "ref": "https://docs.datadoghq.com/containers/kubernetes/installation/",
+  "notes": [
+   "Ansible deploys host Agents; Kubernetes uses the Operator, Helm or a DaemonSet manifest.",
+   "The install script is for hosts, not for running inside application pods.",
+   "Correct: the Datadog Operator (recommended) and Helm chart are the documented Kubernetes methods."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-011",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "medium",
+  "q": "The Agent is installed directly on a Linux host (not in a container). The Docker check reports permission denied on /var/run/docker.sock. What is the recommended fix?",
+  "options": [
+   "Change ownership of /etc/datadog-agent to root so that the Agent service runs with root privileges",
+   "Run usermod -a -G docker dd-agent, then restart the Agent",
+   "Set log_level: debug in datadog.yaml so the Docker check retries the socket with elevated permissions"
+  ],
+  "answer": 1,
+  "explanation": "The host Agent runs as the dd-agent user, which needs membership in the docker group to read the Docker socket.",
+  "ref": "https://docs.datadoghq.com/integrations/docker/",
+  "notes": [
+   "Making the Agent run as root is not the documented fix and is not best practice.",
+   "Correct: add dd-agent to the docker group so it can read the socket, then restart.",
+   "log_level only changes log verbosity; it does not grant permissions."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-012",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Installation",
+  "difficulty": "medium",
+  "q": "With the containerized Agent and default settings, which of these features is DISABLED until explicitly turned on?",
+  "options": [
+   "Log collection (DD_LOGS_ENABLED)",
+   "Trace collection (DD_APM_ENABLED)",
+   "Core host checks such as CPU and memory"
+  ],
+  "answer": 0,
+  "explanation": "DD_LOGS_ENABLED is disabled by default, while DD_APM_ENABLED defaults to true and core checks run by default.",
+  "ref": "https://docs.datadoghq.com/containers/docker/",
+  "notes": [
+   "Correct: log collection is off by default and needs DD_LOGS_ENABLED=true.",
+   "DD_APM_ENABLED defaults to true, so traces are accepted by default.",
+   "Core checks such as CPU and memory run by default."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-013",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "easy",
+  "q": "Which credential does the Datadog Agent require in order to submit metrics, events and logs to Datadog?",
+  "options": [
+   "An application key",
+   "An API key",
+   "A client token"
+  ],
+  "answer": 1,
+  "explanation": "The API key is required by the Agent and for submitting data; application keys are used together with an API key for programmatic read/manage access.",
+  "ref": "https://docs.datadoghq.com/account_management/api-app-keys/",
+  "notes": [
+   "Application keys are for programmatic read/manage API access, not for the Agent.",
+   "Correct: the Agent requires an API key to submit data.",
+   "Client tokens are for browser and mobile apps (RUM, browser logs)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-014",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "easy",
+  "q": "A frontend team wants to send browser logs and RUM data from a web application. Which credential should they embed in the JavaScript?",
+  "options": [
+   "A client token",
+   "An API key",
+   "An application key"
+  ],
+  "answer": 0,
+  "explanation": "Client tokens are designed for browser and mobile apps; API keys must not be used client-side because they would be exposed to end users.",
+  "ref": "https://docs.datadoghq.com/account_management/api-app-keys/",
+  "notes": [
+   "Correct: client tokens are designed for browser, mobile and TV apps.",
+   "API keys would be exposed client-side, so they must not be embedded in browser code.",
+   "Application keys grant API read/manage access and must never be exposed."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-015",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "medium",
+  "q": "An engineer created an API key used by 200 Agents and an application key used by a nightly reporting script. Their Datadog user is then disabled. What stops working?",
+  "options": [
+   "Only the Agents, because the API key is revoked",
+   "Only the reporting script",
+   "Both, because all keys created by a disabled user are revoked"
+  ],
+  "answer": 1,
+  "explanation": "API keys belong to the organization and remain valid when their creator is disabled; application keys are tied to the user and are revoked when the user is disabled.",
+  "ref": "https://docs.datadoghq.com/account_management/api-app-keys/",
+  "notes": [
+   "API keys stay valid when their creator is disabled.",
+   "Correct: only the application key is revoked, so only the script breaks.",
+   "Only application keys are revoked; API keys created by the user remain valid."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-016",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "medium",
+  "q": "An automation needs an application key that will keep working regardless of employee turnover. What is the recommended approach?",
+  "options": [
+   "Create it under an admin user and transfer it to another admin when that person leaves",
+   "Skip the application key and call read endpoints with only the API key",
+   "Create the application key under a service account"
+  ],
+  "answer": 2,
+  "explanation": "Application keys are never transferred between users; service accounts are non-interactive accounts intended to own shared application keys.",
+  "ref": "https://docs.datadoghq.com/account_management/org_settings/service_accounts/",
+  "notes": [
+   "Datadog does not transfer application keys between users.",
+   "Read endpoints require an application key in addition to the API key.",
+   "Correct: service accounts are non-interactive accounts meant to own shared application keys."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-017",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "medium",
+  "q": "By default, how many API keys can a Datadog organization have?",
+  "options": [
+   "25",
+   "100",
+   "50"
+  ],
+  "answer": 2,
+  "explanation": "Organizations are limited to 50 API keys by default; Support can raise the limit if needed.",
+  "ref": "https://docs.datadoghq.com/account_management/api-app-keys/",
+  "notes": [
+   "25 is not the default API key limit.",
+   "100 is not the default API key limit.",
+   "Correct: orgs get up to 50 API keys by default; Support can raise it."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-018",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "medium",
+  "q": "An admin accidentally revokes the API key used by production Agents and notices two days later. What can be done?",
+  "options": [
+   "Unrevoke it in the UI; API keys can be restored for 7 days",
+   "Nothing, since API key revocation is immediate and permanent",
+   "Ask Datadog Support to restore it, because revoked keys are retained for 30 days before deletion"
+  ],
+  "answer": 0,
+  "explanation": "A revoked API key stays listed as Revoked for 7 days and can be unrevoked during that window; application key revocation, by contrast, is permanent.",
+  "ref": "https://docs.datadoghq.com/account_management/api-app-keys/",
+  "notes": [
+   "Correct: revoked API keys stay listed for 7 days and can be unrevoked.",
+   "API key revocation can be undone within 7 days; application key revocation is permanent.",
+   "The restore window is 7 days in the UI, not 30 days via Support."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-019",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "hard",
+  "q": "Which statement about revoking Datadog keys is correct?",
+  "options": [
+   "Only revoked API keys can be restored (within 7 days)",
+   "Both API keys and application keys can be restored within 7 days of revocation",
+   "A revoked application key can be restored within 7 days, but API key revocation is permanent"
+  ],
+  "answer": 0,
+  "explanation": "The 7-day unrevoke window applies only to API keys; application key revocation is permanent.",
+  "ref": "https://docs.datadoghq.com/account_management/api-app-keys/",
+  "notes": [
+   "Correct: only API keys have the 7-day unrevoke window.",
+   "Application key revocation is permanent.",
+   "This is reversed: API keys can be restored, application keys cannot."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-020",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "medium",
+  "q": "A script calls the Datadog API to query timeseries data. Which pair of HTTP headers must it send?",
+  "options": [
+   "DD-API-KEY and DD-APPLICATION-KEY",
+   "DD-API-KEY only",
+   "DD-CLIENT-TOKEN and DD-APPLICATION-KEY"
+  ],
+  "answer": 0,
+  "explanation": "Read and manage endpoints such as GET /api/v1/query require both the API key (DD-API-KEY) and an application key (DD-APPLICATION-KEY); submitting metrics needs only the API key.",
+  "ref": "https://docs.datadoghq.com/api/latest/authentication/",
+  "notes": [
+   "Correct: read requests need both the API key and an application key.",
+   "An API key alone is enough to submit data, not to read it.",
+   "Client tokens are for browser/mobile data submission, not API queries."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-021",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "medium",
+  "q": "Which request checks whether an API key is valid?",
+  "options": [
+   "GET https://api.<site>/api/v1/query with the DD-API-KEY header",
+   "POST https://api.<site>/api/v2/series with an empty body",
+   "GET https://api.<site>/api/v1/validate with the DD-API-KEY header"
+  ],
+  "answer": 2,
+  "explanation": "The /api/v1/validate endpoint returns whether the supplied API key is valid. The query endpoint additionally requires an application key.",
+  "ref": "https://docs.datadoghq.com/api/latest/authentication/",
+  "notes": [
+   "The query endpoint also requires an application key, so it is not a key validation check.",
+   "The series endpoint submits metrics; it is not the validation endpoint.",
+   "Correct: GET /api/v1/validate checks the supplied API key."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-022",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "medium",
+  "q": "A user creates an application key and does not assign any scopes. What can the key do?",
+  "options": [
+   "Everything the creating user's permissions allow",
+   "Only read operations, until scopes are added",
+   "Nothing, until at least one scope is assigned"
+  ],
+  "answer": 0,
+  "explanation": "An unscoped application key inherits the permissions of the user (or service account) that owns it; scopes restrict it to a subset.",
+  "ref": "https://docs.datadoghq.com/account_management/api-app-keys/",
+  "notes": [
+   "Correct: an unscoped application key gets the creating user's permissions.",
+   "Unscoped keys are not limited to read-only access.",
+   "Unscoped keys are not disabled; they inherit the owner's permissions."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-023",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "hard",
+  "q": "An API key was accidentally committed to a public Git repository. Which response follows Datadog's guidance?",
+  "options": [
+   "Revoke it, scrub it from code and history, create and deploy a new key, then audit the account",
+   "Leave the key in place and do nothing further, because API keys can only submit data and cannot be abused by others",
+   "Rotate only the application keys, because an API key cannot be revoked while Agents are actively using it"
+  ],
+  "answer": 0,
+  "explanation": "Datadog's exposed-key procedure is revoke, scrub, create a new key, update affected services, and audit for unauthorized access.",
+  "ref": "https://docs.datadoghq.com/account_management/api-app-keys/",
+  "notes": [
+   "Correct: revoke, scrub, create a new key, update services, then audit the account.",
+   "Exposed API keys can be abused to send data, so they must be revoked and replaced.",
+   "API keys can be revoked at any time; the leaked key itself must be rotated."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-024",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "API & Application Keys",
+  "difficulty": "easy",
+  "q": "How long is a newly created Datadog API key valid?",
+  "options": [
+   "90 days, after which it must be rotated",
+   "1 year from its creation date",
+   "Until it is revoked"
+  ],
+  "answer": 2,
+  "explanation": "Datadog API and application keys have no automatic expiration, which is why storing them in a secrets manager and rotating them on exposure matters.",
+  "ref": "https://docs.datadoghq.com/account_management/api-app-keys/",
+  "notes": [
+   "Datadog keys have no 90-day expiry.",
+   "Datadog keys have no 1-year expiry.",
+   "Correct: API keys are long-lived with no built-in expiration."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-025",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Running the Agent",
+  "difficulty": "easy",
+  "q": "On an Ubuntu host using systemd, the Agent was stopped to edit a check configuration. Which command brings it back up?",
+  "options": [
+   "sudo systemctl start datadog-agent",
+   "sudo datadog-agent restart",
+   "sudo datadog-agent launch-gui"
+  ],
+  "answer": 0,
+  "explanation": "After a stop, the Agent service is started with systemctl start (or service datadog-agent start); restart is intended for an Agent that is already running.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/linux/",
+  "notes": [
+   "Correct: after a stop, systemctl start brings the Agent service back up.",
+   "datadog-agent has no restart subcommand; service control uses systemctl.",
+   "launch-gui opens the Agent Manager GUI; it does not start the service."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-026",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Running the Agent",
+  "difficulty": "medium",
+  "q": "From an elevated PowerShell prompt on Windows, which command restarts the Agent service?",
+  "options": [
+   "& \"$env:ProgramFiles\\Datadog\\Datadog Agent\\bin\\agent.exe\" restart-service",
+   "& \"$env:ProgramFiles\\Datadog\\Datadog Agent\\bin\\agent.exe\" reload",
+   "& \"$env:ProgramFiles\\Datadog\\Datadog Agent\\bin\\agent.exe\" restart"
+  ],
+  "answer": 0,
+  "explanation": "On Windows the Agent binary provides start-service, stopservice and restart-service to control the service through the service control manager.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/windows/",
+  "notes": [
+   "Correct: restart-service restarts the Agent through the Windows service control manager.",
+   "reload is not an Agent subcommand.",
+   "restart is not an agent.exe subcommand; the Windows form is restart-service."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-027",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Running the Agent",
+  "difficulty": "hard",
+  "q": "Which agent.exe subcommand stops the Agent service on Windows?",
+  "options": [
+   "stop-service",
+   "service-stop",
+   "stopservice"
+  ],
+  "answer": 2,
+  "explanation": "The Windows-only service subcommands are start-service, restart-service and stopservice (no hyphen).",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/windows/",
+  "notes": [
+   "stop-service is not the subcommand name; the stop command has no hyphen.",
+   "service-stop is not an Agent subcommand.",
+   "Correct: stopservice (no hyphen) stops the Agent service on Windows."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-028",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Running the Agent",
+  "difficulty": "easy",
+  "q": "On a current macOS Agent installation (system-wide launchd service), which terminal command stops the Agent?",
+  "options": [
+   "sudo launchctl kill SIGTERM system/com.datadoghq.agent",
+   "sudo systemctl stop datadog-agent",
+   "sudo service datadog-agent stop"
+  ],
+  "answer": 0,
+  "explanation": "On macOS the Agent lifecycle is controlled with launchctl against system/com.datadoghq.agent (kill SIGTERM to stop, kickstart to start, kickstart -k to restart); systemctl and service are Linux service managers.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/osx/",
+  "notes": [
+   "Correct: launchctl kill SIGTERM on system/com.datadoghq.agent stops the macOS Agent.",
+   "systemctl is the Linux systemd service manager.",
+   "service is a Linux service wrapper, not used on macOS."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-029",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Running the Agent",
+  "difficulty": "hard",
+  "q": "The Agent runs as a DaemonSet in Kubernetes. What is the documented way to restart the Agent on one node?",
+  "options": [
+   "kubectl exec -it <AGENT_POD_NAME> -- systemctl restart datadog-agent",
+   "kubectl exec -it <AGENT_POD_NAME> -- agent restart-service",
+   "kubectl delete pod <AGENT_POD_NAME>, and the DaemonSet reschedules it"
+  ],
+  "answer": 2,
+  "explanation": "In Kubernetes the Agent pod is restarted by deleting it; the DaemonSet recreates it automatically. restart-service is Windows-only and containers do not use systemd.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "Agent containers do not run systemd.",
+   "restart-service is a Windows-only subcommand.",
+   "Correct: deleting the pod makes the DaemonSet reschedule it, which restarts the Agent."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-030",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Running the Agent",
+  "difficulty": "easy",
+  "q": "What is the name of the Windows service that runs the main Datadog Agent?",
+  "options": [
+   "dd-agent",
+   "datadog-agent",
+   "DatadogAgent"
+  ],
+  "answer": 2,
+  "explanation": "On Windows the Agent runs as the DatadogAgent service, with separate services for the trace and process agents.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/windows/",
+  "notes": [
+   "dd-agent is the Linux user the Agent runs as.",
+   "datadog-agent is the Linux service and binary name.",
+   "Correct: the Windows service is DatadogAgent."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-031",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Hostname",
+  "difficulty": "medium",
+  "q": "An Agent runs on an AWS EC2 instance whose OS hostname is the default ip-10-0-1-23. No hostname is configured in datadog.yaml. Which name does Datadog typically use as the canonical hostname?",
+  "options": [
+   "ip-10-0-1-23, because the OS hostname always wins",
+   "The instance's private IP address, 10.0.1.23",
+   "The EC2 instance ID, such as i-0abc123def456"
+  ],
+  "answer": 2,
+  "explanation": "The Agent skips EC2 default hostnames (ip-..., domu...) when a better candidate exists; if the EC2 metadata endpoint is reachable it uses the instance ID. The DNS name is only a last resort.",
+  "ref": "https://docs.datadoghq.com/agent/faq/how-datadog-agent-determines-the-hostname/",
+  "notes": [
+   "EC2 default hostnames such as ip-... are skipped when a better candidate exists.",
+   "The Agent does not use the private IP address as the hostname.",
+   "Correct: with metadata reachable, the EC2 instance ID is used."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-032",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Hostname",
+  "difficulty": "easy",
+  "q": "Which datadog.yaml option overrides the hostname the Agent detects automatically?",
+  "options": [
+   "host_alias",
+   "display_name",
+   "hostname"
+  ],
+  "answer": 2,
+  "explanation": "Setting hostname in datadog.yaml (or DD_HOSTNAME in containers) defines the hostname the Agent reports.",
+  "ref": "https://docs.datadoghq.com/agent/faq/how-datadog-agent-determines-the-hostname/",
+  "notes": [
+   "host_alias is not a datadog.yaml option; aliases are derived automatically.",
+   "display_name is not a datadog.yaml hostname option.",
+   "Correct: hostname (or DD_HOSTNAME) forces the Agent's reported hostname."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-033",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Hostname",
+  "difficulty": "easy",
+  "q": "Which command prints the hostname that the running Agent reports to Datadog?",
+  "options": [
+   "datadog-agent hostname",
+   "hostname -f",
+   "datadog-agent configcheck"
+  ],
+  "answer": 0,
+  "explanation": "The hostname subcommand prints the hostname used by the Agent, which can differ from the OS hostname (for example, an EC2 instance ID).",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "Correct: the hostname subcommand prints the hostname the Agent uses.",
+   "hostname -f prints the OS FQDN, which can differ from the Agent's hostname.",
+   "configcheck prints loaded check configurations, not the hostname."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-034",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Hostname",
+  "difficulty": "medium",
+  "q": "A host is known as i-0abcd1234 (instance ID), ip-192-0-0-1 (internal hostname) and web01.corp.example (FQDN). How does Datadog represent this host?",
+  "options": [
+   "Three separate hosts appear in the Infrastructure List, but only one of them is billed",
+   "One canonical name, with the others kept as host aliases",
+   "The shortest name is kept as the hostname and the other two names are discarded"
+  ],
+  "answer": 1,
+  "explanation": "When a host has several uniquely identifying names, Datadog picks a canonical name and submits the rest as aliases, visible in the Infrastructure List inspect panel.",
+  "ref": "https://docs.datadoghq.com/agent/faq/how-datadog-agent-determines-the-hostname/",
+  "notes": [
+   "One host with several names is shown once, with aliases, not as three hosts.",
+   "Correct: Datadog chooses a canonical name and keeps the others as host aliases.",
+   "Other names are not discarded; they become aliases."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-035",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Hostname",
+  "difficulty": "hard",
+  "q": "A containerized Agent 7.45 exits at startup with an error saying it cannot reliably determine the hostname. What resolves it?",
+  "options": [
+   "Set DD_HOSTNAME, or let the Agent reach kubelet or cloud metadata",
+   "Set DD_TAGS=\"host:<name>\" so that the hostname is taken from the host tag instead",
+   "Set DD_LOG_LEVEL=debug, which makes the Agent skip hostname validation at startup"
+  ],
+  "answer": 0,
+  "explanation": "Since Agent 7.40 the containerized Agent refuses to start without a reliable hostname; granting access to a provider or setting DD_HOSTNAME fixes it.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/hostname_containers/",
+  "notes": [
+   "Correct: set DD_HOSTNAME or give the Agent access to kubelet, the runtime or cloud metadata.",
+   "A host tag does not set the hostname.",
+   "Debug logging does not bypass hostname validation."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-036",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Architecture",
+  "difficulty": "easy",
+  "q": "By default, how often does the Agent's collector run checks?",
+  "options": [
+   "Every 10 seconds",
+   "Every 15 seconds",
+   "Every 60 seconds"
+  ],
+  "answer": 1,
+  "explanation": "The collector gathers standard metrics every 15 seconds; 10 seconds is the DogStatsD flush interval.",
+  "ref": "https://docs.datadoghq.com/agent/architecture/",
+  "notes": [
+   "10 seconds is the DogStatsD flush interval.",
+   "Correct: the collector gathers standard metrics every 15 seconds.",
+   "60 seconds is not the default collector interval."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-037",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Architecture",
+  "difficulty": "medium",
+  "q": "Which statement about DogStatsD inside the Agent is correct?",
+  "options": [
+   "It forwards every received point to Datadog immediately without aggregation",
+   "It aggregates received points and flushes them every 10 seconds",
+   "It runs checks from conf.d every 15 seconds"
+  ],
+  "answer": 1,
+  "explanation": "DogStatsD receives metrics over UDP (or a Unix socket) and aggregates each metric into one point per 10-second flush interval.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "DogStatsD aggregates points before sending.",
+   "Correct: DogStatsD aggregates each metric into one value per 10-second flush.",
+   "Running conf.d checks every 15 seconds is the collector's job."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-038",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Architecture",
+  "difficulty": "easy",
+  "q": "Which Agent component sends the collected data to Datadog over HTTPS?",
+  "options": [
+   "The forwarder",
+   "The collector",
+   "DogStatsD"
+  ],
+  "answer": 0,
+  "explanation": "The collector runs checks, DogStatsD receives custom metrics, and the forwarder sends payloads to Datadog over HTTPS.",
+  "ref": "https://docs.datadoghq.com/agent/architecture/",
+  "notes": [
+   "Correct: the forwarder sends payloads to Datadog over HTTPS.",
+   "The collector runs checks; it hands data to the forwarder.",
+   "DogStatsD receives and aggregates custom metrics; it does not send to Datadog itself."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-039",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Architecture",
+  "difficulty": "medium",
+  "q": "Which Agent component receives traces from tracing libraries on TCP port 8126?",
+  "options": [
+   "The process agent",
+   "The trace agent",
+   "DogStatsD"
+  ],
+  "answer": 1,
+  "explanation": "The trace agent (APM agent) listens on 8126 for traces; the process agent collects live process data, and DogStatsD listens on UDP 8125.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/network/",
+  "notes": [
+   "The process agent collects live process and container data.",
+   "Correct: the trace agent (APM receiver) listens on TCP 8126.",
+   "DogStatsD listens on UDP 8125."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-040",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Architecture",
+  "difficulty": "easy",
+  "q": "Which Agent component executes the integration checks configured in conf.d?",
+  "options": [
+   "The collector",
+   "The forwarder",
+   "The trace agent"
+  ],
+  "answer": 0,
+  "explanation": "The collector runs Agent checks (integrations and custom checks) and hands the results to the forwarder.",
+  "ref": "https://docs.datadoghq.com/agent/architecture/",
+  "notes": [
+   "Correct: the collector runs integration and custom checks.",
+   "The forwarder sends data to Datadog; it does not run checks.",
+   "The trace agent handles APM traces."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-041",
+  "topic": "Agent Installation & Keys",
+  "subtopic": "Agent Architecture",
+  "difficulty": "hard",
+  "q": "The network link from a host to Datadog is down for a while. What does the Agent forwarder do by default?",
+  "options": [
+   "Writes all payloads to disk indefinitely until connectivity returns",
+   "Pauses the collector so that no new data is generated until connectivity returns",
+   "Buffers in memory up to a limit, then drops data"
+  ],
+  "answer": 2,
+  "explanation": "The forwarder retries from an in-memory queue bounded by forwarder_retry_queue_payloads_max_size; spilling to disk is optional and only enabled when forwarder_storage_max_size_in_bytes is set.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/network/",
+  "notes": [
+   "Disk buffering is optional and off unless forwarder_storage_max_size_in_bytes is set.",
+   "The collector keeps running; the forwarder queues retries.",
+   "Correct: data is buffered in memory up to forwarder_retry_queue_payloads_max_size, then dropped."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-042",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "easy",
+  "q": "Which Agent subcommand shows the overall state of the running Agent, including running checks, the forwarder, DogStatsD, logs and APM?",
+  "options": [
+   "health",
+   "status",
+   "version"
+  ],
+  "answer": 1,
+  "explanation": "datadog-agent status prints a full status page for each component; health only gives a pass/fail readout.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "health only prints a pass/fail health readout.",
+   "Correct: status shows each component, including running checks, forwarder, DogStatsD, logs and APM.",
+   "version prints Agent version information only."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-043",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "medium",
+  "q": "You want to run the nginx check once and see the metrics and service checks it produces. Which command does this?",
+  "options": [
+   "sudo -u dd-agent -- datadog-agent configcheck nginx",
+   "sudo -u dd-agent -- datadog-agent status nginx",
+   "sudo -u dd-agent -- datadog-agent check nginx"
+  ],
+  "answer": 2,
+  "explanation": "The check subcommand runs a single check and prints its output; running it as dd-agent reproduces the Agent's permissions.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/linux/",
+  "notes": [
+   "configcheck lists loaded configurations; it does not run the check.",
+   "status shows the overall Agent state, not a single check run.",
+   "Correct: check runs one check and prints its metrics and service checks."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-044",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "medium",
+  "q": "You added conf.d/postgres.d/conf.yaml but are unsure whether the running Agent loaded it and which values it resolved. Which subcommand shows this?",
+  "options": [
+   "diagnose",
+   "configcheck",
+   "flare"
+  ],
+  "answer": 1,
+  "explanation": "configcheck prints all configurations loaded and resolved by the running Agent, including Autodiscovery-resolved templates.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "diagnose runs connectivity diagnostics.",
+   "Correct: configcheck prints the loaded and resolved configurations.",
+   "flare packages logs and configs for Support."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-045",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "easy",
+  "q": "Which Agent subcommand runs connectivity diagnostics?",
+  "options": [
+   "health",
+   "hostname",
+   "diagnose"
+  ],
+  "answer": 2,
+  "explanation": "diagnose runs connectivity diagnostics; health reports component health and hostname prints the hostname.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "health prints the Agent's component health.",
+   "hostname prints the hostname the Agent uses.",
+   "Correct: diagnose runs connectivity diagnostics."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-046",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "medium",
+  "q": "What does the datadog-agent flare command do?",
+  "options": [
+   "Restarts the Agent in debug mode for 15 minutes and uploads the resulting logs to the Log Explorer",
+   "Sends Support the Agent's logs and configs, with secrets scrubbed",
+   "Sends a test metric to Datadog to confirm the API key works"
+  ],
+  "answer": 1,
+  "explanation": "A flare bundles logs and configuration (with sensitive values scrubbed) and submits them to Datadog Support, optionally linked to a case.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/send_a_flare/",
+  "notes": [
+   "A flare does not send data to Log Explorer; it creates a Support archive.",
+   "Correct: a flare bundles logs and configs, scrubbing secrets, and sends them to Support.",
+   "A flare does not send test metrics; GET /api/v1/validate checks an API key."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-047",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "medium",
+  "q": "Datadog Support asks you to attach a flare to case 1234567. Which command should you run?",
+  "options": [
+   "sudo datadog-agent status --case 1234567",
+   "sudo datadog-agent flare 1234567",
+   "sudo datadog-agent diagnose 1234567"
+  ],
+  "answer": 1,
+  "explanation": "Passing the case ID to the flare subcommand links the uploaded flare to that support case.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/send_a_flare/",
+  "notes": [
+   "status has no case option and does not upload anything.",
+   "Correct: flare <CASE_ID> attaches the flare to that support case.",
+   "diagnose runs connectivity checks and does not upload to a case."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-048",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "easy",
+  "q": "The Agent runs in a Docker container named dd-agent. How do you view its status page?",
+  "options": [
+   "docker logs dd-agent status",
+   "docker exec -it dd-agent agent status",
+   "docker run dd-agent agent status"
+  ],
+  "answer": 1,
+  "explanation": "Agent subcommands run inside the existing container with docker exec; docker run would start a new container.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "docker logs shows container output; it cannot run Agent subcommands.",
+   "Correct: docker exec runs the Agent's status inside the existing container.",
+   "docker run would start a new container instead of querying the running one."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-049",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "medium",
+  "q": "How do you view the status of the Agent running in a Kubernetes pod?",
+  "options": [
+   "kubectl logs <POD_NAME> -- agent status",
+   "kubectl describe pod <POD_NAME> --status",
+   "kubectl exec -it <POD_NAME> -- agent status"
+  ],
+  "answer": 2,
+  "explanation": "Agent subcommands are run inside the Agent pod with kubectl exec; kubectl logs only shows container output.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "kubectl logs only prints container logs.",
+   "kubectl describe has no --status flag that runs the Agent status page.",
+   "Correct: kubectl exec runs agent status inside the Agent pod."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-050",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "easy",
+  "q": "Which Agent subcommand prints the current health of the Agent?",
+  "options": [
+   "hostname",
+   "health",
+   "import"
+  ],
+  "answer": 1,
+  "explanation": "health prints the Agent's current health; import converts configuration from older Agent versions.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "hostname prints the Agent's hostname.",
+   "Correct: health prints the Agent's current health.",
+   "import converts configuration from earlier Agent versions."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-051",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "medium",
+  "q": "You want to watch, in real time, the log lines that the running Agent is processing to check a new log source. Which subcommand should you use?",
+  "options": [
+   "stream-logs",
+   "check",
+   "flare"
+  ],
+  "answer": 0,
+  "explanation": "stream-logs streams the logs processed by the running Agent, which helps verify log sources and processing rules.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "Correct: stream-logs streams logs processed by the running Agent.",
+   "check runs a single integration check.",
+   "flare sends logs and configs to Support."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-052",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "easy",
+  "q": "Which Agent subcommand starts the Datadog Agent Manager GUI in a browser?",
+  "options": [
+   "start-service",
+   "launch-gui",
+   "config"
+  ],
+  "answer": 1,
+  "explanation": "launch-gui opens the Agent GUI (port 5002), enabled by default on Windows and macOS.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "start-service is the Windows-only service start subcommand.",
+   "Correct: launch-gui starts the Datadog Agent Manager GUI.",
+   "config manages runtime configuration settings."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-053",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "medium",
+  "q": "On Windows, where is the Agent binary that accepts subcommands such as status and flare?",
+  "options": [
+   "%ProgramData%\\Datadog\\agent.exe",
+   "C:\\Windows\\System32\\datadog-agent.exe",
+   "%ProgramFiles%\\Datadog\\Datadog Agent\\bin\\agent.exe"
+  ],
+  "answer": 2,
+  "explanation": "The executable lives under %ProgramFiles%\\Datadog\\Datadog Agent\\bin\\; %ProgramData%\\Datadog holds the configuration and logs.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/windows/",
+  "notes": [
+   "%ProgramData%\\Datadog holds configuration and logs, not the binary.",
+   "The Agent is not installed into System32.",
+   "Correct: agent.exe is in %ProgramFiles%\\Datadog\\Datadog Agent\\bin\\."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-054",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "hard",
+  "q": "What is the difference between the config and configcheck subcommands?",
+  "options": [
+   "config validates the YAML syntax of datadog.yaml, while configcheck runs every configured check once and prints its output",
+   "They are aliases for the same command, kept for backward compatibility with Agent v5",
+   "config manages runtime settings; configcheck lists loaded check configs"
+  ],
+  "answer": 2,
+  "explanation": "config manages runtime settings (for example config set log_level debug), while configcheck lists the integration configurations the Agent loaded and resolved.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "config does not validate YAML, and configcheck does not run checks.",
+   "They are separate subcommands with different purposes.",
+   "Correct: config manages runtime settings; configcheck shows loaded and resolved check configs."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-055",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Logs",
+  "difficulty": "easy",
+  "q": "On Linux, in which directory are the Agent's log files written?",
+  "options": [
+   "/etc/datadog-agent/logs/",
+   "/var/log/datadog/",
+   "/opt/datadog-agent/logs/"
+  ],
+  "answer": 1,
+  "explanation": "Linux Agent logs are under /var/log/datadog/. /opt/datadog-agent/logs is the macOS location (Agent 7.28+).",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-log-files/",
+  "notes": [
+   "/etc/datadog-agent holds configuration, not logs.",
+   "Correct: Linux Agent logs are in /var/log/datadog/.",
+   "/opt/datadog-agent/logs is the macOS log location (7.28+)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-056",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Logs",
+  "difficulty": "medium",
+  "q": "Where are the Agent log files on Windows?",
+  "options": [
+   "C:\\Program Files\\Datadog\\Datadog Agent\\logs\\",
+   "C:\\ProgramData\\Datadog\\logs\\",
+   "C:\\Windows\\Logs\\Datadog\\"
+  ],
+  "answer": 1,
+  "explanation": "Windows Agent logs are in C:\\ProgramData\\Datadog\\logs (a hidden folder); Program Files holds the binaries.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-log-files/",
+  "notes": [
+   "Program Files holds the Agent binaries.",
+   "Correct: Windows logs are in C:\\ProgramData\\Datadog\\logs\\.",
+   "C:\\Windows\\Logs is not used by the Agent."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-057",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Logs",
+  "difficulty": "hard",
+  "q": "On macOS with Agent 7.28 or later, where are the Agent log files?",
+  "options": [
+   "/var/log/datadog",
+   "/opt/datadog-agent/logs",
+   "/Library/Logs/Datadog"
+  ],
+  "answer": 1,
+  "explanation": "macOS moved Agent logs to /opt/datadog-agent/logs in 7.28; /var/log/datadog was used by older macOS Agents and is the Linux location.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-log-files/",
+  "notes": [
+   "/var/log/datadog was the macOS location before 7.28 and is the Linux location.",
+   "Correct: macOS Agent 7.28+ logs to /opt/datadog-agent/logs.",
+   "/Library/Logs/Datadog is not an Agent log location."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-058",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Logs",
+  "difficulty": "easy",
+  "q": "Traces from an instrumented service are not showing up in APM. Which Agent log file is the most relevant to inspect first on Linux?",
+  "options": [
+   "/var/log/datadog/trace-agent.log",
+   "/var/log/datadog/process-agent.log",
+   "/var/log/datadog/jmxfetch.log"
+  ],
+  "answer": 0,
+  "explanation": "The trace agent handles APM and writes to trace-agent.log; process-agent.log covers live processes and jmxfetch.log covers JMX checks.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-log-files/",
+  "notes": [
+   "Correct: the trace agent handles APM and logs to trace-agent.log.",
+   "process-agent.log covers the process agent, not APM.",
+   "jmxfetch.log covers JMX-based checks."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-059",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Commands",
+  "difficulty": "easy",
+  "q": "You edited /etc/datadog-agent/datadog.yaml on an Ubuntu host where the Agent is already running as a systemd service. Which command is the documented way to restart the Agent so the change takes effect?",
+  "options": [
+   "sudo datadog-agent restart-service",
+   "sudo systemctl restart datadog-agent",
+   "sudo launchctl kickstart -k system/com.datadoghq.agent"
+  ],
+  "answer": 1,
+  "explanation": "Ubuntu uses systemd, and the Linux Agent docs list sudo systemctl restart datadog-agent to restart the Agent service. restart-service is a Windows-only subcommand and launchctl is for macOS.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/linux/",
+  "notes": [
+   "restart-service is a Windows-only subcommand.",
+   "Correct: on systemd distributions such as Ubuntu, sudo systemctl restart datadog-agent restarts the Agent.",
+   "launchctl kickstart -k is the macOS restart command."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-060",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Logs",
+  "difficulty": "easy",
+  "q": "What is the default Agent log_level?",
+  "options": [
+   "warn",
+   "debug",
+   "info"
+  ],
+  "answer": 2,
+  "explanation": "The default log_level is info; debug and trace are more verbose and are typically enabled only temporarily.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/debug_mode/",
+  "notes": [
+   "warn is more restrictive than the default.",
+   "debug is more verbose and is enabled only temporarily.",
+   "Correct: the default log_level is info."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-061",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Logs",
+  "difficulty": "medium",
+  "q": "datadog.yaml contains:\n\nlog_level: error\n\nWhich messages does agent.log record?",
+  "options": [
+   "ERROR messages only",
+   "ERROR and CRITICAL messages",
+   "ERROR, WARN and INFO messages"
+  ],
+  "answer": 1,
+  "explanation": "Each level includes the levels more severe than it, so error records error and critical messages.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/debug_mode/",
+  "notes": [
+   "Each level also includes more severe levels, so CRITICAL is included too.",
+   "Correct: error logs error and critical messages.",
+   "WARN and INFO are less severe than error and are excluded."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-062",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Logs",
+  "difficulty": "hard",
+  "q": "Which log_level value produces the MOST verbose Agent logging?",
+  "options": [
+   "trace",
+   "debug",
+   "info"
+  ],
+  "answer": 0,
+  "explanation": "The levels from least to most verbose are off, critical, error, warn, info, debug, trace; trace includes everything debug does and more.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/debug_mode/",
+  "notes": [
+   "Correct: trace is the most verbose level.",
+   "debug is less verbose than trace.",
+   "info is the default and far less verbose."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-063",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Logs",
+  "difficulty": "medium",
+  "q": "With default settings, what happens when agent.log reaches 10 MB?",
+  "options": [
+   "The Agent stops logging until it is restarted",
+   "It is compressed and uploaded to Datadog automatically",
+   "It is rolled over to agent.log.1, and only that one backup is kept"
+  ],
+  "answer": 2,
+  "explanation": "log_file_max_size defaults to 10 MB and log_file_max_rolls to 1, so one backup (agent.log.1) is kept and overwritten on the next rollover.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-log-files/",
+  "notes": [
+   "The Agent keeps logging; it rolls the file over.",
+   "Logs are not uploaded automatically; rotation is local.",
+   "Correct: at 10 MB the file rolls to agent.log.1, with one backup kept by default."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-064",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Logs",
+  "difficulty": "medium",
+  "q": "How do you enable debug logging for a containerized Agent at startup?",
+  "options": [
+   "Set the environment variable DD_LOG_LEVEL=debug",
+   "Set the environment variable DD_DEBUG=true",
+   "Mount /var/log/datadog read-write into the container"
+  ],
+  "answer": 0,
+  "explanation": "Containerized Agents read their log level from DD_LOG_LEVEL; for Helm, logLevel in the values file sets it.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/debug_mode/",
+  "notes": [
+   "Correct: DD_LOG_LEVEL=debug sets the containerized Agent's log level.",
+   "DD_DEBUG is not the Agent log-level variable.",
+   "Mount options do not change log verbosity."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-065",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Logs",
+  "difficulty": "hard",
+  "q": "The Linux Agent installer failed partway through. Where is the installer's log written?",
+  "options": [
+   "/var/log/datadog/agent.log, alongside the runtime logs",
+   "ddagent-install.log in the current working directory",
+   "/etc/datadog-agent/install.log, next to datadog.yaml"
+  ],
+  "answer": 1,
+  "explanation": "On Linux the install script writes ddagent-install.log to the current working directory; the Agent's runtime logs go to /var/log/datadog/.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-log-files/",
+  "notes": [
+   "agent.log is the runtime log, not the installer log.",
+   "Correct: the Linux install script writes ddagent-install.log in the current directory.",
+   "/etc/datadog-agent holds configuration, not installer logs."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-066",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "easy",
+  "q": "On Linux, where is the Agent's main configuration file?",
+  "options": [
+   "/opt/datadog-agent/etc/datadog.yaml",
+   "/etc/datadog-agent/datadog.yaml",
+   "/var/lib/datadog/datadog.yaml"
+  ],
+  "answer": 1,
+  "explanation": "Linux uses /etc/datadog-agent/datadog.yaml; /opt/datadog-agent/etc/datadog.yaml is the macOS path.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "/opt/datadog-agent/etc/datadog.yaml is the macOS path.",
+   "Correct: Linux uses /etc/datadog-agent/datadog.yaml.",
+   "/var/lib/datadog is not the config location."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-067",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "medium",
+  "q": "On Windows, where is the Agent's datadog.yaml?",
+  "options": [
+   "%ProgramFiles%\\Datadog\\Datadog Agent\\datadog.yaml",
+   "%ProgramData%\\Datadog\\datadog.yaml",
+   "%AppData%\\Datadog\\datadog.yaml"
+  ],
+  "answer": 1,
+  "explanation": "Windows configuration lives in %ProgramData%\\Datadog, including datadog.yaml and the conf.d directory.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "Program Files holds binaries, not configuration.",
+   "Correct: datadog.yaml is in %ProgramData%\\Datadog.",
+   "%AppData% is per-user and not used by the Agent."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-068",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "medium",
+  "q": "A Linux host shows:\n\n$ ls /etc/datadog-agent/conf.d/redisdb.d/\nauto_conf.yaml  conf.yaml.example\n\nRedis runs directly on this host (no containers). What is the standard way to enable the Redis check?",
+  "options": [
+   "Copy conf.yaml.example to conf.yaml, edit it, restart",
+   "Edit auto_conf.yaml with the connection settings, because it is picked up live with no restart needed",
+   "Add redisdb: true under the integrations section of datadog.yaml"
+  ],
+  "answer": 0,
+  "explanation": "conf.yaml.example is the template for each check; renaming or copying it to conf.yaml enables the check, and a restart applies it. auto_conf.yaml is for Autodiscovery.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "Correct: copy conf.yaml.example to conf.yaml, edit it and restart the Agent.",
+   "auto_conf.yaml is an Autodiscovery template for containers, not host config.",
+   "Integrations are not enabled with a flag in datadog.yaml."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-069",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "hard",
+  "q": "A host shows:\n\n$ ls /etc/datadog-agent/conf.d/cpu.d/\nconf.yaml.default\n\nWhat is this file's role?",
+  "options": [
+   "It enables the CPU check unless another config for it exists",
+   "It is an example template only and has no effect until it is renamed to conf.yaml",
+   "It holds global default settings that every other check in conf.d inherits"
+  ],
+  "answer": 0,
+  "explanation": "Files with a .default suffix enable core checks (CPU, memory, uptime, ...) out of the box; they're ignored when another configuration for that check is present.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "Correct: .default files enable core checks and are ignored if another config exists.",
+   "conf.yaml.example is the inactive template; .default files are active.",
+   "conf.yaml.default applies only to its own check, not to all checks."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-070",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "easy",
+  "q": "A Redis container starts on a host running the containerized Agent and is monitored automatically without any user configuration. Which file in conf.d/redisdb.d/ makes this possible?",
+  "options": [
+   "conf.yaml.default",
+   "metrics.yaml",
+   "auto_conf.yaml"
+  ],
+  "answer": 2,
+  "explanation": "auto_conf.yaml files are Autodiscovery templates that apply the integration to matching containers automatically.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "conf.yaml.default enables core host checks such as CPU.",
+   "metrics.yaml lists default JMX beans for JMX checks.",
+   "Correct: auto_conf.yaml is the Autodiscovery template applied to matching containers."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-071",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "hard",
+  "q": "In which kind of integration directory would you find a metrics.yaml file, and what does it contain?",
+  "options": [
+   "In every check; it lists the custom metrics the check is billed for",
+   "In JMX-based checks; it lists the MBeans collected by default",
+   "In DogStatsD's directory; it maps StatsD metric types to Datadog types"
+  ],
+  "answer": 1,
+  "explanation": "metrics.yaml exists only in JMX checks and lists the default beans, so they don't have to be listed manually in labels or annotations.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "metrics.yaml is not a billing list and exists only in JMX checks.",
+   "Correct: JMX check folders include metrics.yaml listing beans collected by default.",
+   "DogStatsD has no metrics.yaml type mapping file."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-072",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "hard",
+  "q": "A custom check is not running. The files are:\n\n/etc/datadog-agent/checks.d/disk_latency.py\n/etc/datadog-agent/conf.d/disklatency.yaml\n\nWhat is the most likely cause?",
+  "options": [
+   "Custom check Python files must be placed in conf.d, not in checks.d",
+   "The YAML name must match the .py name",
+   "The configuration file must be named conf.yaml.default for custom checks"
+  ],
+  "answer": 1,
+  "explanation": "For a custom Agent check, checks.d/<name>.py and conf.d/<name>.yaml must use the same name, or the Agent won't pair the code with its configuration.",
+  "ref": "https://docs.datadoghq.com/developers/custom_checks/write_agent_check/",
+  "notes": [
+   "checks.d is the correct place for custom check Python files.",
+   "Correct: the check file and its config file names must match.",
+   "Custom checks use <name>.yaml in conf.d, not conf.yaml.default."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-073",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "easy",
+  "q": "You add a second instance to conf.d/nginx.d/conf.yaml while the Agent is running. When does the Agent start collecting from it?",
+  "options": [
+   "On the next 15-second check run",
+   "Within one minute, when the Agent rescans conf.d",
+   "After the Agent is restarted"
+  ],
+  "answer": 2,
+  "explanation": "Changes to datadog.yaml and check configuration files take effect when the Agent next starts, so a restart is required.",
+  "ref": "https://docs.datadoghq.com/getting_started/integrations/",
+  "notes": [
+   "Checks do not pick up new config on their next run.",
+   "The Agent does not rescan conf.d every minute for static configs.",
+   "Correct: config file changes take effect after an Agent restart."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-074",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "medium",
+  "q": "Where can you see every datadog.yaml option along with its default value?",
+  "options": [
+   "In the output of the datadog-agent configcheck command",
+   "In the shipped datadog.yaml.example file",
+   "In the Running Checks section of the datadog-agent status output"
+  ],
+  "answer": 1,
+  "explanation": "The example datadog.yaml documents every option with its default, commented out; configcheck shows check configurations, not the full set of Agent defaults.",
+  "ref": "https://docs.datadoghq.com/agent/supported_platforms/linux/",
+  "notes": [
+   "configcheck shows check configurations, not every datadog.yaml option.",
+   "Correct: datadog.yaml.example lists every option with its default.",
+   "status shows runtime state, not configuration defaults."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-075",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "hard",
+  "q": "After this edit to datadog.yaml, APM is not configured as intended:\n\nlogs_enabled: true\napm_config:\nenabled: true\n\nWhat is the problem?",
+  "options": [
+   "apm_config must be written on a single line as apm_config.enabled: true",
+   "enabled is not indented under apm_config",
+   "logs_enabled and apm_config cannot both be set in the same datadog.yaml file"
+  ],
+  "answer": 1,
+  "explanation": "YAML uses space indentation to define nesting; enabled must be indented under apm_config to belong to it. Datadog recommends validating config files with a YAML linter.",
+  "ref": "https://docs.datadoghq.com/getting_started/integrations/",
+  "notes": [
+   "Nested YAML is valid; dotted single-line keys are not required.",
+   "Correct: enabled must be indented under apm_config to be nested.",
+   "Both keys can coexist in the same datadog.yaml."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-076",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Troubleshooting Scenarios",
+  "difficulty": "medium",
+  "q": "After a firewall change, a Linux host's Agent is running but no new data reaches Datadog. You want the Agent itself to test whether it can reach Datadog's endpoints. Which command should you run?",
+  "options": [
+   "sudo datadog-agent health",
+   "sudo datadog-agent diagnose",
+   "sudo datadog-agent configcheck"
+  ],
+  "answer": 1,
+  "explanation": "The diagnose subcommand runs the Agent's connectivity diagnostics against Datadog endpoints. health only reports whether Agent components are healthy, and configcheck lists loaded check configurations.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "health reports whether Agent components are healthy, not connectivity to Datadog.",
+   "Correct: diagnose runs connectivity diagnostics to Datadog.",
+   "configcheck lists loaded check configurations."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-077",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "medium",
+  "q": "Which datadog.yaml block correctly sends the Agent's HTTPS traffic through proxy.corp.example:3128?",
+  "options": [
+   "https_proxy: proxy.corp.example:3128",
+   "proxy:\n  https: http://proxy.corp.example:3128",
+   "proxy_config:\n  url: proxy.corp.example:3128"
+  ],
+  "answer": 1,
+  "explanation": "Proxy settings go under the proxy key with https, http and no_proxy children; https matters most because most Agent traffic is HTTPS.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/proxy/",
+  "notes": [
+   "https_proxy is not a top-level datadog.yaml key.",
+   "Correct: the proxy block takes https, http and no_proxy children.",
+   "proxy_config is not a datadog.yaml option."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-078",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "hard",
+  "q": "datadog.yaml sets proxy.https to http://proxy-a:3128, and the Agent's environment also sets DD_PROXY_HTTPS=http://proxy-b:3128. Which proxy does the Agent use for HTTPS?",
+  "options": [
+   "proxy-b",
+   "proxy-a",
+   "Neither; conflicting settings make the Agent connect directly"
+  ],
+  "answer": 0,
+  "explanation": "For proxy settings, Datadog documents that environment variables (DD_PROXY_HTTPS, DD_PROXY_HTTP, DD_PROXY_NO_PROXY) override the datadog.yaml values.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/proxy/",
+  "notes": [
+   "Correct: DD_* environment variables override datadog.yaml settings.",
+   "datadog.yaml loses when the matching environment variable is set.",
+   "The Agent does not fall back to a direct connection on conflict."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-079",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "easy",
+  "q": "Which datadog.yaml setting must be true for the host Agent to collect logs?",
+  "options": [
+   "logs_enabled",
+   "use_dogstatsd",
+   "log_level"
+  ],
+  "answer": 0,
+  "explanation": "logs_enabled: true turns on the Logs Agent; log_level only controls the Agent's own log verbosity.",
+  "ref": "https://docs.datadoghq.com/agent/logs/",
+  "notes": [
+   "Correct: logs_enabled: true turns on log collection.",
+   "use_dogstatsd controls the DogStatsD server, not logs.",
+   "log_level controls the Agent's own log verbosity."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-080",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "medium",
+  "q": "Which datadog.yaml snippet controls whether the Agent collects APM traces?",
+  "options": [
+   "process_config:\n  enabled: true",
+   "logs_config:\n  apm: true",
+   "apm_config:\n  enabled: true"
+  ],
+  "answer": 2,
+  "explanation": "Trace collection is controlled by apm_config.enabled (DD_APM_ENABLED in containers), which defaults to true; process_config controls process collection.",
+  "ref": "https://docs.datadoghq.com/containers/docker/apm/",
+  "notes": [
+   "process_config controls process collection.",
+   "logs_config has no apm option; it configures log collection.",
+   "Correct: apm_config.enabled controls trace collection."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-081",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Agent Config Files",
+  "difficulty": "medium",
+  "q": "The http_check directory contains backend.yaml and frontend.yaml, both valid YAML with instances. How does the Agent treat them?",
+  "options": [
+   "It loads only conf.yaml and ignores both files",
+   "Both files are loaded and all instances run",
+   "It loads whichever file is first alphabetically and ignores the other"
+  ],
+  "answer": 1,
+  "explanation": "The Agent loads every valid YAML file in conf.d/<check>.d/, letting you split a configuration across files. (The alphabetical rule applies only to duplicate log sources.)",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "The Agent loads all valid YAML files in the check folder, not only conf.yaml.",
+   "Correct: every valid YAML file in conf.d/<check>.d/ is loaded.",
+   "Alphabetical precedence only applies to duplicate log sources."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-082",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Troubleshooting Scenarios",
+  "difficulty": "medium",
+  "q": "The Agent was installed 15 minutes ago, but the host sends no data to Datadog. What should be checked FIRST?",
+  "options": [
+   "Whether the latest Agent package is installed",
+   "The output of datadog-agent status",
+   "Whether the host appears in the Host Map"
+  ],
+  "answer": 1,
+  "explanation": "The status output shows whether the API key is valid, which site the Agent uses and whether the forwarder is sending successfully, which covers the most common causes.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/",
+  "notes": [
+   "Version checks come later; status shows the actual failure first.",
+   "Correct: status shows API key validity, site and forwarder errors.",
+   "The Host Map only shows the result, not why data is missing."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-083",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Troubleshooting Scenarios",
+  "difficulty": "medium",
+  "q": "An organization is on the EU1 site. The Agent's API key is copied correctly, but datadog-agent status reports the API key as invalid. datadog.yaml has no site setting. What is the fix?",
+  "options": [
+   "Generate an application key and add it to datadog.yaml",
+   "Set hostname to the EU region name",
+   "Set site: datadoghq.eu and restart the Agent"
+  ],
+  "answer": 2,
+  "explanation": "Without site, the Agent reports to datadoghq.com (US1), where an EU1 key is not valid. Each site is a separate instance, so the site must match the organization.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/site/",
+  "notes": [
+   "The Agent does not use application keys.",
+   "hostname does not choose the Datadog site.",
+   "Correct: set site: datadoghq.eu (or DD_SITE) and restart."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-084",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Troubleshooting Scenarios",
+  "difficulty": "medium",
+  "q": "An integration you configured does not appear at all under Running Checks in datadog-agent status. Which command best shows whether the Agent loaded its configuration?",
+  "options": [
+   "datadog-agent health",
+   "datadog-agent configcheck",
+   "datadog-agent version"
+  ],
+  "answer": 1,
+  "explanation": "configcheck lists every configuration the Agent loaded and resolved; if the check is missing, the file is misplaced, misnamed or invalid.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "health does not list loaded configurations.",
+   "Correct: configcheck shows whether the configuration was loaded and resolved.",
+   "version only prints version information."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-085",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Troubleshooting Scenarios",
+  "difficulty": "medium",
+  "q": "datadog-agent status lists the mysql check under Running Checks with an error on instance #0. What is the best next step to see the detailed error?",
+  "options": [
+   "Run sudo -u dd-agent -- datadog-agent check mysql",
+   "Run datadog-agent hostname",
+   "Delete conf.yaml.default from the mysql.d directory"
+  ],
+  "answer": 0,
+  "explanation": "Running the check manually as dd-agent prints its full output, including the error or traceback for the failing instance.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/agent_check_status/",
+  "notes": [
+   "Correct: running the check as dd-agent shows its full error output.",
+   "hostname is unrelated to a check's instance error.",
+   "Deleting a config file does not reveal why the instance is failing."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-086",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Troubleshooting Scenarios",
+  "difficulty": "medium",
+  "q": "Graphs for one host show gaps and delayed points, and monitors trigger unexpectedly. The Clocks section of datadog-agent status shows a large NTP offset. What should be done?",
+  "options": [
+   "Sync the host clock with NTP (outbound UDP 123)",
+   "Reduce min_collection_interval on every check so points are sent more often",
+   "Increase forwarder_retry_queue_payloads_max_size so delayed points are kept longer"
+  ],
+  "answer": 0,
+  "explanation": "Clock drift distorts metric timestamps; the fix is NTP synchronization, which needs outbound UDP 123.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/ntp/",
+  "notes": [
+   "Correct: sync the clock with NTP; the Agent needs outbound UDP 123.",
+   "Collection frequency does not fix wrong timestamps.",
+   "A bigger retry queue does not correct clock drift."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-087",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Troubleshooting Scenarios",
+  "difficulty": "hard",
+  "q": "The Agent should tail /var/log/myapp/app.log, but no logs arrive and the Agent reports permission denied. The file is owned by root with mode 600. What is the recommended fix?",
+  "options": [
+   "Set log_level: debug so the Logs Agent retries the file with higher privileges",
+   "Grant the Agent user read access to the file and execute access to its directory",
+   "Set logs_enabled: false and back to true, then restart the Agent"
+  ],
+  "answer": 1,
+  "explanation": "The Agent does not run as root, so its user needs read permission on tailed files (and execute on the directories). Changing log_level or toggling logs_enabled does not change file permissions.",
+  "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/",
+  "notes": [
+   "log_level changes verbosity, not file permissions.",
+   "Correct: the Agent user needs read access to the file (and execute on its directories).",
+   "Toggling logs_enabled does not change file permissions."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-088",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Troubleshooting Scenarios",
+  "difficulty": "medium",
+  "q": "The Agent fails with \"Permission denied: '/var/log/datadog/...'\" when writing its own logs. Which command fixes the ownership?",
+  "options": [
+   "sudo chmod -R 777 /etc/datadog-agent/",
+   "sudo chown -R root:root /var/log/datadog/",
+   "sudo chown -R dd-agent:dd-agent /var/log/datadog/"
+  ],
+  "answer": 2,
+  "explanation": "Agent log files and their directory must be owned by dd-agent; Datadog's fix is chown -R dd-agent:dd-agent /var/log/datadog/ followed by an Agent restart.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/permissions/",
+  "notes": [
+   "chmod 777 on the config directory is insecure and does not fix log ownership.",
+   "Root ownership is the cause; logs must be owned by dd-agent.",
+   "Correct: chown -R dd-agent:dd-agent /var/log/datadog/, then restart."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-089",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Troubleshooting Scenarios",
+  "difficulty": "medium",
+  "q": "datadog-agent status shows forwarder transactions failing with connection timeouts. A firewall sits between the host and the internet. Which outbound rule is most likely missing?",
+  "options": [
+   "UDP 8125 to the Datadog intake endpoints",
+   "TCP 443 to Datadog",
+   "TCP 8126 to the Datadog intake endpoints"
+  ],
+  "answer": 1,
+  "explanation": "The Agent sends metrics, traces and logs over HTTPS on TCP 443. 8125 and 8126 are local ports for DogStatsD and APM on the host, not outbound destinations.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/network/",
+  "notes": [
+   "8125 UDP is the local DogStatsD port, not outbound to Datadog.",
+   "Correct: the Agent sends data to Datadog over HTTPS on TCP 443.",
+   "8126 is the local APM receiver port."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "agent-090",
+  "topic": "Troubleshooting the Agent",
+  "subtopic": "Troubleshooting Scenarios",
+  "difficulty": "hard",
+  "q": "An engineer set logs_enabled: true in datadog.yaml and configured a log source an hour ago. Live Tail is empty, and datadog-agent status shows the Logs Agent is not running. What is the most likely cause?",
+  "options": [
+   "Logs can only be collected by the containerized Agent",
+   "logs_enabled only takes effect after the next 15-second check run",
+   "The Agent was not restarted after datadog.yaml was edited"
+  ],
+  "answer": 2,
+  "explanation": "datadog.yaml changes apply only when the Agent next starts, so the Logs Agent stays off until a restart.",
+  "ref": "https://docs.datadoghq.com/agent/troubleshooting/",
+  "notes": [
+   "Logs can be collected by host Agents too.",
+   "datadog.yaml settings are not applied on check runs.",
+   "Correct: datadog.yaml changes require an Agent restart."
+  ],
+  "verified": "2026-10"
+ }
+]

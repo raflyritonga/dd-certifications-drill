@@ -1,0 +1,1682 @@
+[
+ {
+  "id": "data-001",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "easy",
+  "q": "Why does DogStatsD use UDP as its default transport?",
+  "options": [
+   "UDP guarantees that every metric reaches the Agent in the order it was sent.",
+   "UDP is fire-and-forget, so the application sends metrics and continues without waiting for a response.",
+   "UDP keeps a persistent connection open so metrics can be retried if the Agent restarts."
+  ],
+  "answer": 1,
+  "explanation": "UDP is connectionless: the application does not wait for an acknowledgment and is not blocked if DogStatsD is unavailable. Guaranteed, ordered delivery is a TCP property, not UDP.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "Wrong: guaranteed, ordered delivery is a TCP property; UDP gives no delivery or ordering guarantee.",
+   "Correct: with UDP the app sends and resumes work without waiting, and is not interrupted if DogStatsD is down.",
+   "Wrong: UDP is connectionless; it keeps no persistent connection and does not retry."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-002",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "easy",
+  "q": "By default, on which port and protocol does the Agent's DogStatsD server listen?",
+  "options": [
+   "8126/TCP",
+   "8125/TCP",
+   "8125/UDP"
+  ],
+  "answer": 2,
+  "explanation": "DogStatsD listens on UDP port 8125 by default. 8126/TCP is the APM trace receiver.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "Wrong: 8126/TCP is the APM trace receiver (tracing and profiler).",
+   "Wrong: DogStatsD uses UDP on 8125, not TCP.",
+   "Correct: DogStatsD is enabled by default on UDP port 8125 in Agent v6+."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-003",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "easy",
+  "q": "How often does DogStatsD aggregate received values and flush them as a single point per metric?",
+  "options": [
+   "Every 15 seconds",
+   "Every 10 seconds",
+   "Every 60 seconds"
+  ],
+  "answer": 1,
+  "explanation": "DogStatsD aggregates each metric into one point per 10-second flush interval. 15 seconds is the default collection interval for Agent checks, a common mix-up.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "Wrong: 15 seconds is the default Agent check collection interval.",
+   "Correct: DogStatsD uses a 10-second flush interval.",
+   "Wrong: 60 seconds is not the DogStatsD flush interval."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-004",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "medium",
+  "q": "An application sends this DogStatsD datagram:\n\npage.views:1|c|#env:prod,page:home\n\nWhich metric type is being submitted?",
+  "options": [
+   "COUNT",
+   "GAUGE",
+   "SET"
+  ],
+  "answer": 0,
+  "explanation": "The type field after the first pipe is `c`, which is COUNT. A gauge uses `g` and a set uses `s`.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/datagram_shell/",
+  "notes": [
+   "Correct: the type field `c` means COUNT.",
+   "Wrong: a GAUGE uses the type `g`.",
+   "Wrong: a SET uses the type `s`."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-005",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "medium",
+  "q": "In the datagram `api.latency:250|ms|@0.5|#env:staging,service:cart`, what does `@0.5` specify?",
+  "options": [
+   "The value is measured in 0.5-second units",
+   "The median (p50) percentile should be computed",
+   "A sample rate: the value is sent for about half of the events"
+  ],
+  "answer": 2,
+  "explanation": "In the DogStatsD format `<NAME>:<VALUE>|<TYPE>|@<SAMPLE_RATE>|#<TAGS>`, the `@` field is the sample rate between 0 and 1. The unit comes from the type (`ms`), not from the `@` field.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/datagram_shell/",
+  "notes": [
+   "Wrong: the unit comes from the type `ms`; the `@` field does not set units.",
+   "Wrong: percentiles are set by histogram_percentiles, not by the `@` field.",
+   "Correct: `@<SAMPLE_RATE>` is a 0 to 1 sample rate; 0.5 means about half the events are sent."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-006",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "medium",
+  "q": "Which DogStatsD datagram type character submits a DISTRIBUTION metric?",
+  "options": [
+   "h",
+   "d",
+   "s"
+  ],
+  "answer": 1,
+  "explanation": "`d` is DISTRIBUTION. `h` is HISTOGRAM (Agent-side aggregation) and `s` is SET.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/datagram_shell/",
+  "notes": [
+   "Wrong: `h` is HISTOGRAM, aggregated Agent-side.",
+   "Correct: `d` submits a DISTRIBUTION, aggregated server-side.",
+   "Wrong: `s` is SET, which counts unique values."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-007",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "medium",
+  "q": "During one flush interval, DogStatsD receives `users.online:<id>|s` with the IDs 101, 102, 101, 103, 102. What value is reported for that interval?",
+  "options": [
+   "5",
+   "509",
+   "3"
+  ],
+  "answer": 2,
+  "explanation": "A SET counts the number of unique values in the flush interval: 101, 102, 103 = 3. It is stored in-app as a GAUGE.",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Wrong: 5 is the number of packets received, not unique values.",
+   "Wrong: 509 is the sum of the IDs, which is not what a SET reports.",
+   "Correct: a SET reports the number of unique values: 101, 102, 103 = 3."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-008",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "easy",
+  "q": "Which pair of datadog.yaml parameters controls whether DogStatsD runs and which port it listens on?",
+  "options": [
+   "`use_dogstatsd` and `dogstatsd_port`",
+   "`dogstatsd_non_local_traffic` and `dogstatsd_socket`",
+   "`apm_config.enabled` and `receiver_port`"
+  ],
+  "answer": 0,
+  "explanation": "`use_dogstatsd` (default true) turns the Agent's DogStatsD server on or off, and `dogstatsd_port` (default 8125) sets its UDP port. `receiver_port` belongs to the APM trace receiver.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "Correct: `use_dogstatsd` (default true) enables the server and `dogstatsd_port` (default 8125) sets its port.",
+   "Wrong: these control accepting non-local traffic and a Unix socket path, not on/off plus UDP port.",
+   "Wrong: these configure the APM trace Agent and its 8126 receiver."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-009",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "medium",
+  "q": "Applications on other hosts in the same VPC send DogStatsD metrics to a host Agent, but nothing arrives. The Agent's local apps work fine. Which datadog.yaml setting must be enabled?",
+  "options": [
+   "`apm_non_local_traffic: true`",
+   "`dogstatsd_non_local_traffic: true`",
+   "`use_dogstatsd: true`"
+  ],
+  "answer": 1,
+  "explanation": "DogStatsD binds to localhost by default; `dogstatsd_non_local_traffic: true` makes it listen for packets from other hosts. `use_dogstatsd` is already on (local apps work), and the APM setting affects port 8126 only.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/network/",
+  "notes": [
+   "Wrong: this is not the DogStatsD setting; APM non-local traffic only affects the 8126 trace receiver.",
+   "Correct: DogStatsD only listens on localhost until `dogstatsd_non_local_traffic: true` is set.",
+   "Wrong: DogStatsD is already enabled, since local apps work."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-010",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "medium",
+  "q": "The Agent runs as a Docker container. Application containers send custom metrics to it over UDP 8125. Which environment variable lets the Agent container accept those packets?",
+  "options": [
+   "DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true",
+   "DD_APM_NON_LOCAL_TRAFFIC=true",
+   "DD_DOGSTATSD_PORT=8126"
+  ],
+  "answer": 0,
+  "explanation": "DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true is the container equivalent of `dogstatsd_non_local_traffic`. DD_APM_NON_LOCAL_TRAFFIC opens the trace receiver, not DogStatsD.",
+  "ref": "https://docs.datadoghq.com/containers/docker/",
+  "notes": [
+   "Correct: this makes the Agent container listen for DogStatsD packets from other containers.",
+   "Wrong: this opens the APM trace receiver (8126) to other containers, not DogStatsD.",
+   "Wrong: 8126 is the APM port; moving DogStatsD there does not allow non-local traffic."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-011",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "medium",
+  "q": "In Kubernetes, the Agent runs as a DaemonSet. How should an application pod find the DogStatsD server on its own node?",
+  "options": [
+   "Set DD_HOSTNAME to localhost in the application container",
+   "Set DD_SITE to the node name through the Downward API",
+   "Set DD_AGENT_HOST from `status.hostIP` through the Downward API"
+  ],
+  "answer": 2,
+  "explanation": "Pass the node IP with `DD_AGENT_HOST` using a `fieldRef` on `status.hostIP`, so the client sends to the Agent on the same node. DD_SITE selects the Datadog region, not the Agent address.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "Wrong: DD_HOSTNAME sets the Agent's reported hostname; localhost inside a pod is the pod itself.",
+   "Wrong: DD_SITE selects the Datadog region, not the Agent address.",
+   "Correct: inject the node IP as DD_AGENT_HOST via fieldRef status.hostIP so clients reach the node's Agent."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-012",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "easy",
+  "q": "Which capability does DogStatsD add that a plain StatsD server does not provide?",
+  "options": [
+   "Tags on metrics",
+   "Sending metrics over UDP",
+   "Counter metrics"
+  ],
+  "answer": 0,
+  "explanation": "DogStatsD extends StatsD with tags, histograms, distributions, service checks, and events. UDP transport and counters already exist in plain StatsD.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "Correct: tagging is one of DogStatsD's Datadog-specific extensions, along with histograms, service checks and events.",
+   "Wrong: plain StatsD already sends metrics over UDP.",
+   "Wrong: counters are a standard StatsD metric type."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-013",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "medium",
+  "q": "An application already uses a generic StatsD client. The team now wants histograms and `env`/`service` tags on its metrics. What is the right approach?",
+  "options": [
+   "Keep the StatsD client and put the tags inside the metric name",
+   "Switch to a DogStatsD client library, such as `datadog` for Python",
+   "Change `dogstatsd_port` to 8126 so the Agent treats the traffic as DogStatsD"
+  ],
+  "answer": 1,
+  "explanation": "Any compliant StatsD client works with DogStatsD but does not include the Datadog-specific extensions such as tags and histograms; a DogStatsD client exposes them. Putting tags in the name creates separate metric names, not tags.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "Wrong: tags in the name create many separate metric names instead of tags.",
+   "Correct: a DogStatsD client exposes the Datadog extensions such as tags and histograms.",
+   "Wrong: 8126 is the APM receiver; the port does not change which protocol features a client supports."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-014",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "easy",
+  "q": "Which DogStatsD client library is maintained by Datadog for Go applications?",
+  "options": [
+   "dogstatsd-ruby",
+   "ddtrace",
+   "datadog-go"
+  ],
+  "answer": 2,
+  "explanation": "`datadog-go` is the Go DogStatsD client. `dogstatsd-ruby` is the Ruby client, and `ddtrace` is a tracing library for APM, not a metrics client.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "Wrong: dogstatsd-ruby is the Ruby DogStatsD client.",
+   "Wrong: ddtrace is a tracing (APM) library, not a metrics client.",
+   "Correct: datadog-go is Datadog's Go DogStatsD client."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-015",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "medium",
+  "q": "How does DogStatsD handle timer (`ms`) metrics?",
+  "options": [
+   "They are stored as a GAUGE holding the last duration",
+   "They are implemented as histograms and produce histogram aggregates",
+   "They are converted into DISTRIBUTION metrics and aggregated server-side"
+  ],
+  "answer": 1,
+  "explanation": "In DogStatsD, TIMER is an implementation of HISTOGRAM, so timers generate the same aggregates (avg, count, median, 95percentile, max).",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/dogstatsd_metrics_submission/",
+  "notes": [
+   "Wrong: timers are not stored as a last-value gauge.",
+   "Correct: DogStatsD TIMER is an implementation of HISTOGRAM and yields the histogram aggregates.",
+   "Wrong: distributions are a separate type (`d`) aggregated server-side; timers stay histograms."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-016",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "medium",
+  "q": "Besides metrics, which two other kinds of data can DogStatsD submit to Datadog?",
+  "options": [
+   "Logs and traces",
+   "Events and service checks",
+   "Profiles and RUM sessions"
+  ],
+  "answer": 1,
+  "explanation": "DogStatsD accepts events (`_e{...}`) and service checks (`_sc|...`) in addition to metrics. Traces go to the trace receiver on 8126, and logs use the logs pipeline.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/datagram_shell/",
+  "notes": [
+   "Wrong: traces go to the trace receiver on 8126 and logs use the logs pipeline.",
+   "Correct: DogStatsD also accepts events (`_e`) and service checks (`_sc`).",
+   "Wrong: profiles go through the trace Agent and RUM is collected by browser/mobile SDKs."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-017",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "hard",
+  "q": "An application sends this DogStatsD datagram:\n\n_sc|app.can_connect|2|#env:prod\n\nWhat status does the service check report?",
+  "options": [
+   "WARNING",
+   "CRITICAL",
+   "UNKNOWN"
+  ],
+  "answer": 1,
+  "explanation": "Service check status integers are 0 = OK, 1 = WARNING, 2 = CRITICAL, 3 = UNKNOWN, so `2` is CRITICAL.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/datagram_shell/",
+  "notes": [
+   "Wrong: WARNING is status 1.",
+   "Correct: status 2 means CRITICAL.",
+   "Wrong: UNKNOWN is status 3."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-018",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "hard",
+  "q": "An application emits `orders.placed:1|c|@0.25`, sending only a sampled subset of events. In one flush interval DogStatsD receives 10 of these packets. About what count does it report for that interval?",
+  "options": [
+   "10",
+   "2.5",
+   "40"
+  ],
+  "answer": 2,
+  "explanation": "For COUNT metrics, DogStatsD multiplies received values by 1/sample_rate to correct for sampling: 10 x (1/0.25) = 40.",
+  "ref": "https://docs.datadoghq.com/metrics/custom_metrics/dogstatsd_metrics_submission/",
+  "notes": [
+   "Wrong: 10 ignores the sample-rate correction applied to COUNT.",
+   "Wrong: 2.5 multiplies by the sample rate instead of dividing by it.",
+   "Correct: COUNT values are multiplied by 1/sample_rate: 10 x 4 = 40."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-019",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "hard",
+  "q": "The Agent runs in its own container. An application in a separate container sends DogStatsD metrics to `localhost:8125`, and none arrive in Datadog. What should be checked FIRST?",
+  "options": [
+   "That the app targets the Agent container's address and the Agent accepts non-local DogStatsD traffic",
+   "That outbound TCP port 8126 is open to Datadog",
+   "That `log_level` is set to `debug` in the Agent configuration"
+  ],
+  "answer": 0,
+  "explanation": "Inside the app container, `localhost` is the app itself, not the Agent. The app must send to the Agent's address, and the Agent must have DogStatsD non-local traffic enabled. Port 8126 is local APM traffic, not an outbound Datadog port.",
+  "ref": "https://docs.datadoghq.com/containers/docker/",
+  "notes": [
+   "Correct: localhost in the app container is the app itself; target the Agent's address and enable non-local DogStatsD.",
+   "Wrong: 8126 is a local APM receiver port, not an outbound port to Datadog, and is unrelated to DogStatsD.",
+   "Wrong: debug logging adds detail but does not fix packets sent to the wrong address."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-020",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "DogStatsD",
+  "difficulty": "medium",
+  "q": "An admin changes `dogstatsd_port` from 8125 to 8200 in datadog.yaml and restarts the Agent. Custom metrics stop arriving. What is the most likely cause?",
+  "options": [
+   "The client libraries still send to port 8125",
+   "Port 8200/TCP must also be opened outbound to Datadog",
+   "DogStatsD only supports port 8125, so the Agent disabled it"
+  ],
+  "answer": 0,
+  "explanation": "When you change the DogStatsD port, you must update the client configuration to match. The port is local to the Agent and does not affect outbound traffic to Datadog.",
+  "ref": "https://docs.datadoghq.com/developers/dogstatsd/",
+  "notes": [
+   "Correct: after changing the Agent port, clients must be configured to send to the same UDP port.",
+   "Wrong: dogstatsd_port is local to the host; outbound traffic to Datadog uses HTTPS 443.",
+   "Wrong: dogstatsd_port can be overridden; the Agent does not disable DogStatsD."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-021",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "easy",
+  "q": "For a GAUGE metric submitted several times within one flush interval, which value does Datadog keep for that interval?",
+  "options": [
+   "The sum of all values",
+   "The last value submitted",
+   "The average of all values"
+  ],
+  "answer": 1,
+  "explanation": "A GAUGE represents a snapshot, so the last value reported in the interval is kept. Summing is COUNT behavior.",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Wrong: summing values in the interval is COUNT behavior.",
+   "Correct: a GAUGE keeps the last value submitted in the interval.",
+   "Wrong: the Agent does not average gauge values within an interval."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-022",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "easy",
+  "q": "Which metric type adds up all values submitted during a flush interval?",
+  "options": [
+   "GAUGE",
+   "SET",
+   "COUNT"
+  ],
+  "answer": 2,
+  "explanation": "A COUNT reports the total of the values submitted during the interval. A GAUGE keeps the last value and a SET counts unique values.",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Wrong: a GAUGE keeps the last value.",
+   "Wrong: a SET counts unique values.",
+   "Correct: a COUNT sums all values submitted in the interval."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-023",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "medium",
+  "q": "A RATE metric records 30 event occurrences during a 10-second interval. What value represents the RATE for that interval?",
+  "options": [
+   "3 per second",
+   "30",
+   "300"
+  ],
+  "answer": 0,
+  "explanation": "RATE is the number of occurrences per second: 30 / 10 s = 3. 30 would be the COUNT for the interval.",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Correct: RATE is occurrences per second: 30 / 10 s = 3.",
+   "Wrong: 30 is the raw COUNT for the interval.",
+   "Wrong: 300 multiplies by the interval instead of dividing."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-024",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "medium",
+  "q": "The values 2, 4, 4, 6, 4 are submitted for a COUNT metric within one 10-second flush interval. What value does the interval report?",
+  "options": [
+   "4",
+   "20",
+   "2"
+  ],
+  "answer": 1,
+  "explanation": "COUNT sums the values: 2+4+4+6+4 = 20. 4 would be the last value (GAUGE behavior), and 2 per second would be the RATE.",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Wrong: 4 is the last value, which is GAUGE behavior.",
+   "Correct: COUNT sums the values: 2+4+4+6+4 = 20.",
+   "Wrong: 2 per second would be the RATE (20 / 10 s), not the COUNT."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-025",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Custom Agent Checks",
+  "difficulty": "easy",
+  "q": "A team needs metrics from an in-house application that no existing Datadog integration supports. They decide to write a custom Agent check. What is a custom Agent check?",
+  "options": [
+   "A user-written Python check class that the Agent runs on its collection schedule to collect data no existing integration covers",
+   "A built-in Datadog integration that is enabled by renaming `conf.yaml.example` to `conf.yaml`",
+   "A monitor that compares a custom metric to a threshold and alerts when it is crossed"
+  ],
+  "answer": 0,
+  "explanation": "Custom checks let you collect metrics and other data from your own systems or applications: a Python class extending `AgentCheck`, placed in checks.d and run by the Agent. For a generally available product, Datadog recommends a full integration instead.",
+  "ref": "https://docs.datadoghq.com/developers/custom_checks/",
+  "notes": [
+   "Correct: a custom check is your own Python class (extending AgentCheck) that the Agent runs to collect data no integration covers.",
+   "Wrong: that describes enabling a built-in Agent-based integration that ships with the Agent.",
+   "Wrong: that describes a metric monitor, which alerts on data rather than collecting it."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-026",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "hard",
+  "q": "Through DogStatsD, a HISTOGRAM metric receives 5 values in one 10-second flush interval. Which value appears in-app for its `.count` aggregate?",
+  "options": [
+   "5",
+   "50",
+   "0.5"
+  ],
+  "answer": 2,
+  "explanation": "The Agent submits the histogram `.count` as a RATE, so the app shows values / interval: 5 / 10 s = 0.5.",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Wrong: 5 is the raw number of values; `.count` is submitted as a per-second RATE.",
+   "Wrong: 50 multiplies by the interval instead of dividing.",
+   "Correct: `.count` is a RATE: 5 values / 10 s = 0.5."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-027",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "easy",
+  "q": "Which of these aggregates is NOT produced by default for a DogStatsD HISTOGRAM metric?",
+  "options": [
+   ".min",
+   ".median",
+   ".95percentile"
+  ],
+  "answer": 0,
+  "explanation": "By default the Agent produces `.avg`, `.count`, `.median`, `.95percentile`, and `.max`. `.min` must be added with `histogram_aggregates`.",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Correct: `.min` is not produced by default; add it with histogram_aggregates.",
+   "Wrong: `.median` is a default histogram aggregate.",
+   "Wrong: `.95percentile` is produced by default via histogram_percentiles."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-028",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "medium",
+  "q": "A team wants `.min` and `.sum` added to every histogram the Agent computes. Which datadog.yaml option should they edit?",
+  "options": [
+   "`histogram_percentiles`",
+   "`histogram_aggregates`",
+   "`dogstatsd_mapper_profiles`"
+  ],
+  "answer": 1,
+  "explanation": "`histogram_aggregates` lists the aggregations generated (default: max, median, avg, count). `histogram_percentiles` controls percentile outputs like 0.95.",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Wrong: histogram_percentiles sets percentile outputs such as 0.95, not min or sum.",
+   "Correct: histogram_aggregates (default max, median, avg, count) accepts min and sum.",
+   "Wrong: mapper profiles rename DogStatsD metrics and tags; they don't add aggregates."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-029",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "medium",
+  "q": "A service runs on 50 hosts, and the team needs an accurate p99 latency across the whole fleet. Which metric type should the service submit?",
+  "options": [
+   "DISTRIBUTION",
+   "HISTOGRAM",
+   "GAUGE"
+  ],
+  "answer": 0,
+  "explanation": "DISTRIBUTION values are aggregated server-side across all hosts, which enables globally accurate percentiles. HISTOGRAM percentiles are computed per Agent.",
+  "ref": "https://docs.datadoghq.com/metrics/distributions/",
+  "notes": [
+   "Correct: DISTRIBUTION aggregates raw values server-side across hosts for globally accurate percentiles.",
+   "Wrong: HISTOGRAM percentiles are computed per Agent, per host.",
+   "Wrong: a GAUGE only keeps one value per interval and cannot give percentiles."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-030",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "hard",
+  "q": "A team graphs `avg:checkout.latency.95percentile{*}` across 20 hosts, where the metric is a DogStatsD HISTOGRAM, and treats the result as the fleet-wide p95. Why is this misleading?",
+  "options": [
+   "Histogram `.95percentile` is stored as a RATE and must be multiplied by the flush interval",
+   "Each Agent computes the percentile from its own host's data, and averaging per-host percentiles does not give a global percentile",
+   "Histogram percentiles are only kept for 15 days, so long time ranges are extrapolated"
+  ],
+  "answer": 1,
+  "explanation": "Histograms are aggregated Agent-side per host, and averaging percentiles is not statistically valid. A DISTRIBUTION aggregates raw values server-side to give true global percentiles.",
+  "ref": "https://docs.datadoghq.com/metrics/distributions/",
+  "notes": [
+   "Wrong: `.95percentile` is a GAUGE; only `.count` is submitted as a RATE.",
+   "Correct: each Agent computes per-host percentiles, and averaging percentiles does not yield a global percentile.",
+   "Wrong: metrics are retained for 15 months; this is not a retention issue."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-031",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "medium",
+  "q": "A metric submitted as a SET through DogStatsD is stored with which in-app type?",
+  "options": [
+   "SET",
+   "COUNT",
+   "GAUGE"
+  ],
+  "answer": 2,
+  "explanation": "DogStatsD SET submissions appear in Datadog as GAUGE, holding the number of unique values per interval.",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Wrong: SET is a submission type only; it has no in-app SET type.",
+   "Wrong: COUNT is not the in-app type for DogStatsD SETs.",
+   "Correct: a DogStatsD SET is stored in-app as a GAUGE of unique values."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-032",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "medium",
+  "q": "A metric submitted as a COUNT through DogStatsD (for example with `increment()`) appears in Datadog with which in-app type?",
+  "options": [
+   "RATE",
+   "COUNT",
+   "GAUGE"
+  ],
+  "answer": 0,
+  "explanation": "DogStatsD COUNTs are stored as RATE in-app so values from different Agents stay comparable. A COUNT submitted directly through the API is stored as COUNT.",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Correct: DogStatsD COUNTs appear as RATE in-app, normalized per second.",
+   "Wrong: COUNT in-app applies to counts submitted through the API, not DogStatsD.",
+   "Wrong: GAUGE is the in-app type for DogStatsD GAUGE and SET."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-033",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "hard",
+  "q": "For a DogStatsD HISTOGRAM, which in-app types do `.avg`/`.median`/`.max` and `.count` use?",
+  "options": [
+   "All are RATE",
+   "`.count` is GAUGE; the others are RATE",
+   "`.avg`, `.median`, `.max` are GAUGE; `.count` is RATE"
+  ],
+  "answer": 2,
+  "explanation": "Histogram statistical aggregates are GAUGE; `.count` is submitted as a RATE (values per second).",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Wrong: only `.count` is a RATE.",
+   "Wrong: it is the reverse: `.count` is RATE and the others are GAUGE.",
+   "Correct: `.avg`, `.median`, `.max` are GAUGE; `.count` is RATE."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-034",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "medium",
+  "q": "A custom script submits a point with timestamp `1767225600.7` (Unix seconds). How does Datadog store the timestamp?",
+  "options": [
+   "As 1767225601, rounded to the nearest second",
+   "As 1767225600700, in milliseconds",
+   "It rejects the point because the timestamp is not an integer"
+  ],
+  "answer": 0,
+  "explanation": "Metric timestamps with fractions of a second are rounded to the nearest whole second. Datadog does not store millisecond precision for metric points.",
+  "ref": "https://docs.datadoghq.com/metrics/",
+  "notes": [
+   "Correct: fractional-second timestamps are rounded to the nearest second.",
+   "Wrong: Datadog does not store metric points at millisecond precision.",
+   "Wrong: the point is not rejected; the timestamp is rounded."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-035",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "hard",
+  "q": "A batch job submits metric points with backdated timestamps. Which point is accepted?",
+  "options": [
+   "A point timestamped 2 hours in the past",
+   "A point timestamped 45 minutes in the past",
+   "A point timestamped 20 minutes in the future"
+  ],
+  "answer": 1,
+  "explanation": "Points can be at most 1 hour in the past and 10 minutes in the future. Only the 45-minutes-ago point is inside that window.",
+  "ref": "https://docs.datadoghq.com/api/latest/metrics/#submit-metrics",
+  "notes": [
+   "Wrong: points older than 1 hour are outside the accepted window.",
+   "Correct: 45 minutes ago is inside the 1 hour past limit.",
+   "Wrong: points more than 10 minutes in the future are not accepted."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-036",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "easy",
+  "q": "How long does Datadog retain metric data?",
+  "options": [
+   "30 days",
+   "13 months",
+   "15 months"
+  ],
+  "answer": 2,
+  "explanation": "Metrics are retained for 15 months.",
+  "ref": "https://docs.datadoghq.com/developers/guide/data-collection-resolution-retention/",
+  "notes": [
+   "Wrong: 30 days is not the metric retention period.",
+   "Wrong: 13 months is a distractor; metrics are kept longer.",
+   "Correct: metric tags and values are retained for 15 months."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-037",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "hard",
+  "q": "One host submits a HISTOGRAM metric `queue.wait` tagged `env` with only two values, `prod` and `staging`. With default histogram aggregates, how many custom metrics does this generate?",
+  "options": [
+   "2",
+   "5",
+   "10"
+  ],
+  "answer": 2,
+  "explanation": "Each tag combination of a histogram produces 5 timeseries (avg, count, median, 95percentile, max): 2 combinations x 5 = 10.",
+  "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/",
+  "notes": [
+   "Wrong: 2 counts only the tag combinations, not the 5 aggregates each.",
+   "Wrong: 5 is the per-combination count, ignoring the two env values.",
+   "Correct: 2 tag combinations x 5 default aggregates = 10 custom metrics."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-038",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Metric Types & Timeseries",
+  "difficulty": "easy",
+  "q": "Which measurement is best submitted as a GAUGE?",
+  "options": [
+   "The current number of messages waiting in a queue",
+   "The number of requests handled per flush interval",
+   "The number of unique user IDs seen per flush interval"
+  ],
+  "answer": 0,
+  "explanation": "A GAUGE reports a point-in-time value such as current queue depth. Requests handled fit COUNT, and unique IDs fit SET.",
+  "ref": "https://docs.datadoghq.com/metrics/types/",
+  "notes": [
+   "Correct: current queue depth is a point-in-time snapshot, which fits a GAUGE.",
+   "Wrong: requests handled per interval is a COUNT.",
+   "Wrong: unique IDs per interval is a SET."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-039",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "easy",
+  "q": "Which type of integration is installed with the Agent, configured in `conf.d`, and implemented as a Python class with a `check` method?",
+  "options": [
+   "Agent-based",
+   "Authentication (crawler)-based",
+   "Library"
+  ],
+  "answer": 0,
+  "explanation": "Agent-based integrations ship with the Agent and are Python checks configured through conf.d. Crawler-based integrations use credentials you give Datadog, and library integrations instrument application code.",
+  "ref": "https://docs.datadoghq.com/getting_started/integrations/",
+  "notes": [
+   "Correct: Agent-based integrations ship with the Agent and use a Python check class configured in conf.d.",
+   "Wrong: crawler integrations use credentials entered in Datadog to pull from a provider API.",
+   "Wrong: library integrations instrument application code in a given language."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-040",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "easy",
+  "q": "You enter AWS role credentials in the Datadog UI so Datadog can pull CloudWatch metrics. What kind of integration is this?",
+  "options": [
+   "Agent-based",
+   "Library",
+   "Authentication (crawler)-based"
+  ],
+  "answer": 2,
+  "explanation": "Crawler-based integrations use credentials you give Datadog to pull metrics from the provider's API. No Agent is needed for that data.",
+  "ref": "https://docs.datadoghq.com/getting_started/integrations/",
+  "notes": [
+   "Wrong: no Agent is involved; Datadog pulls the data from the provider API.",
+   "Wrong: library integrations instrument application code.",
+   "Correct: supplying credentials so Datadog pulls metrics through the API is a crawler-based integration."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-041",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "medium",
+  "q": "Instrumenting a Python application with `ddtrace` falls into which integration category?",
+  "options": [
+   "Agent-based",
+   "Library",
+   "Authentication (crawler)-based"
+  ],
+  "answer": 1,
+  "explanation": "Library integrations use Datadog's API or tracing libraries (such as ddtrace) to instrument applications based on their language.",
+  "ref": "https://docs.datadoghq.com/getting_started/integrations/",
+  "notes": [
+   "Wrong: Agent-based integrations are checks that run inside the Agent.",
+   "Correct: tracing libraries like ddtrace are library integrations that instrument apps by language.",
+   "Wrong: crawler integrations pull from a third-party API with your credentials."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-042",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "medium",
+  "q": "An EC2 host runs the Agent and is also covered by the AWS integration. Why does CPU data from the AWS integration lag behind the Agent's and look coarser?",
+  "options": [
+   "Crawler-based metrics are pulled from the cloud provider's API with delay and lower resolution",
+   "The Agent buffers cloud metrics and forwards them once an hour",
+   "The AWS integration only sends metrics after the instance restarts"
+  ],
+  "answer": 0,
+  "explanation": "Crawler data comes from the provider API: CloudWatch has its own latency plus Datadog's polling delay (often 10+ minutes) at 1- or 5-minute granularity. The Agent collects with virtually no delay every 15 seconds.",
+  "ref": "https://docs.datadoghq.com/integrations/guide/cloud-metric-delay/",
+  "notes": [
+   "Correct: crawler metrics come from the provider API with polling delay and 1 or 5-minute granularity.",
+   "Wrong: the Agent does not buffer or forward cloud provider metrics hourly.",
+   "Wrong: the AWS integration polls continuously, regardless of instance restarts."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-043",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "easy",
+  "q": "By default, how often does the Agent's collector run integration checks?",
+  "options": [
+   "Every 10 seconds",
+   "Every 15 seconds",
+   "Every 60 seconds"
+  ],
+  "answer": 1,
+  "explanation": "The collector runs checks every 15 seconds by default. 10 seconds is the DogStatsD flush interval.",
+  "ref": "https://docs.datadoghq.com/developers/custom_checks/write_agent_check/",
+  "notes": [
+   "Wrong: 10 seconds is the DogStatsD flush interval.",
+   "Correct: the collector runs checks every 15 seconds by default.",
+   "Wrong: 60 seconds is not the default check interval."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-044",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "easy",
+  "q": "After enabling the Redis integration, a user wants to add a widget to its out-of-the-box dashboard. What should they do?",
+  "options": [
+   "Clone the dashboard and edit the clone",
+   "Add the widget definition to `conf.d/redisdb.d/conf.yaml`",
+   "Ask Datadog Support to unlock the dashboard"
+  ],
+  "answer": 0,
+  "explanation": "Out-of-the-box integration dashboards aren't edited directly. Clone the dashboard (Configuration Actions > Clone) and customize the unlinked copy.",
+  "ref": "https://docs.datadoghq.com/getting_started/dashboards/",
+  "notes": [
+   "Correct: clone the out-of-the-box dashboard and edit the unlinked copy.",
+   "Wrong: conf.yaml configures the Redis check, not dashboards.",
+   "Wrong: Support does not unlock integration dashboards; cloning is the supported path."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-045",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "medium",
+  "q": "Which command installs a community integration on a Linux host running Agent v7?",
+  "options": [
+   "`sudo pip install datadog-<INTEGRATION_NAME>`",
+   "`sudo -u dd-agent datadog-agent integration install -t datadog-<INTEGRATION_NAME>==<VERSION>`",
+   "`sudo datadog-agent check <INTEGRATION_NAME> --install`"
+  ],
+  "answer": 1,
+  "explanation": "Community integrations are installed with `datadog-agent integration install -t` as the dd-agent user. `check` runs a check once and does not install anything.",
+  "ref": "https://docs.datadoghq.com/agent/guide/use-community-integrations/",
+  "notes": [
+   "Wrong: plain pip installs into the wrong Python and is not the supported method.",
+   "Correct: community integrations install with `datadog-agent integration install -t` run as dd-agent.",
+   "Wrong: `check` runs a check once; it has no --install option."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-046",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "medium",
+  "q": "A custom check is deployed as:\n\n/etc/datadog-agent/checks.d/custom_queue.py\n/etc/datadog-agent/conf.d/queue.yaml\n\nAfter a restart the check never runs. What is wrong?",
+  "options": [
+   "The Python file must live in `conf.d/` next to the YAML file",
+   "The configuration and check file names must match",
+   "Custom checks must be registered in datadog.yaml under `checks:`"
+  ],
+  "answer": 1,
+  "explanation": "The check file in checks.d and the config file in conf.d must share the same name, for example `custom_queue.py` and `custom_queue.yaml`.",
+  "ref": "https://docs.datadoghq.com/developers/custom_checks/write_agent_check/",
+  "notes": [
+   "Wrong: the Python file belongs in checks.d; conf.d holds the YAML config.",
+   "Correct: the check file and config file names must match (custom_queue.py and custom_queue.yaml).",
+   "Wrong: custom checks are not registered in datadog.yaml."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-047",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "medium",
+  "q": "In a custom Agent check, which method must the check class implement for the Agent to collect data?",
+  "options": [
+   "`run(self)`",
+   "`collect(self, config)`",
+   "`check(self, instance)`"
+  ],
+  "answer": 2,
+  "explanation": "A custom check class extends `AgentCheck` and implements `check(self, instance)`, which the collector calls on each run.",
+  "ref": "https://docs.datadoghq.com/developers/custom_checks/write_agent_check/",
+  "notes": [
+   "Wrong: `run(self)` is not the method the collector calls for custom checks.",
+   "Wrong: `collect(self, config)` is not part of the AgentCheck interface.",
+   "Correct: the class implements `check(self, instance)`, called on each run."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-048",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "medium",
+  "q": "A custom Agent check class must inherit from which class?",
+  "options": [
+   "`AgentCheck`, from `datadog_checks.base`",
+   "`DogStatsd`, from the `datadog` package",
+   "`Tracer`, from `ddtrace`"
+  ],
+  "answer": 0,
+  "explanation": "Custom checks subclass `AgentCheck`, imported from `datadog_checks.base` (from `checks` only on Agents older than 6.6.0). DogStatsd is a metrics client, and Tracer is for APM.",
+  "ref": "https://docs.datadoghq.com/developers/custom_checks/write_agent_check/",
+  "notes": [
+   "Correct: custom checks subclass AgentCheck from datadog_checks.base.",
+   "Wrong: DogStatsd is a client for sending metrics from apps, not a check base class.",
+   "Wrong: Tracer is the ddtrace APM tracer."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-049",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "easy",
+  "q": "A custom check config contains:\n\ninit_config:\n\ninstances:\n  - min_collection_interval: 60\n\nHow often does the Agent try to run this instance?",
+  "options": [
+   "Every 60 minutes",
+   "Every 15 seconds",
+   "Every 60 seconds"
+  ],
+  "answer": 2,
+  "explanation": "`min_collection_interval` is in seconds, so the collector tries to run the instance every 60 seconds instead of the 15-second default. The interval is a target, not a guarantee.",
+  "ref": "https://docs.datadoghq.com/developers/custom_checks/write_agent_check/",
+  "notes": [
+   "Wrong: min_collection_interval is in seconds, not minutes.",
+   "Wrong: 15 seconds is the default, overridden here.",
+   "Correct: the collector tries to run the instance every 60 seconds (a target, not a guarantee)."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-050",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "medium",
+  "q": "A custom check should run about every 5 minutes. Which conf.d snippet does this?",
+  "options": [
+   "instances:\n  - min_collection_interval: 300",
+   "instances:\n  - min_collection_interval: 5",
+   "init_config:\n  interval: 5m"
+  ],
+  "answer": 0,
+  "explanation": "`min_collection_interval` is set per instance, in seconds: 5 minutes = 300. `interval: 5m` is not a valid check option.",
+  "ref": "https://docs.datadoghq.com/developers/custom_checks/write_agent_check/",
+  "notes": [
+   "Correct: min_collection_interval is set per instance in seconds; 5 minutes = 300.",
+   "Wrong: 5 would mean 5 seconds, not 5 minutes.",
+   "Wrong: `interval: 5m` is not a valid check option."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-051",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "medium",
+  "q": "On a Linux host Agent, the Docker check logs `permission denied` when it accesses `/var/run/docker.sock`. What fixes this?",
+  "options": [
+   "Set `dogstatsd_non_local_traffic: true`",
+   "Add the dd-agent user to the docker group: `usermod -a -G docker dd-agent`",
+   "Set `log_level: debug` and restart the Agent"
+  ],
+  "answer": 1,
+  "explanation": "The Agent runs as `dd-agent`, which needs to be in the docker group to read the Docker socket. The other settings don't grant socket access.",
+  "ref": "https://docs.datadoghq.com/integrations/docker_daemon/",
+  "notes": [
+   "Wrong: this lets DogStatsD accept remote packets; it doesn't grant socket access.",
+   "Correct: the dd-agent user must be in the docker group to read the Docker socket.",
+   "Wrong: debug logging adds detail but does not fix the permission."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-052",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "medium",
+  "q": "When the Agent runs as a container, which host path must be mounted into it for the Docker integration to collect container metrics?",
+  "options": [
+   "/var/log/datadog",
+   "/etc/datadog-agent/checks.d",
+   "/var/run/docker.sock"
+  ],
+  "answer": 2,
+  "explanation": "The containerized Agent reads the Docker socket at `/var/run/docker.sock` (along with `/proc/` and `/sys/fs/cgroup/`) to collect container data.",
+  "ref": "https://docs.datadoghq.com/containers/docker/",
+  "notes": [
+   "Wrong: /var/log/datadog holds Agent logs on a Linux host.",
+   "Wrong: checks.d holds custom check Python files.",
+   "Correct: the Agent mounts /var/run/docker.sock (read-only) to read container data."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-053",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "easy",
+  "q": "An integration ships `conf.d/postgres.d/conf.yaml.example`. What enables the integration?",
+  "options": [
+   "Copy or rename it to `conf.yaml`, configure it, and restart the Agent",
+   "Run `datadog-agent configcheck` to activate the example file",
+   "Remove the `.d` suffix from the folder name"
+  ],
+  "answer": 0,
+  "explanation": "Example files are not loaded. Copy or rename `conf.yaml.example` to `conf.yaml`, edit it, then restart the Agent so the change takes effect. `configcheck` only prints loaded configurations.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/",
+  "notes": [
+   "Correct: rename or copy to conf.yaml, edit it, then restart the Agent.",
+   "Wrong: configcheck only prints loaded configurations; it activates nothing.",
+   "Wrong: the folder must keep its `<check>.d` name."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-054",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "medium",
+  "q": "After writing a new custom check, which Agent subcommand runs that check once and shows its output, so you can confirm it works?",
+  "options": [
+   "`datadog-agent configcheck`",
+   "`datadog-agent check <check_name>`",
+   "`datadog-agent diagnose`"
+  ],
+  "answer": 1,
+  "explanation": "`check <name>` runs a single check and prints the metrics it collected. `configcheck` lists the loaded configurations, and `diagnose` tests connectivity.",
+  "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/",
+  "notes": [
+   "Wrong: configcheck prints loaded and resolved configurations.",
+   "Correct: `check <name>` runs the check once and shows its output.",
+   "Wrong: diagnose runs connectivity diagnostics."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-055",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Integrations",
+  "difficulty": "hard",
+  "q": "Why does Datadog recommend naming a custom check with a `custom_` prefix, as in `custom_queue.py`?",
+  "options": [
+   "The Agent only loads files in checks.d that start with `custom_`",
+   "To avoid conflicts with the name of an existing Datadog Agent integration",
+   "Metrics from checks without the prefix are billed as standard metrics"
+  ],
+  "answer": 1,
+  "explanation": "The docs recommend the `custom_` prefix so a custom check does not clash with a pre-existing integration's name. Metrics from any custom check are custom metrics, whatever the file name.",
+  "ref": "https://docs.datadoghq.com/developers/custom_checks/write_agent_check/",
+  "notes": [
+   "Wrong: the Agent loads checks.d files regardless of prefix.",
+   "Correct: the custom_ prefix avoids clashing with an existing Agent integration name.",
+   "Wrong: any custom check's metrics are custom metrics, whatever the file name."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-056",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "easy",
+  "q": "What does the Agent's Autodiscovery feature do?",
+  "options": [
+   "It finds new cloud hosts through crawler integrations and installs the Agent on them",
+   "It detects containers and automatically applies integration configuration templates to them",
+   "It generates dashboards for every service it detects"
+  ],
+  "answer": 1,
+  "explanation": "Autodiscovery watches container events and applies integration templates to matching containers, even when they move or change IPs.",
+  "ref": "https://docs.datadoghq.com/getting_started/containers/autodiscovery/",
+  "notes": [
+   "Wrong: Autodiscovery does not install Agents on cloud hosts.",
+   "Correct: it watches container events and applies matching integration templates.",
+   "Wrong: dashboards come from integrations, not Autodiscovery."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-057",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "medium",
+  "q": "In a plain Docker environment (no Kubernetes), which is a valid source for Autodiscovery integration templates?",
+  "options": [
+   "Kubernetes ConfigMaps",
+   "Container labels such as `com.datadoghq.ad.checks`",
+   "An Ansible inventory file"
+  ],
+  "answer": 1,
+  "explanation": "On Docker, templates can come from container labels (`com.datadoghq.ad.checks` on Agent 7.36+), local auto_conf/conf.d files, or key-value stores. ConfigMaps exist only in Kubernetes.",
+  "ref": "https://docs.datadoghq.com/containers/docker/integrations/",
+  "notes": [
+   "Wrong: ConfigMaps are Kubernetes objects and unavailable on plain Docker.",
+   "Correct: Docker container labels like com.datadoghq.ad.checks supply templates.",
+   "Wrong: Ansible inventories are not an Autodiscovery template source."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-058",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "medium",
+  "q": "Which Autodiscovery template source can be used ONLY in Kubernetes?",
+  "options": [
+   "Key-value stores such as etcd",
+   "`auto_conf.yaml` files",
+   "ConfigMaps"
+  ],
+  "answer": 2,
+  "explanation": "ConfigMaps are a Kubernetes object, so they apply only there. Key-value stores and auto_conf.yaml files also work in Docker.",
+  "ref": "https://docs.datadoghq.com/containers/kubernetes/integrations/",
+  "notes": [
+   "Wrong: etcd, Consul and ZooKeeper stores also work on Docker.",
+   "Wrong: auto_conf.yaml files are local files that also work on Docker.",
+   "Correct: ConfigMaps are Kubernetes objects, so they apply only there."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-059",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "medium",
+  "q": "Which pod annotation key supplies an Autodiscovery check template for a container named `redis`?",
+  "options": [
+   "`ad.datadoghq.com/redis.checks`",
+   "`com.datadoghq.ad.check_names`",
+   "`tags.datadoghq.com/redis.service`"
+  ],
+  "answer": 0,
+  "explanation": "Kubernetes Autodiscovery annotations take the form `ad.datadoghq.com/<CONTAINER_NAME>.checks`. `com.datadoghq.ad.*` are Docker labels, and `tags.datadoghq.com/*` labels are for unified service tagging.",
+  "ref": "https://docs.datadoghq.com/containers/kubernetes/integrations/",
+  "notes": [
+   "Correct: Kubernetes uses ad.datadoghq.com/<CONTAINER_NAME>.checks.",
+   "Wrong: com.datadoghq.ad.check_names is the legacy Docker label format.",
+   "Wrong: tags.datadoghq.com labels are for unified service tagging."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-060",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "medium",
+  "q": "Which key-value stores can serve as Autodiscovery template sources?",
+  "options": [
+   "Redis, Memcached, and etcd",
+   "Vault, Consul, and DynamoDB",
+   "etcd, Consul, and ZooKeeper"
+  ],
+  "answer": 2,
+  "explanation": "Autodiscovery supports etcd, Consul, and ZooKeeper as key-value template stores.",
+  "ref": "https://docs.datadoghq.com/containers/docker/integrations/",
+  "notes": [
+   "Wrong: Redis and Memcached are not supported template stores.",
+   "Wrong: Vault and DynamoDB are not supported template stores.",
+   "Correct: Consul, etcd and ZooKeeper are the supported key-value stores."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-061",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "easy",
+  "q": "In an Autodiscovery template, what does `%%host%%` resolve to?",
+  "options": [
+   "The node's hostname as reported by `datadog-agent hostname`",
+   "The container's network IP address",
+   "The Datadog intake host for the configured site"
+  ],
+  "answer": 1,
+  "explanation": "`%%host%%` resolves to the container's network IP. `%%hostname%%` is the hostname from the container configuration.",
+  "ref": "https://docs.datadoghq.com/containers/guide/template_variables/",
+  "notes": [
+   "Wrong: that describes the Agent's own hostname, not a template variable value.",
+   "Correct: %%host%% resolves to the container's network IP.",
+   "Wrong: intake hosts come from the site setting, not template variables."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-062",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "hard",
+  "q": "A container exposes ports 80, 443, and 8443. Its Autodiscovery template uses `http://%%host%%:%%port%%/status`. Which port does `%%port%%` resolve to?",
+  "options": [
+   "80",
+   "443",
+   "8443"
+  ],
+  "answer": 2,
+  "explanation": "`%%port%%` uses the highest exposed port when ports are sorted numerically in ascending order, here 8443. Use `%%port_<N>%%` to choose a different one.",
+  "ref": "https://docs.datadoghq.com/containers/guide/template_variables/",
+  "notes": [
+   "Wrong: 80 is %%port_0%%, the lowest exposed port.",
+   "Wrong: 443 is %%port_1%%.",
+   "Correct: %%port%% is the highest exposed port sorted ascending, here 8443."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-063",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "hard",
+  "q": "A template contains `password: %%env_REDIS_PASSWORD%%`. Where does the Agent read `REDIS_PASSWORD` from?",
+  "options": [
+   "From the environment of the monitored Redis container",
+   "From a Kubernetes Secret named REDIS_PASSWORD",
+   "From the environment variables seen by the Agent process"
+  ],
+  "answer": 2,
+  "explanation": "`%%env_<VAR>%%` is replaced with the variable as seen by the Agent process, so it must be set on the Agent, not on the application container.",
+  "ref": "https://docs.datadoghq.com/containers/guide/template_variables/",
+  "notes": [
+   "Wrong: the monitored container's environment is not read.",
+   "Wrong: %%env_%% reads an environment variable, not a Secret by name.",
+   "Correct: %%env_<VAR>%% uses the variable as seen by the Agent process."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-064",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "medium",
+  "q": "The Agent ships `conf.d/redisdb.d/auto_conf.yaml`. A container from the `redis` image starts with no Datadog labels or annotations. What happens?",
+  "options": [
+   "The Agent applies the Redis check template to the container through Autodiscovery",
+   "Nothing until the user renames auto_conf.yaml to conf.yaml",
+   "The Agent runs the Redis check against localhost on the Agent host"
+  ],
+  "answer": 0,
+  "explanation": "auto_conf.yaml files are default Autodiscovery templates whose `ad_identifiers` match container images such as `redis`, so the check is applied automatically. It can be turned off with DD_IGNORE_AUTOCONF.",
+  "ref": "https://docs.datadoghq.com/containers/guide/auto_conf/",
+  "notes": [
+   "Correct: the default redisdb auto_conf.yaml template matches redis images automatically.",
+   "Wrong: auto_conf.yaml is already an active Autodiscovery template; no rename is needed.",
+   "Wrong: the template targets the container via %%host%%, not localhost on the Agent host."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-065",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "hard",
+  "q": "On Agent 7.36 or later, a team wants to define an nginx Autodiscovery check template on a plain Docker container (no Kubernetes) using a single container label. Which label key should they use?",
+  "options": [
+   "`com.datadoghq.ad.checks`",
+   "`com.datadoghq.ad.check_names`",
+   "`ad.datadoghq.com/nginx.checks`"
+  ],
+  "answer": 0,
+  "explanation": "Since Agent 7.36, Docker Autodiscovery uses one JSON label, `com.datadoghq.ad.checks`, mapping the integration name to its init_config and instances. Older Agents used separate check_names, init_configs and instances labels.",
+  "ref": "https://docs.datadoghq.com/containers/docker/integrations/",
+  "notes": [
+   "Correct: Agent 7.36+ uses the single JSON label com.datadoghq.ad.checks.",
+   "Wrong: check_names is part of the legacy multi-label format used before 7.36.",
+   "Wrong: ad.datadoghq.com/<container>.checks is a Kubernetes pod annotation, not a Docker label."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-066",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "hard",
+  "q": "A pod has the annotation `ad.datadoghq.com/web.checks` with a valid nginx template, but the pod spec's only container is named `nginx`. The check never runs. Why?",
+  "options": [
+   "The annotation must be on the Agent DaemonSet, not the application pod",
+   "The identifier in the annotation must match the container name in the pod spec",
+   "Annotations only work when the template is also copied into a ConfigMap"
+  ],
+  "answer": 1,
+  "explanation": "In `ad.datadoghq.com/<CONTAINER_NAME>.checks`, the identifier must match a container name in the pod, so here it should be `ad.datadoghq.com/nginx.checks`.",
+  "ref": "https://docs.datadoghq.com/containers/kubernetes/integrations/",
+  "notes": [
+   "Wrong: annotations go on the application pod, not the Agent DaemonSet.",
+   "Correct: the identifier must match the container name (spec.containers[].name), here nginx.",
+   "Wrong: annotations work on their own without a ConfigMap."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-067",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "Autodiscovery",
+  "difficulty": "medium",
+  "q": "Which template variable inserts the container's process ID into an Autodiscovery template?",
+  "options": [
+   "`%%pid%%`",
+   "`%%port%%`",
+   "`%%hostname%%`"
+  ],
+  "answer": 0,
+  "explanation": "`%%pid%%` resolves to the container process ID. `%%port%%` is an exposed port, and `%%hostname%%` is the hostname from the container configuration.",
+  "ref": "https://docs.datadoghq.com/containers/guide/template_variables/",
+  "notes": [
+   "Correct: %%pid%% is the container process ID.",
+   "Wrong: %%port%% is the highest exposed port.",
+   "Wrong: %%hostname%% is the hostname from the container configuration."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-068",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "easy",
+  "q": "Which endpoint submits metric points to Datadog through the HTTP API?",
+  "options": [
+   "`GET /api/v1/query`",
+   "`POST /api/v2/series`",
+   "`GET /api/v1/validate`"
+  ],
+  "answer": 1,
+  "explanation": "`POST /api/v2/series` submits metrics. `GET /api/v1/query` reads timeseries, and `/api/v1/validate` checks an API key.",
+  "ref": "https://docs.datadoghq.com/api/latest/metrics/#submit-metrics",
+  "notes": [
+   "Wrong: GET /api/v1/query reads timeseries.",
+   "Correct: POST /api/v2/series submits metric points.",
+   "Wrong: GET /api/v1/validate checks an API key."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-069",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "medium",
+  "q": "Which key or keys does `POST /api/v2/series` require?",
+  "options": [
+   "An API key only",
+   "An application key only",
+   "Both an API key and an application key"
+  ],
+  "answer": 0,
+  "explanation": "Submitting data (metrics, events, logs) needs only the API key. Reading or managing data, such as querying timeseries, also needs an application key.",
+  "ref": "https://docs.datadoghq.com/api/latest/metrics/#submit-metrics",
+  "notes": [
+   "Correct: submitting metrics needs only the API key (DD-API-KEY).",
+   "Wrong: an application key alone cannot submit data.",
+   "Wrong: application keys are needed to read or manage data, not to submit metrics."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-070",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "medium",
+  "q": "A reporting script pulls timeseries with `GET /api/v1/query`. Which credentials must it send?",
+  "options": [
+   "An API key only",
+   "A client token",
+   "Both an API key and an application key"
+  ],
+  "answer": 2,
+  "explanation": "Reading data through the API needs the org's API key plus a user's or service account's application key (newer bearer access tokens are also accepted). Client tokens are for browser and mobile SDKs.",
+  "ref": "https://docs.datadoghq.com/api/latest/authentication/",
+  "notes": [
+   "Wrong: reading data needs more than the API key.",
+   "Wrong: client tokens are for browser and mobile SDKs (RUM, browser logs).",
+   "Correct: querying requires an API key plus an application key."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-071",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "easy",
+  "q": "Which endpoint checks whether an API key is valid?",
+  "options": [
+   "`GET /api/v1/validate`",
+   "`POST /api/v2/series`",
+   "`GET /api/v1/query`"
+  ],
+  "answer": 0,
+  "explanation": "`GET /api/v1/validate` returns whether the supplied API key is valid.",
+  "ref": "https://docs.datadoghq.com/api/latest/authentication/",
+  "notes": [
+   "Correct: GET /api/v1/validate returns whether the API key is valid.",
+   "Wrong: POST /api/v2/series submits metrics.",
+   "Wrong: GET /api/v1/query reads timeseries."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-072",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "easy",
+  "q": "Which HTTP headers carry Datadog keys in an API request?",
+  "options": [
+   "`Authorization: Bearer <API_KEY>` and `X-App-Key`",
+   "`DD-API-KEY` and `DD-APPLICATION-KEY`",
+   "`X-Datadog-Token` and `X-Datadog-User`"
+  ],
+  "answer": 1,
+  "explanation": "Datadog API requests pass keys in the `DD-API-KEY` and `DD-APPLICATION-KEY` headers.",
+  "ref": "https://docs.datadoghq.com/api/latest/authentication/",
+  "notes": [
+   "Wrong: X-App-Key is not a Datadog header, and Bearer auth is for access tokens, not the API key.",
+   "Correct: keys go in the DD-API-KEY and DD-APPLICATION-KEY headers.",
+   "Wrong: these are not Datadog API headers."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-073",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "medium",
+  "q": "An organization is hosted on the EU1 site. Which base URL should its API calls use?",
+  "options": [
+   "`https://api.datadoghq.com/eu/`",
+   "`https://eu.api.datadoghq.com/`",
+   "`https://api.datadoghq.eu/`"
+  ],
+  "answer": 2,
+  "explanation": "The API base is `https://api.<site>/`, and the EU1 site is `datadoghq.eu`, so EU1 calls go to `api.datadoghq.eu`.",
+  "ref": "https://docs.datadoghq.com/getting_started/site/",
+  "notes": [
+   "Wrong: the site is part of the hostname, not a URL path.",
+   "Wrong: EU1 uses the datadoghq.eu domain, not an eu. subdomain of datadoghq.com.",
+   "Correct: the EU1 API base is api.datadoghq.eu."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-074",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "hard",
+  "q": "An org on the US3 site sends metrics with a valid API key to `https://api.datadoghq.com/api/v2/series` and gets HTTP 403. What is the most likely fix?",
+  "options": [
+   "Send the request to `https://api.us3.datadoghq.com` instead",
+   "Add a `DD-APPLICATION-KEY` header",
+   "Retry with exponential backoff"
+  ],
+  "answer": 0,
+  "explanation": "Each Datadog site is completely independent, so a US3 org's key fails against the US1 endpoint. Use the org's site-specific base URL. Metric submission needs no application key, and backoff is the response to 429.",
+  "ref": "https://docs.datadoghq.com/getting_started/site/",
+  "notes": [
+   "Correct: sites are independent, so the US3 key must be used with api.us3.datadoghq.com.",
+   "Wrong: metric submission needs only an API key.",
+   "Wrong: backoff addresses 429 rate limiting, not 403 authentication errors."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-075",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "medium",
+  "q": "A script polling the Datadog API starts receiving HTTP 429 responses. What does this mean, and what should the script do?",
+  "options": [
+   "The API key is invalid, so the script should rotate it",
+   "The request is rate limited, so the script should back off and use the `X-RateLimit-*` headers to time retries",
+   "The payload is too large, so the script should split it into smaller batches"
+  ],
+  "answer": 1,
+  "explanation": "429 means too many requests (rate limited). Datadog returns `X-RateLimit-Limit`, `-Remaining`, `-Reset`, and related headers. Bad keys produce 401/403 and oversized payloads produce 413.",
+  "ref": "https://docs.datadoghq.com/api/latest/rate-limits/",
+  "notes": [
+   "Wrong: an invalid key gives 401/403, not 429.",
+   "Correct: 429 is rate limiting; use the X-RateLimit-* headers to time retries.",
+   "Wrong: oversized payloads return 413."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-076",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "easy",
+  "q": "Which API endpoint posts a custom event to the Datadog event stream?",
+  "options": [
+   "`POST /api/v1/events`",
+   "`POST /api/v2/series`",
+   "`POST /api/v1/check_run`"
+  ],
+  "answer": 0,
+  "explanation": "Events can be submitted with `POST /api/v1/events` on api.<site> (a v2 intake also exists for change and alert events). `/api/v2/series` is for metrics, and `check_run` submits service checks.",
+  "ref": "https://docs.datadoghq.com/api/latest/events/",
+  "notes": [
+   "Correct: POST /api/v1/events posts an event.",
+   "Wrong: /api/v2/series submits metrics.",
+   "Wrong: /api/v1/check_run submits service checks."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-077",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "medium",
+  "q": "An application sends logs directly over HTTP to a US1 account without the Agent. Which endpoint should it use?",
+  "options": [
+   "`https://api.datadoghq.com/api/v2/series`",
+   "`https://http-intake.logs.datadoghq.com/api/v2/logs`",
+   "`agent-intake.logs.datadoghq.com:10516`"
+  ],
+  "answer": 1,
+  "explanation": "HTTP log submission goes to `http-intake.logs.<site>/api/v2/logs` with an API key. Port 10516 was the TCP log intake, which is deprecated and no longer supported, and `/api/v2/series` is for metrics.",
+  "ref": "https://docs.datadoghq.com/api/latest/logs/",
+  "notes": [
+   "Wrong: /api/v2/series is the metrics endpoint.",
+   "Correct: HTTP logs go to http-intake.logs.<site>/api/v2/logs with an API key.",
+   "Wrong: port 10516 was the TCP log intake, which is deprecated and not supported."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-078",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "easy",
+  "q": "Which Datadog library instruments a Python application for APM tracing?",
+  "options": [
+   "`datadog` (the DogStatsD/API client)",
+   "`datadog_checks.base`",
+   "`ddtrace`"
+  ],
+  "answer": 2,
+  "explanation": "`ddtrace` is Datadog's Python APM client; it sends traces to the Agent's trace receiver (8126/TCP by default). The `datadog` package is a DogStatsD/API client, and `datadog_checks.base` is for writing Agent checks.",
+  "ref": "https://ddtrace.readthedocs.io/en/stable/",
+  "notes": [
+   "Wrong: the datadog package is a DogStatsD and API client.",
+   "Wrong: datadog_checks.base is for writing Agent checks.",
+   "Correct: ddtrace is Datadog's Python APM client."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-079",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "hard",
+  "q": "A script sends this body to `POST /api/v2/series`:\n\n{\"series\": [{\"metric\": \"shop.cart.size\", \"type\": 3,\n  \"points\": [{\"timestamp\": 1767225600, \"value\": 4}]}]}\n\nWhich metric type does `\"type\": 3` declare?",
+  "options": [
+   "COUNT",
+   "RATE",
+   "GAUGE"
+  ],
+  "answer": 2,
+  "explanation": "In the v2 series API, the type enum is 0 = unspecified, 1 = count, 2 = rate, 3 = gauge.",
+  "ref": "https://docs.datadoghq.com/api/latest/metrics/#submit-metrics",
+  "notes": [
+   "Wrong: count is type 1.",
+   "Wrong: rate is type 2.",
+   "Correct: type 3 is gauge."
+  ],
+  "verified": "2026-10"
+ },
+ {
+  "id": "data-080",
+  "topic": "Data Collection & Integrations",
+  "subtopic": "API Endpoints",
+  "difficulty": "hard",
+  "q": "What HTTP status does `POST /api/v2/series` return when a well-formed payload with a valid API key is received?",
+  "options": [
+   "200 OK",
+   "202 Accepted",
+   "204 No Content"
+  ],
+  "answer": 1,
+  "explanation": "The submit-metrics endpoint returns 202 (Payload accepted), meaning the data is accepted for asynchronous processing.",
+  "ref": "https://docs.datadoghq.com/api/latest/metrics/#submit-metrics",
+  "notes": [
+   "Wrong: the endpoint does not return 200 for submissions.",
+   "Correct: 202 means the payload was accepted for asynchronous processing.",
+   "Wrong: 204 No Content is not used here."
+  ],
+  "verified": "2026-10"
+ }
+]
