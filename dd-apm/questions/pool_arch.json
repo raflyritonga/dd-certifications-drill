@@ -1,0 +1,527 @@
+[
+  {
+    "id": "ap-arch-001",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "easy",
+    "q": "In Datadog APM terminology, what does a trace represent?",
+    "options": [
+      "A single logical unit of work, such as one database query, with its own start time and duration",
+      "The time spent processing one request and its status, built from one or more spans",
+      "An aggregate of hits, errors and latency for a service, kept with 15-month retention"
+    ],
+    "answer": 1,
+    "explanation": "A trace tracks the time an application spends processing a request and the status of that request. Each trace consists of one or more spans.",
+    "notes": [
+      "Wrong: this describes a span, the unit of work that traces are built from.",
+      "Correct: a trace covers one request end to end and is made of one or more spans.",
+      "Wrong: this describes trace metrics, which are computed from spans and kept 15 months."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/glossary/#trace",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-002",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "A trace starts with a `rack.request` span in a Ruby service. Later the request reaches a .NET service, whose first span is `aspnet_coremvc.request`. How does Datadog classify these two spans?",
+    "options": [
+      "Both are root spans, since each is the first span in its own service.",
+      "Only `rack.request` is a service entry span; `aspnet_coremvc.request` is a plain child span.",
+      "Both are service entry spans, and only `rack.request` is the root span."
+    ],
+    "answer": 2,
+    "explanation": "The root span is the first span of the whole trace, so a trace has only one. A service entry span is the entrypoint of a request into any service, so the first span in each service qualifies, including the root span.",
+    "notes": [
+      "Wrong: a trace has a single root span, its first span; the first span in another service is a service entry span.",
+      "Wrong: `aspnet_coremvc.request` is the entrypoint of the request into the .NET service, so it is a service entry span.",
+      "Correct: `rack.request` starts the trace and enters the Ruby service; `aspnet_coremvc.request` enters the .NET service."
+    ],
+    "ref": "https://docs.datadoghq.com/glossary/#service-entry-span",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-003",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "A team with no official Datadog SDK for its language sends spans directly to the Agent with `PUT http://localhost:8126/v0.3/traces`. In which unit must each span's `start` and `duration` fields be expressed?",
+    "options": [
+      "Milliseconds",
+      "Microseconds",
+      "Nanoseconds"
+    ],
+    "answer": 2,
+    "explanation": "In the Agent tracing API model, `start` is the start time in nanoseconds from the UNIX epoch and `duration` is the request duration in nanoseconds.",
+    "notes": [
+      "Wrong: neither field uses milliseconds; both are int64 values in nanoseconds.",
+      "Wrong: microseconds are not used; `start` counts nanoseconds from the UNIX epoch.",
+      "Correct: both `start` and `duration` are int64 values in nanoseconds."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/send_traces_to_agent_by_api/#model",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-004",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "easy",
+    "q": "On a `web-store` service, spans named `web.request` cover endpoints such as `GET /productpage` and `ShoppingCartController#checkout`. In the APM data model, what are `GET /productpage` and `ShoppingCartController#checkout`?",
+    "options": [
+      "Operation names",
+      "Services",
+      "Resources"
+    ],
+    "answer": 2,
+    "explanation": "Resources are a particular domain of the application, such as a web endpoint, database query or background job. Web endpoints are grouped under a static span name like `web.request`.",
+    "notes": [
+      "Wrong: the operation (span) name here is `web.request`, which groups the endpoints.",
+      "Wrong: the service is `web-store`; the endpoints belong to it.",
+      "Correct: individual endpoints like `GET /productpage` are resources."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/glossary/#resources",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-005",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "A team instruments a web service, but its HTTP endpoints do not appear on the Service page they expected. Besides the service name, what does APM use to connect endpoints to a service?",
+    "options": [
+      "The `version` tag of the deployment that served each of the requests",
+      "The `host` tag of the instance or container that emitted the spans",
+      "The span name of the trace's entry-point span, such as `web.request`"
+    ],
+    "answer": 2,
+    "explanation": "In APM, endpoints are connected to a service by more than the service name: the `span.name` of the entry-point span of the trace is also used.",
+    "notes": [
+      "Wrong: `version` tracks deployments; it does not decide which service an endpoint belongs to.",
+      "Wrong: host tags are infrastructure context and do not group resources under a service.",
+      "Correct: resources are tied to a service together with the entry-point span name (for example `web.request`)."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/glossary/#services",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-006",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "easy",
+    "q": "Datadog distinguishes span tags from span attributes. Which of these is a span attribute?",
+    "options": [
+      "`kube_deployment`",
+      "`availability-zone`",
+      "`http.status_code`"
+    ],
+    "answer": 2,
+    "explanation": "Span attributes are the content of the span, collected by automatic or manual instrumentation, such as `http.url`, `http.status_code` and `error.message`. Span tags are context such as host or container tags.",
+    "notes": [
+      "Wrong: `kube_deployment` is a container tag that adds context to the span.",
+      "Wrong: `availability-zone` is a host tag describing where the service runs.",
+      "Correct: `http.status_code` is collected by instrumentation and is part of the span's content."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/tracing_naming_convention/#span-tags-and-span-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-007",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "In the Trace Explorer search bar, which of these fields can be queried without an `@` prefix?",
+    "options": [
+      "`operation_name`",
+      "`http.url`",
+      "`peer.db.name`"
+    ],
+    "answer": 0,
+    "explanation": "Reserved attributes are present on every span and are queried without `@`: `env`, `service`, `operation_name`, `resource_name`, `status`, `ingestion_reason` and `trace_id`. Other span attributes need the `@` prefix.",
+    "notes": [
+      "Correct: `operation_name` is a reserved attribute, so no `@` is needed.",
+      "Wrong: `http.url` is a regular span attribute and is queried as `@http.url`.",
+      "Wrong: `peer.db.name` is a peer attribute and is queried as `@peer.db.name`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/span_tags_attributes/#reserved-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-008",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "hard",
+    "q": "An app instrumented with the OpenTelemetry SDK emits non-root spans of kind `server`, `client`, `producer`, `consumer` and `internal`. With Datadog's span-kind-based mapping, which of these non-root spans are treated as service entry spans?",
+    "options": [
+      "`server` and `consumer` spans",
+      "`client` and `producer` spans",
+      "`server` and `internal` spans"
+    ],
+    "answer": 0,
+    "explanation": "Datadog maps OpenTelemetry root spans, `server` spans and `consumer` spans to service entry spans. `client` and `producer` spans become measured spans, and `internal` spans generate no trace metrics.",
+    "notes": [
+      "Correct: `server` and `consumer` spans map to service entry spans.",
+      "Wrong: `client` and `producer` spans map to measured spans, not service entry spans.",
+      "Wrong: `internal` spans generate no trace metrics and are not service entry spans."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/mapping/service_entry_spans/#supported-conventions",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-009",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "easy",
+    "q": "With no propagation settings configured, which trace context formats does a current Datadog SDK extract and inject?",
+    "options": [
+      "`tracecontext,datadog`",
+      "`datadog,tracecontext,baggage`",
+      "`datadog,tracecontext,b3multi`"
+    ],
+    "answer": 1,
+    "explanation": "The default for `DD_TRACE_PROPAGATION_STYLE` is `datadog,tracecontext,baggage`, with Datadog headers taking precedence when extracting.",
+    "notes": [
+      "Wrong: this order (W3C first) was an older .NET default and omits baggage.",
+      "Correct: Datadog, W3C Trace Context and Baggage are the defaults.",
+      "Wrong: B3 multi is supported but must be configured; the third default format is `baggage`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/trace_context_propagation/#customize-trace-context-propagation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-010",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "hard",
+    "q": "A service uses the default propagation settings. An incoming request carries valid Datadog headers and valid W3C Trace Context headers, but they point to different traces. What does the SDK do?",
+    "options": [
+      "It continues the trace from the Datadog headers and records the W3C context as a span link.",
+      "It continues the trace from the W3C headers, because W3C Trace Context is the open standard.",
+      "It discards both contexts and starts a new trace, because the contexts conflict."
+    ],
+    "answer": 0,
+    "explanation": "Extraction follows the configured order (`datadog` first by default). The first valid context continues the trace, and additional valid contexts become span links.",
+    "notes": [
+      "Correct: Datadog headers are checked first; the other valid context is kept as a span link.",
+      "Wrong: `datadog` comes before `tracecontext` in the default extraction order.",
+      "Wrong: a new trace is only forced with `DD_TRACE_PROPAGATION_BEHAVIOR_EXTRACT` set to `restart` or `ignore`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/trace_context_propagation/#customize-trace-context-propagation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-011",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "A public API receives requests from partners. The team does not want partner trace headers to become parents of its spans, but wants to keep a reference to the incoming context. Which `DD_TRACE_PROPAGATION_BEHAVIOR_EXTRACT` value fits?",
+    "options": [
+      "`ignore`",
+      "`continue`",
+      "`restart`"
+    ],
+    "answer": 2,
+    "explanation": "`restart` always starts a new trace; if the incoming headers hold a valid context, it is represented as a span link on the service entry span instead of as the parent.",
+    "notes": [
+      "Wrong: `ignore` starts a new trace but drops the incoming headers entirely, so no link is kept.",
+      "Wrong: `continue` (the default) makes the incoming context the parent.",
+      "Correct: `restart` starts a new trace and keeps the incoming context as a span link."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/trace_context_propagation/#customize-trace-context-propagation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-012",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "A gateway service must read B3 multi headers from an upstream proxy but send only W3C Trace Context headers to downstream services. Which configuration does this?",
+    "options": [
+      "`DD_TRACE_PROPAGATION_STYLE_EXTRACT=b3multi` and `DD_TRACE_PROPAGATION_STYLE_INJECT=tracecontext`",
+      "`DD_TRACE_PROPAGATION_STYLE=b3multi,tracecontext` and `DD_TRACE_PROPAGATION_STYLE_EXTRACT=b3multi`",
+      "`DD_TRACE_PROPAGATION_STYLE=b3multi` and `DD_TRACE_PROPAGATION_BEHAVIOR_EXTRACT=restart`"
+    ],
+    "answer": 0,
+    "explanation": "When a service accepts one format and sends another, set the extract-only and inject-only variables. `DD_TRACE_PROPAGATION_STYLE_EXTRACT` and `DD_TRACE_PROPAGATION_STYLE_INJECT` have the highest precedence for their direction.",
+    "notes": [
+      "Correct: separate extract and inject settings let the service read B3 multi and write W3C.",
+      "Wrong: extraction is B3 multi, but injection still uses `DD_TRACE_PROPAGATION_STYLE`, so B3 multi headers are also sent downstream.",
+      "Wrong: this injects B3 multi too, and `restart` would break the trace from the proxy."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/trace_context_propagation/#advanced-configuration",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-013",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "hard",
+    "q": "With the Datadog propagation format, `x-datadog-trace-id` carries only the lower 64 bits of a 128-bit trace ID, in decimal. Which header carries the higher 64 bits?",
+    "options": [
+      "`x-datadog-parent-id`",
+      "`x-datadog-tags`",
+      "`x-datadog-origin`"
+    ],
+    "answer": 1,
+    "explanation": "`x-datadog-tags` holds supplemental Datadog trace state, including the higher 64 bits of the 128-bit trace ID in hexadecimal.",
+    "notes": [
+      "Wrong: `x-datadog-parent-id` is the 64-bit span ID of the current span.",
+      "Correct: the upper 64 bits travel in `x-datadog-tags`, hex-encoded.",
+      "Wrong: `x-datadog-origin` names the product that started the trace, such as `rum` or `synthetics`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/trace_context_propagation/#datadog-format",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-014",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "easy",
+    "q": "A worker reads a batch of 50 queued messages, each produced under a different trace, and processes them in one span. How should the batch span be related to the producers' spans?",
+    "options": [
+      "Add span links from the batch span to each producer span",
+      "Make all 50 producer spans parents of the batch span",
+      "Copy each producer's trace ID into baggage on the batch span"
+    ],
+    "answer": 0,
+    "explanation": "Span links correlate spans that are causally related but lack a typical parent-child relationship, even across traces. They fit fan-in scenarios, such as message aggregation or batch processing, where many operations converge into one span.",
+    "notes": [
+      "Correct: span links connect one span to many converging operations, even across traces.",
+      "Wrong: a span has a single parent, so a parent-child model cannot express 50 sources.",
+      "Wrong: baggage carries business key-value data between services; it does not link spans."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/span_links/#common-use-cases",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-015",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "A developer added span links with the Datadog SDK, but the Span Links tab of the trace view shows nothing for the linked spans. What is the most likely cause?",
+    "options": [
+      "Span links work only for applications instrumented with the OpenTelemetry SDK.",
+      "The linked spans were not indexed, for example by a retention filter.",
+      "The Agent needs `apm_config.peer_tags_aggregation` enabled to show links."
+    ],
+    "answer": 1,
+    "explanation": "Span links only display when the corresponding spans are ingested and indexed, for example with a retention filter.",
+    "notes": [
+      "Wrong: Datadog supports span links from both OpenTelemetry SDKs and Datadog SDKs.",
+      "Correct: linked spans must be ingested and indexed to appear in the Span Links tab.",
+      "Wrong: `peer_tags_aggregation` is for inferred services, not span links."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#more-information",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-016",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "easy",
+    "q": "A checkout service calls `api.stripe.com`, which nobody instruments. Datadog still shows `api.stripe.com` as a dependency with performance metrics. What makes this possible?",
+    "options": [
+      "Datadog infers it from the instrumented service's outbound requests.",
+      "Synthetic tests register every external hostname they reach as a service.",
+      "The Agent attaches eBPF probes that instrument the third-party API directly."
+    ],
+    "answer": 0,
+    "explanation": "Inferred services: by analyzing outbound requests from instrumented services, Datadog infers databases, queues and third-party APIs. External APIs are named from `net.peer.name` by default, for example `api.stripe.com`.",
+    "notes": [
+      "Correct: dependencies are inferred from the instrumented service's client spans.",
+      "Wrong: Synthetic tests do not create APM services for the hosts they call.",
+      "Wrong: the third-party API is never instrumented; only the caller is."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/inferred_services/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-017",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "hard",
+    "q": "A client span to a database has `db.instance:orders`, `out.host:pg-1.internal` and `db.system:postgresql`. With the default peer tag precedence, what name does Datadog give the inferred database?",
+    "options": [
+      "`pg-1.internal`",
+      "`postgresql`",
+      "`orders`"
+    ],
+    "answer": 2,
+    "explanation": "For databases the precedence is `peer.db.name` > store-specific tags > `peer.hostname` > `peer.db.system`. `db.instance` feeds `peer.db.name`, so the database is named `orders`.",
+    "notes": [
+      "Wrong: `out.host` feeds `peer.hostname`, which only wins when no `peer.db.name` is captured.",
+      "Wrong: `db.system` feeds `peer.db.system`, the lowest-priority database tag.",
+      "Correct: `db.instance` maps to `peer.db.name`, the highest-priority tag for databases."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/inferred_services/#precedence-of-peer-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-018",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "Integrations in a team's services name client spans `checkout-postgres` and `checkout-redis`, cluttering the service list, while inferred services already show those dependencies. Which setting stops integrations from setting service names that differ from `DD_SERVICE`?",
+    "options": [
+      "`DD_SERVICE_MAPPING`",
+      "`DD_TRACE_REMOVE_INTEGRATION_SERVICE_NAMES_ENABLED`",
+      "`DD_TRACE_PEER_SERVICE_DEFAULTS_ENABLED`"
+    ],
+    "answer": 1,
+    "explanation": "Enabling `DD_TRACE_REMOVE_INTEGRATION_SERVICE_NAMES_ENABLED` makes sure no Datadog integration sets a service name different from the global default. Assets that used the old names must be updated to `service:<DD_SERVICE>`.",
+    "notes": [
+      "Wrong: `DD_SERVICE_MAPPING` renames specific services pair by pair; it does not remove integration overrides.",
+      "Correct: this flag removes integration service name overrides across all languages and integrations.",
+      "Wrong: this setting controls default `peer.service` values, not span service names."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/inferred_services/#migrate-to-global-default-service-naming",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-019",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "easy",
+    "q": "You enable OTLP ingestion over HTTP in the Datadog Agent with the default endpoint. Which port should the OpenTelemetry SDK export to?",
+    "options": [
+      "4317",
+      "8126",
+      "4318"
+    ],
+    "answer": 2,
+    "explanation": "The Agent's OTLP receiver uses port 4318 for OTLP/HTTP and 4317 for OTLP/gRPC by default.",
+    "notes": [
+      "Wrong: 4317 is the default OTLP/gRPC port.",
+      "Wrong: 8126 is the Agent's port for Datadog SDK traces, not OTLP.",
+      "Correct: OTLP/HTTP defaults to port 4318."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/setup/otlp_ingest_in_the_agent/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-020",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "An engineer turns on the Agent's OTLP gRPC receiver with `DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_GRPC_ENDPOINT` and changes nothing else. Which OTLP signals does the Agent ingest?",
+    "options": [
+      "Traces only, because metrics need a separate `otlp_config.metrics` switch",
+      "Traces and metrics, while logs stay off until explicitly enabled",
+      "Traces, metrics and logs, because all signals share one receiver"
+    ],
+    "answer": 1,
+    "explanation": "OTLP ingestion is off by default. Once enabled, metrics and traces ingestion is on by default; logs ingestion stays disabled to prevent unexpected logs billing.",
+    "notes": [
+      "Wrong: metrics ingestion is on by default once the receiver is enabled.",
+      "Correct: traces and metrics flow; logs need `logs_enabled` plus `otlp_config.logs.enabled`.",
+      "Wrong: OTLP logs are disabled by default to avoid unexpected billing."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/setup/otlp_ingest_in_the_agent/#enabling-otlp-ingestion-on-the-datadog-agent",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-021",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "hard",
+    "q": "A team is writing a new configuration for a self-managed OpenTelemetry Collector Contrib that sends traces to Datadog. Which pipeline do the current Datadog docs recommend?",
+    "options": [
+      "The Datadog Exporter, plus the Datadog Connector to compute trace metrics",
+      "The `otlp_http` exporter to Datadog's OTLP intake, plus the `span_metrics` connector",
+      "An `otlp` gRPC exporter to the Agent's trace port 8126, plus the `batch` processor"
+    ],
+    "answer": 1,
+    "explanation": "For new Collector configurations Datadog recommends the OTLP HTTP exporter to its OTLP intake with the `span_metrics` connector generating RED metrics. The Datadog Exporter and Connector remain supported, and existing setups do not need to migrate.",
+    "notes": [
+      "Wrong: still supported, but no longer the recommended choice for new configurations.",
+      "Correct: OTLP HTTP export plus `span_metrics` is the recommended upstream Collector setup.",
+      "Wrong: 8126 is the Agent's Datadog trace port, not an OTLP endpoint, and this pipeline produces no trace metrics."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/setup/collector_exporter/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-022",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "A team instruments its services with the OpenTelemetry SDK and sends data through the DDOT Collector. They now want Datadog Continuous Profiler for these services. What does the feature compatibility table say?",
+    "options": [
+      "It needs the Datadog SDK; setups using the OTel SDK do not support it.",
+      "Continuous Profiler works with any setup once the DDOT Collector is installed.",
+      "Continuous Profiler works with the OTel SDK only through Direct OTLP Ingest."
+    ],
+    "answer": 0,
+    "explanation": "In the compatibility table, Continuous Profiler (like App and API Protection) is supported only in the Datadog SDK + DDOT setup, not in setups that use the OpenTelemetry SDK.",
+    "notes": [
+      "Correct: only the Datadog SDK setup supports Continuous Profiler.",
+      "Wrong: DDOT alone does not add profiling to OTel SDK-instrumented apps.",
+      "Wrong: Direct OTLP Ingest supports fewer features, and Continuous Profiler is not among them."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/compatibility/#feature-compatibility",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-023",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "easy",
+    "q": "A team collects Lambda metrics and traces with the Datadog Forwarder reading CloudWatch Logs. What is the main advantage of moving to the Datadog Lambda Extension?",
+    "options": [
+      "It sends telemetry directly to Datadog, so CloudWatch Logs is skipped.",
+      "It removes all cold start overhead because it runs outside the execution environment.",
+      "It also collects and enriches logs from API Gateway, AppSync and Lambda@Edge."
+    ],
+    "answer": 0,
+    "explanation": "The extension is a lightweight Datadog Agent that runs alongside the function and sends telemetry directly to Datadog, reducing CloudWatch Logs and Forwarder costs. The Forwarder is still needed for other AWS service logs.",
+    "notes": [
+      "Correct: telemetry goes directly to Datadog, so CloudWatch Logs is no longer in the path.",
+      "Wrong: the extension runs inside the execution environment and adds some cold start overhead.",
+      "Wrong: logs from API Gateway, AppSync and Lambda@Edge still require the Forwarder."
+    ],
+    "ref": "https://docs.datadoghq.com/serverless/guide/extension_motivation/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-024",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "A Lambda function in `eu-west-1` reports to the US1 Datadog site and shows a noticeable duration overhead from the extension flushing data. What does Datadog suggest?",
+    "options": [
+      "Set `DD_TRACE_ENABLED=false` so the extension stops flushing traces.",
+      "Set `DD_EXTENSION_VERSION=compatibility` to use the next-generation extension.",
+      "Set `DD_SERVERLESS_FLUSH_STRATEGY=periodically,60000` to flush less often."
+    ],
+    "answer": 2,
+    "explanation": "Network latency to a distant Datadog site increases flush overhead. Configuring the extension to flush less often, for example every minute with `DD_SERVERLESS_FLUSH_STRATEGY=periodically,60000`, reduces it.",
+    "notes": [
+      "Wrong: this disables tracing altogether instead of reducing flush overhead.",
+      "Wrong: `compatibility` opts out of the next-generation extension (v67-v87); it does not change flushing.",
+      "Correct: a periodic flush strategy lowers the per-invocation overhead."
+    ],
+    "ref": "https://docs.datadoghq.com/serverless/libraries_integrations/extension/#overhead",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-arch-025",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "medium",
+    "q": "A Lambda function is written for a runtime without Datadog tracing support and is instrumented with an OpenTelemetry SDK. How should it send its spans through the Datadog Lambda Extension?",
+    "options": [
+      "Add the Datadog tracing layer for the runtime and set `DD_TRACE_OTEL_ENABLED=true` on the function.",
+      "Export OTLP to `localhost:4318` and set `DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_HTTP_ENDPOINT=localhost:4318`.",
+      "Export OTLP to `https://otlp.<DD_SITE>` and set `DD_AGENT_HOST=localhost` so the extension relays it."
+    ],
+    "answer": 1,
+    "explanation": "Any OpenTelemetry SDK can export OTLP to the extension, which is enabled with the OTLP receiver endpoint variable (HTTP `localhost:4318` or gRPC `localhost:4317`). The Datadog tracing layer must not be added in this setup.",
+    "notes": [
+      "Wrong: `DD_TRACE_OTEL_ENABLED` is for the OpenTelemetry API with a Datadog SDK, which this runtime lacks, and the docs say not to add the tracing layer here.",
+      "Correct: the extension (v53+) acts as a local OTLP receiver once its HTTP (`localhost:4318`) or gRPC (`localhost:4317`) endpoint is set.",
+      "Wrong: this sends spans straight to the OTLP intake and bypasses the extension; `DD_AGENT_HOST` does not enable the extension's OTLP receiver."
+    ],
+    "ref": "https://docs.datadoghq.com/serverless/aws_lambda/opentelemetry/#sdk",
+    "verified": "2026-11"
+  }
+]

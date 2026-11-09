@@ -1,0 +1,422 @@
+[
+  {
+    "id": "ap-sec-001",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "easy",
+    "q": "A service runs the query `SELECT data FROM table WHERE key=123 LIMIT 10`. With default settings, what resource name does the Datadog Agent set on the query span?",
+    "options": [
+      "`SELECT data FROM table WHERE key = ? LIMIT ?`",
+      "`SELECT data FROM table WHERE key = 123 LIMIT ?`",
+      "`SELECT data FROM table WHERE ? = ? LIMIT 10`"
+    ],
+    "answer": 0,
+    "explanation": "The Agent obfuscates SQL numeric literals and bind variables before it sets the resource name, so both `123` and `10` become `?`.",
+    "notes": [
+      "Correct: every numeric literal, including the `LIMIT` value, is replaced with `?`.",
+      "Wrong: the `key=123` literal is obfuscated too, not only the `LIMIT` value.",
+      "Wrong: column names are kept; only literals are replaced, and `10` is a literal too."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/configure_data_security/#resource-names",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-002",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "medium",
+    "q": "An app sends SQL such as `WHERE email = \"jane@example.com\"`, using double quotes around strings. The email addresses show up in APM resource names. Why did the Agent not obfuscate them?",
+    "options": [
+      "SQL obfuscation is off by default and must be turned on under `apm_config.obfuscation.sql` in `datadog.yaml`.",
+      "The Agent finds string literals only by ANSI single quotes, so double-quoted values are treated as identifiers.",
+      "The Agent obfuscates only numeric literals and keeps every string literal so resources stay readable."
+    ],
+    "answer": 1,
+    "explanation": "The obfuscator recognizes SQL strings by standard ANSI single quotes. Most SQL variants treat double-quoted text as identifiers, so the Agent does too and does not obfuscate it.",
+    "notes": [
+      "Wrong: the Agent obfuscates SQL resource names by default; nothing needs to be turned on.",
+      "Correct: double-quoted values are treated as identifiers (like column names) and are left as-is.",
+      "Wrong: string literals in standard single quotes are obfuscated; only double-quoted text is treated as an identifier."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/configure_data_security/#resource-names",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-003",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "easy",
+    "q": "With default Agent settings, how does the resource name show the Redis query `MULTI`, `SET k1 v1`, `SET k2 v2`?",
+    "options": [
+      "`MULTI SET k1 ? SET k2 ?`",
+      "`MULTI ? ?`",
+      "`MULTI SET SET`"
+    ],
+    "answer": 2,
+    "explanation": "The Agent quantizes Redis queries by keeping only the command tokens, so keys and values are removed from the resource name.",
+    "notes": [
+      "Wrong: keys are dropped as well; only command tokens remain.",
+      "Wrong: the command names are kept; only their arguments are dropped.",
+      "Correct: only the command tokens `MULTI`, `SET`, `SET` are kept."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/configure_data_security/#resource-names",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-004",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "medium",
+    "q": "A security review finds session tokens in the query strings of `http.url` on web spans. The team wants the Datadog Agent to remove query strings for every service that reports to it. What should they set on the Agent?",
+    "options": [
+      "`DD_APM_OBFUSCATION_HTTP_ENABLED=true`",
+      "`DD_APM_OBFUSCATION_HTTP_REMOVE_QUERY_STRING=true`",
+      "`DD_TRACE_OBFUSCATION_QUERY_STRING_REGEXP` on the Agent container"
+    ],
+    "answer": 1,
+    "explanation": "HTTP URLs in `http` and `web` spans are not obfuscated by the Agent by default. Setting `remove_query_string` (`DD_APM_OBFUSCATION_HTTP_REMOVE_QUERY_STRING`) to true makes the Agent obfuscate query strings in `http.url`.",
+    "notes": [
+      "Wrong: the HTTP obfuscation options are `remove_query_string` and `remove_paths_with_digits`; there is no HTTP `enabled` switch.",
+      "Correct: this Agent option obfuscates query strings in `http.url` for all spans it receives.",
+      "Wrong: this is an SDK setting read by the application, not by the Agent."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/configure_data_security/#trace-obfuscation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-005",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "hard",
+    "q": "The Agent's credit card obfuscator is on with default settings. Which span tag value does it replace with `?`?",
+    "options": [
+      "`CC-4111 1111 1111 1111`",
+      "`order 4111111111111111 paid`",
+      "`4111 1111 1111 1111`"
+    ],
+    "answer": 2,
+    "explanation": "The obfuscator only redacts values that are exactly a credit card number, with internal whitespace allowed. A value with extra text around the number is not treated as a card number.",
+    "notes": [
+      "Wrong: the `CC-` prefix is extra string data, so the value is not redacted.",
+      "Wrong: the surrounding words make this value more than a card number, so it is not redacted.",
+      "Correct: the value is only a card number with internal spaces, so it becomes `?`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/configure_data_security/#trace-obfuscation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-006",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "hard",
+    "q": "The Agent has this configuration:\n\napm_config:\n  replace_tags:\n    - name: \"http.url\"\n      pattern: \"token/(.*)\"\n      repl: \"?\"\n\nWhat value of `http.url` does a span with `/api/token/abc123` end up with?",
+    "options": [
+      "`/api/?`",
+      "`/api/token/?`",
+      "`?`"
+    ],
+    "answer": 0,
+    "explanation": "`replace_tags` replaces the part of the tag that matches `pattern` with `repl`. The match starts at `token/`, so everything from `token/` onward becomes `?`.",
+    "notes": [
+      "Correct: `token/abc123` matches the pattern and is replaced by `?`.",
+      "Wrong: `token/` is part of the match, so it is replaced too.",
+      "Wrong: only the matching part is replaced; `/api/` does not match and is kept."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/configure_data_security/#replace-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-007",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "medium",
+    "q": "An Agent is deployed with the Datadog Helm chart. Where should `DD_APM_REPLACE_TAGS` be set in `datadog-values.yaml`?",
+    "options": [
+      "`agents.containers.agent.env`",
+      "`clusterAgent.env`",
+      "`agents.containers.traceAgent.env`"
+    ],
+    "answer": 2,
+    "explanation": "Tag replacement is done by the trace-agent, so with Helm the variable goes in `agents.containers.traceAgent.env`. With the Datadog Operator it goes in `override.nodeAgent.env`.",
+    "notes": [
+      "Wrong: that is the core Agent container; the trace-agent container processes spans.",
+      "Wrong: the Cluster Agent does not receive or process traces.",
+      "Correct: Helm sets trace-agent variables in `agents.containers.traceAgent.env`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/configure_data_security/#replace-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-008",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "medium",
+    "q": "A team wants health-check requests to stop being ingested as traces, but still wants those requests counted in the service's trace metrics. What should they use?",
+    "options": [
+      "An `ignore_resources` regex on the Agent for the health-check resource",
+      "A tracer sampling rule for that resource with `sample_rate` 0.0",
+      "A `filter_tags` reject rule on the Agent for the health-check URL"
+    ],
+    "answer": 1,
+    "explanation": "Sampling rules keep the requests in trace metrics while not ingesting them. Agent filtering (`ignore_resources` or `filter_tags`) drops the traces completely, so they are also missing from trace metrics.",
+    "notes": [
+      "Wrong: traces dropped by `ignore_resources` are not included in trace metrics.",
+      "Correct: a `DD_TRACE_SAMPLING_RULES` rule with `sample_rate` 0.0 stops ingestion but keeps the requests in trace metrics.",
+      "Wrong: traces dropped by filter tags are also left out of trace metrics."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/ignoring_apm_resources/#sampling",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-009",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "medium",
+    "q": "A Ruby health-check trace has a root span with operation `rack.request`, resource `Api::HealthchecksController#index` and `http.url` `/api/healthcheck`. Which `ignore_resources` value drops these traces at the Agent?",
+    "options": [
+      "`Api::HealthchecksController#index$`",
+      "`/api/healthcheck$`",
+      "`rack.request`"
+    ],
+    "answer": 0,
+    "explanation": "`ignore_resources` takes regular expressions that are matched against the resource name of the trace's root span, so the regex has to match `Api::HealthchecksController#index`.",
+    "notes": [
+      "Correct: the regex matches the root span's resource name.",
+      "Wrong: this matches the URL, not the resource name, so nothing is dropped.",
+      "Wrong: `rack.request` is the operation name, not the resource name."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/ignoring_apm_resources/#ignoring-traces-based-on-resources",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-010",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "hard",
+    "q": "An Agent is configured with:\n\nDD_APM_FILTER_TAGS_REJECT=\"outcome:success env:staging\"\n\nWhich traces does it drop?",
+    "options": [
+      "Only traces whose root span has both `outcome:success` and `env:staging`",
+      "Traces in which any span, root or child, has `outcome:success` or `env:staging`",
+      "Traces whose root span has `outcome:success` or `env:staging`"
+    ],
+    "answer": 2,
+    "explanation": "Filter tags are checked against the root span with exact matching. When several tags are listed, OR logic is used: the trace is dropped if the root span matches any of them.",
+    "notes": [
+      "Wrong: multiple tags use OR logic, not AND. To require both, add one custom tag that combines the conditions.",
+      "Wrong: only the root span is checked; child spans are never matched on their own.",
+      "Correct: a root span matching any listed tag causes the whole trace to be dropped."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/ignoring_apm_resources/#ignoring-traces-based-on-span-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-011",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "hard",
+    "q": "To drop health checks at the Agent, an engineer sets `DD_APM_FILTER_TAGS_REJECT=\"http.path_group:/healthcheck\"`, but health-check traces still arrive in Datadog. What is the most likely cause?",
+    "options": [
+      "Filter tags can only be set in `datadog.yaml`, not with environment variables.",
+      "`http.path_group` is added by the Datadog backend after ingestion, so the Agent never sees it.",
+      "Filter tags need Agent 7.49 or later, and older Agents ignore the setting."
+    ],
+    "answer": 1,
+    "explanation": "Tags such as `http.path_group` and `http.url_details.*` are created on the backend after ingestion. The Agent can only filter on tags that exist before ingestion.",
+    "notes": [
+      "Wrong: `DD_APM_FILTER_TAGS_REJECT` is a supported environment variable, as is `filter_tags` in `datadog.yaml`.",
+      "Correct: backend-generated tags cannot be used to drop traces at the Agent.",
+      "Wrong: filter tags exist since Agent 6.27.0/7.27.0; 7.49 added only the regex variants."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/ignoring_apm_resources/#available-span-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-012",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "easy",
+    "q": "A team wants the SDK to also redact the value of a custom `session_ref` query parameter in `http.url`, in addition to the values it already redacts. Which environment variable on the application should they change?",
+    "options": [
+      "`DD_TRACE_OBFUSCATION_QUERY_STRING_REGEXP`",
+      "`DD_APM_OBFUSCATION_HTTP_REMOVE_QUERY_STRING`",
+      "`DD_HTTP_SERVER_TAG_QUERY_STRING`"
+    ],
+    "answer": 0,
+    "explanation": "By default the SDK parses the query string in `http.url` and replaces suspicious-looking key-value pairs with `<redacted>`. `DD_TRACE_OBFUSCATION_QUERY_STRING_REGEXP` replaces the regex used for that redaction with one of your choice.",
+    "notes": [
+      "Correct: this SDK variable sets the regex that decides which query string values are redacted.",
+      "Wrong: this is an Agent option that obfuscates the whole query string; it is not an SDK setting and does not target one parameter.",
+      "Wrong: this turns query string collection on server spans on or off (default `true`); it sets no redaction regex."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/configure_data_security/#redact-query-strings",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-013",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "easy",
+    "q": "A team wants the value of the incoming `X-Customer-Tier` HTTP header recorded as a span tag. Which SDK setting should they use?",
+    "options": [
+      "`DD_TAGS=X-Customer-Tier:customer.tier`",
+      "`DD_TRACE_HEADER_TAGS=X-Customer-Tier:customer.tier`",
+      "`DD_TRACE_BAGGAGE_TAG_KEYS=X-Customer-Tier`"
+    ],
+    "answer": 1,
+    "explanation": "Header values are collected only when you list them in `DD_TRACE_HEADER_TAGS`, which maps case-insensitive header names to tag names.",
+    "notes": [
+      "Wrong: `DD_TAGS` adds the same fixed tags to every span; it does not read headers.",
+      "Correct: this maps the header to the `customer.tier` tag.",
+      "Wrong: this copies baggage items into span tags, not HTTP headers."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/configure_data_security/#collect-headers",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-014",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "medium",
+    "q": "A Python service calls a partner API with an API key in the query string, and the key appears in `http.url` on the outgoing HTTP client spans. Which SDK setting stops query strings from being added to those client spans?",
+    "options": [
+      "`DD_HTTP_SERVER_TAG_QUERY_STRING=false`",
+      "`DD_APM_OBFUSCATION_HTTP_REMOVE_PATHS_WITH_DIGITS=true`",
+      "`DD_TRACE_HTTP_CLIENT_TAG_QUERY_STRING=false`"
+    ],
+    "answer": 2,
+    "explanation": "By default, query string parameters and fragments are added to `http.url` on web client spans. Setting `DD_TRACE_HTTP_CLIENT_TAG_QUERY_STRING` to `false` stops this.",
+    "notes": [
+      "Wrong: this controls server spans for incoming requests, not outgoing client calls.",
+      "Wrong: this Agent option replaces path segments that contain digits; it does not touch the query string.",
+      "Correct: this turns off query string collection on HTTP client spans (default `true`)."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/library_config/python/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-015",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "medium",
+    "q": "A compliance policy says customer emails in span tags must be removed before trace data leaves the company's infrastructure. Which approach meets this policy?",
+    "options": [
+      "A `replace_tags` rule in the Datadog Agent for those tags",
+      "A Sensitive Data Scanner scanning group for APM spans with a Redact rule",
+      "A custom role without `apm_read` for users who should not see emails"
+    ],
+    "answer": 0,
+    "explanation": "The Agent and SDK remove sensitive data at collection, before traces are sent to Datadog. Sensitive Data Scanner redacts data at ingestion, after it has left your environment.",
+    "notes": [
+      "Correct: the Agent rewrites the tag values before the traces are sent to Datadog.",
+      "Wrong: Sensitive Data Scanner redacts in the Datadog backend, so the data has already left the infrastructure.",
+      "Wrong: access control limits who can view the data; the emails are still sent to Datadog."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/configure_data_security/#replace-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-016",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "medium",
+    "q": "An admin creates a Sensitive Data Scanner scanning group with APM spans turned on and a 25% sampling rate. When adding a rule, the Redact, Partially redact and Hash actions cannot be selected. What should they do?",
+    "options": [
+      "Grant their role the `data_scanner_unmask` permission",
+      "Turn off sampling so the group scans all matching data",
+      "Switch the rule from Entire Event to Specific Attributes"
+    ],
+    "answer": 1,
+    "explanation": "A scanning group that samples data cannot use actions that obfuscate it. To redact, partially redact or hash matches, the group must scan all data that matches its query filter.",
+    "notes": [
+      "Wrong: this permission lets users view masked data; it does not unlock actions in a sampled scanning group.",
+      "Correct: turning off sampling makes the obfuscating actions available.",
+      "Wrong: the scan scope does not affect which actions are available; sampling does."
+    ],
+    "ref": "https://docs.datadoghq.com/security/sensitive_data_scanner/setup/telemetry_data/#add-a-scanning-group",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-017",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "medium",
+    "q": "A Sensitive Data Scanner rule applies the Mask action to email addresses in APM spans. A user has the `data_scanner_unmask` permission. Where can that user see the original values?",
+    "options": [
+      "In the Trace Explorer and on the Findings page",
+      "Only through the Datadog API and Terraform",
+      "Nowhere, because masking cannot be reversed"
+    ],
+    "answer": 0,
+    "explanation": "Users with `Data Scanner Unmask` can unmask values for indexed logs, APM spans and RUM events in the Datadog UI, such as the Findings page and the Trace Explorer. Masked data accessed through the API, Terraform or archives always stays obfuscated.",
+    "notes": [
+      "Correct: the eye icon reveals masked values on the Findings page and in the Log, Trace and RUM Explorers.",
+      "Wrong: masked data accessed programmatically, such as through the API or Terraform, always appears obfuscated.",
+      "Wrong: Mask is reversible for permitted users; Redact, Partially redact and Hash are the irreversible actions."
+    ],
+    "ref": "https://docs.datadoghq.com/security/sensitive_data_scanner/setup/telemetry_data/#mask-action",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-018",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "medium",
+    "q": "A Live Debugger service and environment are set to Strict Mode. Which captured values are still shown without redaction?",
+    "options": [
+      "Numbers and Booleans",
+      "All values except those of identifiers such as `password`",
+      "Values that match no known PII pattern and no high-entropy secret"
+    ],
+    "answer": 0,
+    "explanation": "Strict Mode redacts all captured values except numbers and Booleans. Targeted Mode redacts only known sensitive patterns and likely high-entropy secrets.",
+    "notes": [
+      "Correct: Strict Mode keeps only numbers and Booleans visible.",
+      "Wrong: identifier-based redaction applies in every mode; Strict Mode redacts much more.",
+      "Wrong: this describes Targeted Mode, not Strict Mode."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/live_debugger/sensitive-data-scrubbing/#mode-based-redaction",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-019",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "medium",
+    "q": "A team wants Live Debugger to redact the variables `firstName` and `phoneNumber` before snapshots leave the host. Where should they set `DD_DYNAMIC_INSTRUMENTATION_REDACTED_IDENTIFIERS=firstName,phoneNumber`?",
+    "options": [
+      "On the Datadog Agent container, next to `DD_APM_REPLACE_TAGS`",
+      "In the environment of the instrumented application",
+      "On the Live Debugger Settings page, next to the redaction mode"
+    ],
+    "answer": 1,
+    "explanation": "Identifier redaction is done by the SDK, so the variable goes in the application's environment, not on `datadog-agent`. The values are redacted in your infrastructure and never uploaded.",
+    "notes": [
+      "Wrong: the docs say to set it in the application's environment, not on the Agent.",
+      "Correct: the SDK reads it and redacts these identifiers before upload.",
+      "Wrong: this is an environment variable, not a UI setting; the Settings page manages enablement and redaction mode."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/live_debugger/sensitive-data-scrubbing/#custom-identifier-redaction",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-sec-020",
+    "topic": "Application Instrumentation",
+    "subtopic": "APM Data Security",
+    "difficulty": "easy",
+    "q": "Which permission is required to create Dynamic Instrumentation probes that capture local variables, method arguments and return values?",
+    "options": [
+      "`debugger_write`",
+      "`live_debugger_redaction_write`",
+      "`debugger_capture_variables`"
+    ],
+    "answer": 2,
+    "explanation": "Dynamic Instrumentation Capture Variables (`debugger_capture_variables`, Datadog Admin Role by default) is needed for probes that capture function state.",
+    "notes": [
+      "Wrong: `debugger_write` covers probes that do not capture function state.",
+      "Wrong: this permission changes Live Debugger redaction rules; it does not create probes.",
+      "Correct: capturing variables, arguments, fields and return values needs this permission."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/rbac/permissions/#apm",
+    "verified": "2026-11"
+  }
+]

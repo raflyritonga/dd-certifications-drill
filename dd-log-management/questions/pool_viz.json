@@ -1,0 +1,632 @@
+[
+  {
+    "id": "lm-viz-001",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "easy",
+    "q": "In the Log Explorer list of individual logs, how are logs sorted by default?",
+    "options": [
+      "By service name, in alphabetical order from A to Z",
+      "By status, with `error` logs on top",
+      "By timestamp, with the most recent logs on top"
+    ],
+    "answer": 2,
+    "explanation": "The default sort for the list visualization is by timestamp with the most recent logs on top. Datadog calls this the fastest and recommended sort for general purposes.",
+    "notes": [
+      "Wrong: you can sort a column lexicographically by a facet, but that is not the default.",
+      "Wrong: status is a column you can sort on, but it is not the default sort.",
+      "Correct: timestamp, newest first, is the default and the fastest sort, recommended for general use."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#list-of-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-002",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "An engineer adds the attribute `@cart.total` as a column in the Log Explorer list and sorts by it, but the order looks inconsistent. What should they do?",
+    "options": [
+      "Declare a facet on `@cart.total` before sorting by that column",
+      "Raise the Content Height in the Options menu so every value is visible",
+      "Switch to the Patterns view and sort the patterns by `@cart.total`"
+    ],
+    "answer": 0,
+    "explanation": "Any attribute or tag can be added as a column, but non-faceted columns do not sort reliably. Declaring a facet first makes sorting reliable.",
+    "notes": [
+      "Correct: any attribute can be a column, but sorting is only reliable on a declared facet.",
+      "Wrong: Content Height only changes how much of each log row is displayed, not sort order.",
+      "Wrong: pattern lists are sorted by the number of matching events, not by an attribute value."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#list-of-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-003",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "hard",
+    "q": "After you group logs into Transactions in the Log Explorer, how is the resulting list sorted by default?",
+    "options": [
+      "By number of matching events per transaction, descending",
+      "By transaction ID, ascending (A to Z)",
+      "By transaction Duration, longest first"
+    ],
+    "answer": 1,
+    "explanation": "List aggregates of logs are sorted by event count descending for patterns, and by transaction id in ascending (A to Z) order for transactions.",
+    "notes": [
+      "Wrong: descending event count is the default sort for Patterns, not Transactions.",
+      "Correct: transaction aggregates default to ascending lexicographic order of the transaction id.",
+      "Wrong: Duration is an automatically added measure, but it is not the default sort."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#list-aggregates-of-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-004",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "You build a Log Explorer timeseries of `count unique of` `@usr.id`. Which display type does Datadog recommend for this aggregation?",
+    "options": [
+      "Areas",
+      "Lines",
+      "Bars"
+    ],
+    "answer": 2,
+    "explanation": "Timeseries can be displayed as bars, lines, or areas. Datadog recommends bars for counts and unique counts, and lines for statistical aggregations.",
+    "notes": [
+      "Wrong: areas are available but are not the recommendation for unique counts.",
+      "Wrong: lines are recommended for statistical aggregations such as avg or percentiles.",
+      "Correct: bars are recommended for counts and unique counts."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#timeseries",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-005",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "A teammate wants one Log Explorer timeseries of error counts split by `service`, `env`, and `version`. Is this possible?",
+    "options": [
+      "Yes; a timeseries can be split by more than one facet, so three works",
+      "No; like a Top List, a timeseries can be split by only one group-by facet",
+      "No; only the Table visualization can group by more than one facet"
+    ],
+    "answer": 0,
+    "explanation": "Only Top List is limited to one dimension. The Log Visualizations page says a timeseries can be split by up to three facets, and the Log Analytics page lists up to four dimensions for Timeseries, Table, Tree Map, and Pie Chart, so three facets is allowed under either statement.",
+    "notes": [
+      "Correct: Timeseries supports several group-by dimensions (up to three per the Visualizations page, up to four per Log Analytics).",
+      "Wrong: the one-dimension limit applies to Top List, not Timeseries.",
+      "Wrong: Timeseries, Table, Tree Map, and Pie Chart all support multiple dimensions."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#visualize-log-groups",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-006",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "A nested table groups logs by `@http.url_details.path` and shows three measures in this order: count, p95 of `@duration`, and count unique of `host`. Which measure decides which paths appear as the top rows?",
+    "options": [
+      "Each measure ranks the paths separately in its own column",
+      "Count unique of `host`, because it is the last measure added",
+      "Count, because it is the first measure in the list"
+    ],
+    "answer": 2,
+    "explanation": "Nested tables rank values by the first measure you choose and display the other measures for those rows.",
+    "notes": [
+      "Wrong: the table has one ranking, driven by the first measure.",
+      "Wrong: additional measures are only displayed for the rows chosen by the first measure.",
+      "Correct: when there are multiple measures, the top or bottom list is determined by the first measure."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#nested-tables",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-007",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "hard",
+    "q": "In a Log Explorer nested table grouped by `availability-zone` then `version`, the subtotal for one zone is larger than the sum of the version rows shown under it. Why?",
+    "options": [
+      "Only the top or bottom subset of versions is shown, and null or empty versions are not shown as a sub-group",
+      "Subtotals are computed from a 10,000-log sample, while the version rows use every indexed log in the time frame",
+      "Subtotals include Flex Logs, while the rows only read Standard Indexes"
+    ],
+    "answer": 0,
+    "explanation": "Because a nested table only displays the top or bottom subset of each group, and drops null or empty values as sub-groups, a subtotal can differ from the sum of visible rows.",
+    "notes": [
+      "Correct: the docs state the subtotal may differ because only a subset is displayed and null or empty values are not sub-groups.",
+      "Wrong: the 10,000-log sample applies to pattern detection, not table subtotals.",
+      "Wrong: the docs give no storage-tier difference between subtotals and rows."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#nested-tables",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-008",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "Which Log Explorer visualizations let you add several queries (A, B, ...) with the + Add button next to the query editor?",
+    "options": [
+      "Timeseries and Table",
+      "Top List and Pie Chart",
+      "Every visualization, including the list of logs"
+    ],
+    "answer": 0,
+    "explanation": "Multiple queries are supported in Timeseries and Table visualizations. A new query starts as a copy of the last query and its grouping options.",
+    "notes": [
+      "Correct: multiple queries are supported in the Timeseries and Table visualizations.",
+      "Wrong: the docs list only Timeseries and Table for multiple queries.",
+      "Wrong: it is functions, not multiple queries, that are supported in all visualizations."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#multiple-queries",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-009",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "hard",
+    "q": "An analyst creates query A (`@merchant.tier:enterprise`, count unique of `@cart_id`, grouped by `@store.name`) and query B (`@merchant.tier:premium`, same measure, grouped by `service`). The formula `a / b` does not give a per-store ratio. What is wrong?",
+    "options": [
+      "Formulas only accept the `count` measure, not count unique",
+      "All queries in a formula must be grouped by the same field",
+      "A Timeshift function must be applied before dividing queries"
+    ],
+    "answer": 1,
+    "explanation": "Log Explorer formulas across multiple queries require every query to be grouped by the same query search value. Here A is grouped by `@store.name` and B by `service`.",
+    "notes": [
+      "Wrong: the docs' own formula example divides two unique counts.",
+      "Correct: to apply formulas with multiple queries, all queries must be grouped by the same query search value.",
+      "Wrong: Timeshift is optional and is used to compare with an earlier period."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#formulas",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-010",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "An SRE graphs a formula for the ratio of error logs to all logs and wants to compare it with the same window one week earlier. Which function should they apply to the formula?",
+    "options": [
+      "A Timeshift function, such as `calendar_shift()` with `-7d`",
+      "A Rollup function with an interval of `604800` seconds (one week)",
+      "An Exclusion function such as `cutoff_min()`"
+    ],
+    "answer": 0,
+    "explanation": "Timeshift functions show values from an earlier period next to current values, and they can be applied to log formulas with the Σ icon. `week_before()` is being deprecated in favour of calendar shift with `-7d`.",
+    "notes": [
+      "Correct: Timeshift functions graph values from an earlier period; calendar shift `-7d` replaces the deprecated `week_before()`.",
+      "Wrong: a rollup changes the time aggregation bucket size; it does not shift data back in time.",
+      "Wrong: exclusion functions drop or clamp values; they do not compare periods."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/functions/timeshift/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-011",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "A team excludes 90% of `service:cdn` logs with an index exclusion filter, then builds a Log Explorer top list of CDN requests by country. The counts look far too low. Why?",
+    "options": [
+      "Top lists only show approximate counts, capped at the top 10 values of the facet",
+      "Top lists sample at most 10,000 logs per query",
+      "Aggregations only count indexed logs, so excluded logs are missing"
+    ],
+    "answer": 2,
+    "explanation": "Log Explorer aggregations are supported for indexed logs only. To aggregate excluded logs, generate log-based metrics, temporarily disable exclusion filters, or rehydrate from archives.",
+    "notes": [
+      "Wrong: the docs describe no such approximation or top-10 limit.",
+      "Wrong: the 10,000-log sample applies to pattern detection, not top lists.",
+      "Correct: aggregations are supported for indexed logs only; use log-based metrics or rehydration for the rest."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-012",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "easy",
+    "q": "You want the number of distinct users (`@usr.id`) who hit errors, per service, in the Log Explorer. Which aggregation do you choose?",
+    "options": [
+      "`max` of `@usr.id`, grouped by `service`",
+      "`count` of logs, grouped by `@usr.id`",
+      "`count unique of` `@usr.id`, grouped by `service`"
+    ],
+    "answer": 2,
+    "explanation": "When grouping by fields you can compute count of logs, count of unique values (`count unique of`), or statistics such as min, max, avg, and percentiles. Distinct users per service is a unique count grouped by service.",
+    "notes": [
+      "Wrong: statistical operations such as max apply to numerical values, not to counting distinct users.",
+      "Wrong: this counts log lines per user, not the number of distinct users per service.",
+      "Correct: count unique gives the number of distinct values per group."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#group-logs-by-fields",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-013",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "easy",
+    "q": "By default, which field do Log Patterns cluster on, and how are the results grouped?",
+    "options": [
+      "They cluster on `error.stack` and group results by Status only",
+      "They cluster on `service` and group results by Host and Source",
+      "They cluster on `message` and group results by Status and Service"
+    ],
+    "answer": 2,
+    "explanation": "By default, Log Patterns cluster logs with similar `message` values and group the results by Status and Service. You can choose other attributes for clustering or grouping.",
+    "notes": [
+      "Wrong: the default clustered field is `message`, and grouping uses both Status and Service.",
+      "Wrong: Service is a grouping, not the clustered field, and Host/Source are not the defaults.",
+      "Correct: the default is similar `message` values, grouped by Status and Service."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/patterns/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-014",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "An on-call engineer runs Patterns on a very broad query and a rare error message does not show up. What explains this, and what helps?",
+    "options": [
+      "Patterns only cover the last 15 minutes, so widening the time range helps",
+      "Pattern detection uses 10,000 log samples, so narrowing the query helps",
+      "Patterns hide `error` logs unless Status is removed from the grouping"
+    ],
+    "answer": 1,
+    "explanation": "Pattern detection is based on 10,000 log samples. Refining the search narrows patterns to a specific subset of logs, so rare messages are more likely to appear.",
+    "notes": [
+      "Wrong: patterns follow the selected time range; there is no fixed 15-minute window.",
+      "Correct: detection is based on 10,000 samples; refine the search to see patterns for a smaller subset.",
+      "Wrong: Status is a default grouping, which separates errors rather than hiding them."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/patterns/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-015",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "You want to see how many hosts, or which regions, are involved in the variable part of a log pattern. Which feature shows this distribution?",
+    "options": [
+      "Watchdog Insights, which surfaces outliers in the Log Explorer",
+      "The View in context button of the log side panel",
+      "The Pattern Inspector tab of the pattern side panel"
+    ],
+    "answer": 2,
+    "explanation": "In the Patterns view, aggregate values are highlighted in yellow. Clicking one opens the pattern side panel, where the Pattern Inspector tab shows the distribution of its values, such as hosts or regions.",
+    "notes": [
+      "Wrong: Watchdog Insights surfaces anomalies and outliers, not the value breakdown of a pattern.",
+      "Wrong: View in context shows logs just before and after one log.",
+      "Correct: Pattern Inspector gives a visual breakdown of the underlying values of a pattern's aggregate values."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/patterns/#pattern-inspector",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-016",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "hard",
+    "q": "You group logs into Transactions by `@requestId` with the query `status:error`. Which logs does each resulting transaction include?",
+    "options": [
+      "Only logs matching `status:error`, grouped by `@requestId`",
+      "Only the first and last log for each `@requestId`, used to compute Duration",
+      "All logs of each matching transaction, even ones without `status:error`"
+    ],
+    "answer": 2,
+    "explanation": "Unlike the Fields grouping, transaction aggregates include not only logs matching the query but all logs belonging to those transactions.",
+    "notes": [
+      "Wrong: that describes the Fields grouping, not Transactions.",
+      "Wrong: first and last logs only set the Duration; the transaction holds all its logs.",
+      "Correct: transaction aggregates include all logs belonging to the related transactions, not only matching logs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/transactions/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-017",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "Which two measures are added automatically when you group logs into Transactions?",
+    "options": [
+      "Count and Duration",
+      "Duration and Maximum Severity",
+      "Maximum Severity and the most frequent `service`"
+    ],
+    "answer": 1,
+    "explanation": "Transactions automatically include Duration, the difference between the last and first log timestamps, and Maximum Severity found in the transaction's logs.",
+    "notes": [
+      "Wrong: Count is not one of the two automatically added transaction measures.",
+      "Correct: Duration (last minus first timestamp) and Maximum Severity are added automatically.",
+      "Wrong: most frequent is a Find Key Items operation you add yourself."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/transactions/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-018",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "What is the maximum number of individual logs you can export to CSV at once from the Log Explorer?",
+    "options": [
+      "100,000",
+      "10,000",
+      "1,000"
+    ],
+    "answer": 0,
+    "explanation": "You can export up to 100,000 individual logs to CSV at once, 300 patterns, or 500 transactions.",
+    "notes": [
+      "Correct: CSV export allows up to 100,000 individual logs (300 for Patterns, 500 for Transactions).",
+      "Wrong: 10,000 is the pattern sample size, not the CSV limit.",
+      "Wrong: 1,000 is the maximum the Logs API returns per call without pagination."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/export/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-019",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "easy",
+    "q": "You built a useful log timeseries in the Log Explorer and want it on your team's incident dashboard. What is the most direct way?",
+    "options": [
+      "Save it as a Saved View and pin that view on the dashboard",
+      "Use Export and send it to a dashboard as a widget",
+      "Generate a new metric from it, because dashboards cannot show log queries"
+    ],
+    "answer": 1,
+    "explanation": "From the Log Explorer you can export your current exploration as a dashboard or notebook widget for reporting or consolidation.",
+    "notes": [
+      "Wrong: Saved Views restore an Explorer context; they are not dashboard widgets.",
+      "Correct: Export lets you save the exploration as a dashboard widget for reporting.",
+      "Wrong: dashboards can show log queries directly; metrics are for long-term KPIs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/export/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-020",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "easy",
+    "q": "A manager asks: \"What share of today's error logs comes from each service, as a percentage of the total?\" Which Log Explorer visualization fits best?",
+    "options": [
+      "Timeseries",
+      "List of logs",
+      "Pie chart"
+    ],
+    "answer": 2,
+    "explanation": "A pie chart organizes and shows data as a percentage of a whole, which is what a share-by-service question needs.",
+    "notes": [
+      "Wrong: a timeseries shows evolution over time, not share of a whole.",
+      "Wrong: a list shows individual logs, not proportions.",
+      "Correct: a pie chart shows data as a percentage of a whole, for example by service."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#pie-chart",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-021",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "easy",
+    "q": "Which Log Explorer visualization shows parts of a whole as nested rectangles, using both size and color, and can show a hierarchy when you select several attributes?",
+    "options": [
+      "Top list",
+      "Tree map",
+      "Pie chart"
+    ],
+    "answer": 1,
+    "explanation": "A tree map shows data as a percentage of a whole in nested rectangles, compares dimensions by size and color, and shows a hierarchy when multiple attributes are selected.",
+    "notes": [
+      "Wrong: a top list ranks values of one facet as bars.",
+      "Correct: tree maps display data in nested rectangles and show a hierarchy for multiple attributes.",
+      "Wrong: a pie chart also shows parts of a whole, but as radial slices, not rectangles."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#tree-map",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-022",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "easy",
+    "q": "A team wants a dashboard tile that shows one number: the total count of `status:error` logs over the dashboard time frame, with a red background above 500. Which widget fits?",
+    "options": [
+      "Timeseries widget with a horizontal marker line at 500",
+      "Query Value widget with conditional formatting",
+      "List widget with the Logs data source"
+    ],
+    "answer": 1,
+    "explanation": "The Query Value widget reduces a metric, APM, or log query to a single value and supports conditional formatting such as a red background.",
+    "notes": [
+      "Wrong: a timeseries shows a line over time, not a single value.",
+      "Correct: Query Value shows one aggregated value from a log query, with conditional background colors.",
+      "Wrong: the List widget shows individual events, not one aggregated number."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/widgets/query_value/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-023",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "easy",
+    "q": "A team wants a dashboard widget that shows the latest individual `service:payments` error logs, as in the Log Explorer list. Which widget should they add?",
+    "options": [
+      "The List widget with the Logs data source",
+      "The Top List widget with a log query",
+      "The Query Value widget with a log query"
+    ],
+    "answer": 0,
+    "explanation": "The List widget displays individual events from sources such as Logs. The Log Stream widget page now directs users to view the log stream through the List widget.",
+    "notes": [
+      "Correct: the List widget with Logs displays individual log events; the old Log Stream widget points to it.",
+      "Wrong: Top List ranks aggregated values; it does not show individual logs.",
+      "Wrong: Query Value shows a single aggregated number."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/widgets/list/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-024",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "Some of a team's logs are stored in Flex Logs. They want a dashboard List widget that can also show those logs. What should they do?",
+    "options": [
+      "Add `storage:flex` to the widget's search query",
+      "Set the widget's storage location to Standard Indexes + Flex Logs",
+      "Rehydrate the Flex logs first; dashboard widgets only read Standard Indexes"
+    ],
+    "answer": 1,
+    "explanation": "Depending on your logs configuration, the List widget's Logs data source lets you select the storage location: Standard Indexes, Standard Indexes + Flex Logs, or Online Archives.",
+    "notes": [
+      "Wrong: storage is chosen as a widget option, not with a query term.",
+      "Correct: depending on configuration, the Logs source offers Standard Indexes, Standard Indexes + Flex Logs, or Online Archives.",
+      "Wrong: the List widget can read Flex Logs directly when it is configured."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/widgets/list/#options",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-025",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "hard",
+    "q": "In a notebook, you click and drag across a log timeseries graph to zoom in on a spike. What happens?",
+    "options": [
+      "The notebook's global time changes, and the graph stays linked to it",
+      "Only that graph is unlinked from global time and zoomed in",
+      "The zoomed range is immediately saved as the notebook's default time"
+    ],
+    "answer": 0,
+    "explanation": "By default every notebook graph is linked to the global time. Dragging to zoom does not unlink the graph; it changes the notebook's global time, which is saved only if you click Set Default Time.",
+    "notes": [
+      "Correct: click-and-drag zoom changes the notebook's global time instead of unlinking the graph.",
+      "Wrong: dragging does not unlink the graph; you unlink it by editing it and turning off Global Time.",
+      "Wrong: the new time is only in the URL until you click Set Default Time."
+    ],
+    "ref": "https://docs.datadoghq.com/notebooks/#time-controls",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-026",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "During an incident, an engineer wants to keep one specific log event in a postmortem notebook so it stays readable after the log ages out of retention. What should they do?",
+    "options": [
+      "Use Save to notebook from the log event side panel",
+      "Use Share Event in the log side panel to send the log to the notebook",
+      "Create a Saved View for the log and link it in the notebook"
+    ],
+    "answer": 0,
+    "explanation": "Selecting Save to notebook in the log side panel saves the individual log in a reader-friendly format that stays in the notebook after the log event ages out of retention.",
+    "notes": [
+      "Correct: logs saved to notebooks keep their reader-friendly display even after the log ages out of retention.",
+      "Wrong: Share Event shares the log and its view with teammates through email, Slack, and other notification integrations; it does not keep a copy in a notebook.",
+      "Wrong: a Saved View reruns a query on indexed data, which disappears after retention."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/export/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-027",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "A dashboard timeseries has query A `status:error` and query B `*` (both log counts) and the formula `a / b * 100`. The team wants only the formula line on the graph. What should they do?",
+    "options": [
+      "Delete queries A and B; the formula keeps using their last returned results",
+      "Wrap the formula in `exclude_null()` to hide the raw queries",
+      "Click the A and B letter labels to hide them; the formula still uses them"
+    ],
+    "answer": 2,
+    "explanation": "Clicking a query's letter label toggles its visibility: blue means displayed, grey means hidden. A hidden query is still used in the formula calculation.",
+    "notes": [
+      "Wrong: the formula needs its queries; deleting them breaks it.",
+      "Wrong: `exclude_null()` removes groups with N/A values; it does not hide queries.",
+      "Correct: a grey letter label hides the query from the graph, but the query is still used in the formula."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/querying/#hide-a-query-from-the-visualization",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-028",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "hard",
+    "q": "A widget has log queries `a` and `b` and two formulas, `a / b` and `a - b`. A user wants a third formula that divides the first formula by the second. What happens?",
+    "options": [
+      "It works, because formulas are named `f1` and `f2` and can be referenced",
+      "It is not possible, because formulas are not lettered and cannot be combined",
+      "It works only if both formulas use the same group-by"
+    ],
+    "answer": 1,
+    "explanation": "Each query gets a letter for use in formulas, but formulas are not lettered and arithmetic cannot be done between formulas. Write one formula from the queries instead, such as `(a / b) / (a - b)`.",
+    "notes": [
+      "Wrong: formulas do not get letters or names that other formulas can reference.",
+      "Correct: formulas are not lettered, and arithmetic cannot be done between formulas.",
+      "Wrong: sharing a group-by does not make formulas referenceable."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/querying/#advanced-graphing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-029",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "You want a dashboard formula that returns, at each timestamp, the lower of two log counts: `status:error` and `status:warn`. Which syntax is current?",
+    "options": [
+      "`minimum(status:error, status:warn)`",
+      "`min by(status:error, status:warn)`",
+      "`min(status:error, status:warn)`"
+    ],
+    "answer": 0,
+    "explanation": "`minimum()` and `maximum()` compare two queries point by point and return the lower or higher value at each timestamp. Using `min()` and `max()` for this is deprecated.",
+    "notes": [
+      "Correct: `minimum()` compares two queries point by point, even across products.",
+      "Wrong: `min by` is a space aggregation method, not a comparison between two queries.",
+      "Wrong: using `min()` for arithmetic comparison is deprecated."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/querying/#advanced-graphing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-viz-030",
+    "topic": "Log Analysis",
+    "subtopic": "Visualizing",
+    "difficulty": "medium",
+    "q": "A dashboard has several log widgets. You want a template variable that filters them on the HTTP status code attribute. How is this template variable defined?",
+    "options": [
+      "On a tag only, because log attributes cannot back template variables",
+      "On the facet, written with `@`, for example `@http.status_code`",
+      "On the facet, written without `@`, for example `http.status_code`"
+    ],
+    "answer": 1,
+    "explanation": "Template variables work with log, APM, and RUM widgets. You can define them on facets, and these variables start with `@`, for example `@http.status_code`.",
+    "notes": [
+      "Wrong: template variables can use a tag or an attribute (facet or measure).",
+      "Correct: log, APM, and RUM template variables based on facets start with `@`.",
+      "Wrong: facet-based template variables for logs start with `@`."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/template_variables/#logs-apm-and-rum-queries",
+    "verified": "2026-11"
+  }
+]

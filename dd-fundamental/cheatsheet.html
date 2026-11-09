@@ -5,12 +5,13 @@
     <div class="toc" aria-label="Jump to section">
       <button data-jumpto="cs-ports">Ports</button>
       <button data-jumpto="cs-dsd">DogStatsD</button>
-      <button data-jumpto="cs-types">Metric types</button>
       <button data-jumpto="cs-allot">Allotments &amp; billing</button>
       <button data-jumpto="cs-cm">Custom metrics</button>
+      <button data-jumpto="cs-types">Metric types</button>
       <button data-jumpto="cs-agent">Agent files &amp; commands</button>
       <button data-jumpto="cs-keys">Keys &amp; API</button>
       <button data-jumpto="cs-int">Integrations &amp; Autodiscovery</button>
+      <button data-jumpto="cs-apm">APM &amp; ddtrace</button>
       <button data-jumpto="cs-tags">Tags &amp; search</button>
       <button data-jumpto="cs-viz">Graphs &amp; dashboards</button>
       <button data-jumpto="cs-mon">Monitors</button>
@@ -164,30 +165,6 @@ statsd.histogram("request.latency", 0.23)</pre>
     <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/developers/dogstatsd/" target="_blank" rel="noopener">DogStatsD</a> <a href="https://docs.datadoghq.com/developers/dogstatsd/datagram_shell/" target="_blank" rel="noopener">Datagram format</a> <a href="https://docs.datadoghq.com/metrics/custom_metrics/dogstatsd_metrics_submission/" target="_blank" rel="noopener">Submitting metrics</a> <a href="https://docs.datadoghq.com/developers/dogstatsd/unix_socket/" target="_blank" rel="noopener">Unix Domain Socket</a> <a href="https://docs.datadoghq.com/containers/docker/" target="_blank" rel="noopener">Docker setup</a></p>
   </section>
 
-  <!-- METRIC TYPES -->
-  <section class="panel" id="cs-types">
-    <h2>Metric types and timeseries</h2>
-    <p class="hint">Values <code>[1,1,1,2,2,2,3,3]</code> received in a 10-second flush interval:</p>
-    <div class="tbl"><table>
-      <thead><tr><th>Type</th><th>Result</th><th>Use it for</th></tr></thead>
-      <tbody>
-        <tr><td>COUNT</td><td>15 (sum)</td><td>Number of events in the interval: requests handled, errors</td></tr>
-        <tr><td>RATE</td><td>1.5 per second (15 / 10 s)</td><td>Events per second</td></tr>
-        <tr><td>GAUGE</td><td>Last value received</td><td>A snapshot: queue depth, memory used, temperature</td></tr>
-        <tr><td>HISTOGRAM</td><td>avg 1.88 · count 0.8 · median 2 · p95 3 · max 3</td><td>Per-host statistics: latency on one host</td></tr>
-        <tr><td>DISTRIBUTION</td><td>Raw values kept; avg, count, min, max, sum and optional p50/p75/p90/p95/p99 across all hosts</td><td>Fleet-wide percentiles</td></tr>
-      </tbody>
-    </table></div>
-    <ul class="notes hint">
-      <li>A metric = name + value + timestamp + tags (+ type, + interval for COUNT/RATE). Values are 32-bit, not dates.</li>
-      <li>Timestamps: up to 10 minutes in the future and 1 hour in the past. Fractions of a second are rounded to the nearest second.</li>
-      <li>Names: start with a letter, ASCII letters, digits, <code>_</code> and <code>.</code> only (others become <code>_</code>), max 200 characters, case-sensitive.</li>
-      <li>Retention: 15 months. A metric sent with no type shows as "Not Assigned".</li>
-      <li>Values sent straight to the API are stored as-is; the Agent and DogStatsD aggregate per flush interval first.</li>
-    </ul>
-    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/metrics/types/" target="_blank" rel="noopener">Metric types</a> <a href="https://docs.datadoghq.com/metrics/" target="_blank" rel="noopener">Metrics overview</a> <a href="https://docs.datadoghq.com/metrics/distributions/" target="_blank" rel="noopener">Distributions</a> <a href="https://docs.datadoghq.com/metrics/custom_metrics/" target="_blank" rel="noopener">Custom metrics rules</a> <a href="https://docs.datadoghq.com/developers/guide/data-collection-resolution-retention/" target="_blank" rel="noopener">Resolution and retention</a></p>
-  </section>
-
   <!-- ALLOTMENTS -->
   <section class="panel" id="cs-allot">
     <div class="cs-head"><h2>Allotments and billing</h2><span class="badge">Exam-heavy</span></div>
@@ -281,6 +258,30 @@ statsd.histogram("request.latency", 0.23)</pre>
       <li>See near-real-time counts for one metric in Metrics Summary; account totals on the Usage page.</li>
     </ul>
     <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/account_management/billing/custom_metrics/" target="_blank" rel="noopener">Custom metrics billing</a> <a href="https://docs.datadoghq.com/metrics/custom_metrics/" target="_blank" rel="noopener">Custom metrics</a> <a href="https://docs.datadoghq.com/metrics/summary/" target="_blank" rel="noopener">Metrics Summary</a></p>
+  </section>
+
+  <!-- METRIC TYPES -->
+  <section class="panel" id="cs-types">
+    <h2>Metric types and timeseries</h2>
+    <p class="hint">Values <code>[1,1,1,2,2,2,3,3]</code> received in a 10-second flush interval:</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Type</th><th>Result</th><th>Use it for</th></tr></thead>
+      <tbody>
+        <tr><td>COUNT</td><td>15 (sum)</td><td>Number of events in the interval: requests handled, errors</td></tr>
+        <tr><td>RATE</td><td>1.5 per second (15 / 10 s)</td><td>Events per second</td></tr>
+        <tr><td>GAUGE</td><td>Last value received</td><td>A snapshot: queue depth, memory used, temperature</td></tr>
+        <tr><td>HISTOGRAM</td><td>avg 1.88 · count 0.8 · median 2 · p95 3 · max 3</td><td>Per-host statistics: latency on one host</td></tr>
+        <tr><td>DISTRIBUTION</td><td>Raw values kept; avg, count, min, max, sum and optional p50/p75/p90/p95/p99 across all hosts</td><td>Fleet-wide percentiles</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>A metric = name + value + timestamp + tags (+ type, + interval for COUNT/RATE). Values are 32-bit, not dates.</li>
+      <li>Timestamps: up to 10 minutes in the future and 1 hour in the past. Fractions of a second are rounded to the nearest second.</li>
+      <li>Names: start with a letter, ASCII letters, digits, <code>_</code> and <code>.</code> only (others become <code>_</code>), max 200 characters, case-sensitive.</li>
+      <li>Retention: 15 months. A metric sent with no type shows as "Not Assigned".</li>
+      <li>Values sent straight to the API are stored as-is; the Agent and DogStatsD aggregate per flush interval first.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/metrics/types/" target="_blank" rel="noopener">Metric types</a> <a href="https://docs.datadoghq.com/metrics/" target="_blank" rel="noopener">Metrics overview</a> <a href="https://docs.datadoghq.com/metrics/distributions/" target="_blank" rel="noopener">Distributions</a> <a href="https://docs.datadoghq.com/metrics/custom_metrics/" target="_blank" rel="noopener">Custom metrics rules</a> <a href="https://docs.datadoghq.com/developers/guide/data-collection-resolution-retention/" target="_blank" rel="noopener">Resolution and retention</a></p>
   </section>
 
   <!-- AGENT -->
@@ -420,6 +421,84 @@ statsd.histogram("request.latency", 0.23)</pre>
     </table></div>
     <p class="hint">Template variables: <code>%%host%%</code> container IP · <code>%%port%%</code> highest exposed port (<code>%%port_&lt;N&gt;%%</code> for another) · <code>%%env_&lt;VAR&gt;%%</code> environment variable as seen by the Agent · <code>%%pid%%</code> · <code>%%hostname%%</code>.</p>
     <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/getting_started/integrations/" target="_blank" rel="noopener">Integrations intro</a> <a href="https://docs.datadoghq.com/developers/custom_checks/write_agent_check/" target="_blank" rel="noopener">Writing a custom check</a> <a href="https://docs.datadoghq.com/containers/docker/integrations/" target="_blank" rel="noopener">Docker Autodiscovery</a> <a href="https://docs.datadoghq.com/containers/kubernetes/integrations/" target="_blank" rel="noopener">Kubernetes Autodiscovery</a> <a href="https://docs.datadoghq.com/containers/guide/template_variables/" target="_blank" rel="noopener">Template variables</a> <a href="https://docs.datadoghq.com/containers/guide/auto_conf/" target="_blank" rel="noopener">auto_conf files</a> <a href="https://docs.datadoghq.com/integrations/guide/cloud-metric-delay/" target="_blank" rel="noopener">Cloud metric delay</a></p>
+  </section>
+
+  <!-- APM -->
+  <section class="panel" id="cs-apm">
+    <h2>APM and ddtrace (Python)</h2>
+    <p class="hint">The exam guide links the ddtrace "advanced usage" page. Know the vocabulary, how traces reach Datadog, and the main <code>DD_*</code> settings.</p>
+    <div class="tbl plain"><table>
+      <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><b>Trace</b></td><td>One request from start to finish, made of one or more spans</td></tr>
+        <tr><td><b>Span</b></td><td>A logical unit of work in a distributed system for a given period (a function call, a DB query)</td></tr>
+        <tr><td><b>Root span</b></td><td>The first span of a trace: the entry point of the request</td></tr>
+        <tr><td><b>Service</b></td><td>A group of related endpoints, queries or jobs, e.g. <code>web-store</code></td></tr>
+        <tr><td><b>Resource</b></td><td>One endpoint, query or job inside a service, e.g. <code>GET /productpage</code></td></tr>
+      </tbody>
+    </table></div>
+    <p><b>Data path:</b> app with <code>ddtrace</code> → local Agent trace receiver on <b>8126/TCP</b> → Datadog <code>trace.agent.&lt;site&gt;</code> over <b>443</b>. The trace receiver (<code>DD_APM_ENABLED</code>) is on by default.</p>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Install and run</h3>
+        <pre class="code">pip install ddtrace
+ddtrace-run python app.py      # auto-instrument, no code changes
+ddtrace-run --info             # health check + config (env vars only)</pre>
+        <ul class="notes hint">
+          <li>In code instead: <code>import ddtrace.auto</code> as the very first import (not together with <code>ddtrace-run</code>).</li>
+          <li>Turn off one integration: <code>DD_TRACE_&lt;INTEGRATION&gt;_ENABLED=false</code>, e.g. <code>DD_TRACE_DJANGO_ENABLED=false</code>.</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Custom instrumentation</h3>
+        <pre class="code">from ddtrace.trace import tracer
+
+@tracer.wrap()                       # trace a whole function
+def charge(cart):
+    with tracer.trace("checkout.charge", resource="charge_card") as span:
+        span.set_tag("cart.items", len(cart))   # child of the active span
+
+tracer.current_span().set_tag("customer.id", cid)</pre>
+        <p class="hint">Without a <code>with</code> block, call <code>span.finish()</code>, or the span is never sent.</p>
+      </div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Setting</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>DD_SERVICE, DD_ENV, DD_VERSION</td><td>Unified service tags on every span. <code>DD_TAGS</code> adds more global tags</td></tr>
+        <tr><td>DD_AGENT_HOST</td><td>Where the Agent is (default <code>localhost</code>). In containers, the Agent container name or the node IP</td></tr>
+        <tr><td>DD_TRACE_AGENT_PORT</td><td>Agent receiver port (default 8126). Must match the Agent's <code>DD_APM_RECEIVER_PORT</code></td></tr>
+        <tr><td>DD_TRACE_AGENT_URL</td><td>Full address, <code>http://</code> or <code>unix://</code>. Overrides host and port</td></tr>
+        <tr><td>DD_APM_NON_LOCAL_TRAFFIC</td><td><b>Agent side</b>, default <code>false</code>. Set <code>true</code> to accept traces from other containers</td></tr>
+        <tr><td>DD_TRACE_ENABLED</td><td><code>false</code> stops sending traces; instrumentation still runs</td></tr>
+        <tr><td>DD_LOGS_INJECTION</td><td>Adds trace IDs to log records (on by default in recent versions)</td></tr>
+        <tr><td>DD_TRACE_DEBUG</td><td>Debug logs from the tracer; overrides <code>DD_TRACE_LOG_LEVEL</code>. <code>DD_TRACE_LOG_FILE</code> writes them to a file</td></tr>
+        <tr><td>DD_TRACE_SAMPLING_RULES</td><td>Sampling rules (<code>DD_TRACE_SAMPLE_RATE</code> is deprecated). <code>DD_TRACE_RATE_LIMIT</code> default 100 traces/s</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Connecting services and logs</h3>
+        <ul class="notes">
+          <li><b>Distributed tracing</b>: the caller injects trace context into HTTP headers and the callee extracts it (<code>HTTPPropagator.inject</code> / <code>extract</code>). Built in for Flask, Django, Requests, aiohttp and others.</li>
+          <li><b>Threads</b>: pass <code>tracer.current_trace_context()</code> to the thread and call <code>tracer.context_provider.activate(ctx)</code> there. <code>ThreadPoolExecutor</code> and asyncio carry it automatically.</li>
+          <li><b>Logs injection</b> adds <code>dd.trace_id</code>, <code>dd.span_id</code>, <code>dd.service</code>, <code>dd.env</code>, <code>dd.version</code> to log records. Your log format must include them, e.g. <code>%(dd.trace_id)s</code>.</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Filtering and sampling</h3>
+        <pre class="code">class DropHealthChecks(TraceFilter):
+    def process_trace(self, trace):
+        for span in trace:
+            if span.resource == "GET /health":
+                return None        # drop the whole trace
+        return trace
+
+tracer.configure(trace_processors=[DropHealthChecks()])</pre>
+        <p class="hint">Sampling is head-based by default: the keep or drop decision is made at the root span and passed downstream. The Agent targets 10 traces/s by default (<code>DD_APM_TARGET_TPS</code>).</p>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://ddtrace.readthedocs.io/en/stable/advanced_usage.html" target="_blank" rel="noopener">ddtrace advanced usage</a> <a href="https://ddtrace.readthedocs.io/en/stable/basic_usage.html" target="_blank" rel="noopener">ddtrace basic usage</a> <a href="https://ddtrace.readthedocs.io/en/stable/configuration.html" target="_blank" rel="noopener">ddtrace configuration</a> <a href="https://docs.datadoghq.com/tracing/glossary/" target="_blank" rel="noopener">APM glossary</a> <a href="https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/dd_libraries/python/" target="_blank" rel="noopener">Tracing Python apps</a> <a href="https://docs.datadoghq.com/tracing/trace_collection/library_config/python/" target="_blank" rel="noopener">Python library config</a> <a href="https://docs.datadoghq.com/containers/docker/apm/" target="_blank" rel="noopener">Docker APM</a> <a href="https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/python/" target="_blank" rel="noopener">Connect logs and traces</a> <a href="https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/" target="_blank" rel="noopener">Ingestion and sampling</a></p>
   </section>
 
   <!-- TAGS & SEARCH -->

@@ -624,7 +624,7 @@
   "ref": "https://www.datadoghq.com/pricing/allotments/",
   "notes": [
    "This is the allotment for only 1M invocations, not 5M.",
-   "5M indexed and 750 GB scales the per-APM-host allotment, which does not apply to Lambda.",
+   "That is the APM host allotment (1M indexed spans + 150 GB per host) times 5. Lambda functions aren't APM hosts; Serverless APM is counted per 1M invocations.",
    "Correct: 5 x 300,000 = 1,500,000 indexed spans and 5 x 50 GB = 250 GB."
   ],
   "verified": "2026-10"

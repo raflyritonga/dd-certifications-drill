@@ -1,0 +1,422 @@
+[
+ {
+  "id": "apm-001",
+  "topic": "APM & Tracing",
+  "subtopic": "Concepts",
+  "difficulty": "easy",
+  "q": "In Datadog APM, what does a span represent?",
+  "options": [
+   "The full record of one request across every service it touched",
+   "A logical unit of work in a distributed system for a given period",
+   "A group of related endpoints, queries, or jobs in an application"
+  ],
+  "answer": 1,
+  "explanation": "Datadog defines a span as a logical unit of work in a distributed system for a given period. Multiple spans make up a trace.",
+  "notes": [
+   "That is a trace: it tracks the time spent processing a request and is made of one or more spans.",
+   "Correct: a span is one timed unit of work, for example a single DB query or an HTTP handler.",
+   "That is a service, the APM grouping of related endpoints, queries, or jobs."
+  ],
+  "ref": "https://docs.datadoghq.com/glossary/",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-002",
+  "topic": "APM & Tracing",
+  "subtopic": "Concepts",
+  "difficulty": "medium",
+  "q": "Your `web-store` APM page lists `GET /productpage` and `ShoppingCartController#checkout`. In APM terms, what are these two entries?",
+  "options": [
+   "Resources",
+   "Services",
+   "Root spans"
+  ],
+  "answer": 0,
+  "explanation": "A resource is a particular domain of an application, typically an instrumented web endpoint, database query, or background job. Datadog uses `GET /productpage` and `ShoppingCartController#checkout` as its own examples of resources.",
+  "notes": [
+   "Correct: endpoints, queries, and jobs inside a service are resources.",
+   "The service is `web-store` itself, the group these endpoints belong to.",
+   "A root span is the first span of one trace (the entry point of a request), not a listed endpoint."
+  ],
+  "ref": "https://docs.datadoghq.com/tracing/glossary/",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-003",
+  "topic": "APM & Tracing",
+  "subtopic": "ddtrace-run",
+  "difficulty": "easy",
+  "q": "You want to trace a Python app's supported web framework and database calls without changing any code. How do you start `app.py`?",
+  "options": [
+   "`DD_TRACE_ENABLED=true python app.py`",
+   "`DD_APM_ENABLED=true python app.py`",
+   "`ddtrace-run python app.py`"
+  ],
+  "answer": 2,
+  "explanation": "Prefixing the entry-point command with `ddtrace-run` auto-instruments supported web frameworks and database modules with no code changes.",
+  "notes": [
+   "`DD_TRACE_ENABLED` turns tracing on or off (it defaults to `true`), but it does not load the tracer into a plain `python` run.",
+   "`DD_APM_ENABLED` is an Agent setting that controls whether the Agent accepts traces; it does nothing to the application.",
+   "Correct: `ddtrace-run <command>` loads `ddtrace` and patches supported libraries automatically."
+  ],
+  "ref": "https://ddtrace.readthedocs.io/en/stable/advanced_usage.html",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-004",
+  "topic": "APM & Tracing",
+  "subtopic": "ddtrace-run",
+  "difficulty": "easy",
+  "q": "The Datadog Agent is already running on the host. Which command installs the Python tracing library, which also provides the `ddtrace-run` command?",
+  "options": [
+   "`pip install ddtrace`",
+   "`pip install ddtrace-run`",
+   "`pip install datadog-agent`"
+  ],
+  "answer": 0,
+  "explanation": "The Python setup docs install the tracer with `pip install ddtrace` (pip 18.0.0 or later). `ddtrace-run` is a command that comes with that package.",
+  "notes": [
+   "Correct: `pip install ddtrace` installs the tracer and the `ddtrace-run` wrapper.",
+   "`ddtrace-run` is a command from the `ddtrace` package, not a separate package to install.",
+   "The Agent is a separate prerequisite installed with its own installer, not a Python package added to the app."
+  ],
+  "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/dd_libraries/python/",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-005",
+  "topic": "APM & Tracing",
+  "subtopic": "ddtrace-run",
+  "difficulty": "medium",
+  "q": "You run `ddtrace-run --info` to check your tracer setup. Which statement about its output is true?",
+  "options": [
+   "It lists the traces your app sent to the Agent in the last 15 minutes",
+   "It shows a health check and configuration, but not changes made in code",
+   "It tails the Agent's trace receiver log for requests arriving on port `8126`"
+  ],
+  "answer": 1,
+  "explanation": "`ddtrace-run --info` prints a health check and the tracer configuration. It reflects environment variables only, so settings changed in application code at runtime do not appear.",
+  "notes": [
+   "It reports configuration, not trace data. Search sent traces in the Trace Explorer.",
+   "Correct: use it to confirm environment-based configuration; code-level overrides are not reflected.",
+   "It reads the tracer's own configuration and does not read Agent logs."
+  ],
+  "ref": "https://ddtrace.readthedocs.io/en/stable/advanced_usage.html",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-006",
+  "topic": "APM & Tracing",
+  "subtopic": "Custom Instrumentation",
+  "difficulty": "medium",
+  "q": "This function runs inside a request already traced by the Flask integration:\nfrom ddtrace.trace import tracer\n\ndef checkout(cart):\n    with tracer.trace(\"checkout.charge\", resource=\"charge_card\") as span:\n        span.set_tag(\"cart.items\", len(cart))\n        charge_card(cart)\nWhat does it produce?",
+  "options": [
+   "A new trace with `checkout.charge` as root span, separate from the request's trace",
+   "A new service named `checkout.charge` in the APM service list, with `charge_card` as its only resource",
+   "A tagged `checkout.charge` child span of the request span, closed when the block exits"
+  ],
+  "answer": 2,
+  "explanation": "`tracer.trace()` activates and returns a new span that inherits from the current active span. Used as a context manager, the span finishes automatically when the block exits, and `set_tag` adds the `cart.items` tag.",
+  "notes": [
+   "A new span becomes the child of the active span, so it joins the existing request trace.",
+   "The first argument is the span (operation) name. The service only changes if you pass `service=`.",
+   "Correct: it is a child span with a custom resource and tag, closed at the end of the `with` block."
+  ],
+  "ref": "https://ddtrace.readthedocs.io/en/stable/api.html",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-007",
+  "topic": "APM & Tracing",
+  "subtopic": "Custom Instrumentation",
+  "difficulty": "easy",
+  "q": "Which `ddtrace` API traces an entire function when you apply it as a decorator?",
+  "options": [
+   "`tracer.current_span()`",
+   "`@tracer.wrap()`",
+   "`tracer.configure(trace_processors=[...])`"
+  ],
+  "answer": 1,
+  "explanation": "`tracer.wrap()` is the decorator for tracing a whole function; each call creates a span.",
+  "notes": [
+   "`current_span()` returns the active span so you can tag it. It does not create spans.",
+   "Correct: `@tracer.wrap()` creates a span around every call of the decorated function.",
+   "This registers trace filters (processors) that run before traces are sent. It does not trace a function."
+  ],
+  "ref": "https://ddtrace.readthedocs.io/en/stable/basic_usage.html",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-008",
+  "topic": "APM & Tracing",
+  "subtopic": "Custom Instrumentation",
+  "difficulty": "medium",
+  "q": "A Flask app runs under `ddtrace-run`. Inside a request handler, you want the customer ID of that request as a tag on the active span. Which line do you add?",
+  "options": [
+   "`tracer.current_span().set_tag(\"customer.id\", customer_id)`",
+   "`with tracer.trace(\"customer.id\"): ...` around the handler body",
+   "Set `DD_TAGS=customer.id:<id>` in the app's environment before it starts"
+  ],
+  "answer": 0,
+  "explanation": "`tracer.current_span()` returns the active span in the current execution context, and `set_tag` sets a key/value pair on it, so the tag lands on the span already being traced.",
+  "notes": [
+   "Correct: get the active span and tag it with the per-request value.",
+   "This creates a new child span named `customer.id` instead of tagging the existing span.",
+   "`DD_TAGS` sets static global tags on every span of the process, so it cannot vary per request."
+  ],
+  "ref": "https://ddtrace.readthedocs.io/en/stable/api.html",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-009",
+  "topic": "APM & Tracing",
+  "subtopic": "Troubleshooting",
+  "difficulty": "medium",
+  "q": "During an incident, you set `DD_TRACE_ENABLED=false` on one instrumented Python service and restart it. What happens?",
+  "options": [
+   "The Agent on that host stops accepting traces from all applications",
+   "Only the integrations listed in `DD_PATCH_MODULES` keep sending traces",
+   "That app stops sending trace data, though instrumentation still runs"
+  ],
+  "answer": 2,
+  "explanation": "`DD_TRACE_ENABLED` (default `true`) enables or disables tracing in the SDK. When it is disabled, instrumentation still runs but no trace data is sent.",
+  "notes": [
+   "That is the Agent-side `DD_APM_ENABLED` setting. `DD_TRACE_ENABLED` affects only the app that sets it.",
+   "`DD_PATCH_MODULES` chooses which modules are patched. It does not override a global tracing switch.",
+   "Correct: tracing is off for this app only. Use `DD_TRACE_<INTEGRATION>_ENABLED` to disable one integration."
+  ],
+  "ref": "https://docs.datadoghq.com/tracing/trace_collection/library_config/python/",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-010",
+  "topic": "APM & Tracing",
+  "subtopic": "Configuration",
+  "difficulty": "medium",
+  "q": "An application container has this environment, and the Agent runs in a container named `datadog-agent`:\nDD_AGENT_HOST=datadog-agent\nDD_SERVICE=checkout\nDD_ENV=prod\nWhat does the `DD_AGENT_HOST` line do?",
+  "options": [
+   "It turns on the trace receiver inside the `datadog-agent` container",
+   "It points the tracer at the `datadog-agent` container (port `8126`)",
+   "It sends traces straight to Datadog, skipping the local Agent"
+  ],
+  "answer": 1,
+  "explanation": "`DD_AGENT_HOST` is read by the tracer and sets the host it submits traces to. With no `DD_TRACE_AGENT_PORT` set, it uses the default port `8126`.",
+  "notes": [
+   "The tracer in the app reads this variable. The Agent's trace receiver is controlled by `DD_APM_ENABLED`, which defaults to `true`.",
+   "Correct: point `DD_AGENT_HOST` at the Agent container's name. Port `8126` is the default, so `DD_TRACE_AGENT_PORT` can be left unset.",
+   "The tracer still sends to an Agent; this setting only changes which host that Agent is on."
+  ],
+  "ref": "https://docs.datadoghq.com/containers/docker/apm/",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-011",
+  "topic": "APM & Tracing",
+  "subtopic": "Configuration",
+  "difficulty": "hard",
+  "q": "The Agent runs in its own Docker container with port `8126/tcp` published. An app in a different container has `DD_AGENT_HOST` set correctly, but no traces arrive. Which Agent setting is most likely missing?",
+  "options": [
+   "`DD_APM_NON_LOCAL_TRAFFIC=true`",
+   "`DD_APM_ENABLED=true`",
+   "`DD_TRACE_ENABLED=true`"
+  ],
+  "answer": 0,
+  "explanation": "By default the Agent's trace receiver accepts only local traffic (`DD_APM_NON_LOCAL_TRAFFIC` defaults to `false`). To trace from other containers, set it to `true` on the Agent.",
+  "notes": [
+   "Correct: this lets the Agent accept traces from outside its own container.",
+   "`DD_APM_ENABLED` already defaults to `true`; the Trace Agent is on by default since Agent 6.0.0.",
+   "`DD_TRACE_ENABLED` is a tracer (app-side) setting that defaults to `true`; it is not set on the Agent."
+  ],
+  "ref": "https://docs.datadoghq.com/containers/docker/apm/",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-012",
+  "topic": "APM & Tracing",
+  "subtopic": "Concepts",
+  "difficulty": "medium",
+  "q": "Which describes the default path of traces from a `ddtrace`-instrumented app to Datadog?",
+  "options": [
+   "App straight to Datadog's trace intake over `8126/TCP`, with no Agent involved in the path",
+   "App to the Agent's DogStatsD port `8125/UDP`, then the Agent forwards them to Datadog over `443`",
+   "App to the local Agent on `8126/TCP`, then the Agent forwards them to Datadog over `443`"
+  ],
+  "answer": 2,
+  "explanation": "The tracer submits to the Agent's trace receiver on port `8126/TCP`. The Agent forwards APM data to the `trace.agent.<YOUR_DATADOG_SITE>` endpoint, and most Agent data goes out on port `443` over SSL.",
+  "notes": [
+   "`8126` is the Agent's local receiver port, not a Datadog intake port.",
+   "`8125/UDP` is DogStatsD for custom metrics, not traces.",
+   "Correct: the tracer sends to the Agent on 8126, and the Agent forwards over HTTPS/443."
+  ],
+  "ref": "https://docs.datadoghq.com/agent/configuration/network/",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-013",
+  "topic": "APM & Tracing",
+  "subtopic": "Configuration",
+  "difficulty": "hard",
+  "q": "A service starts with:\nDD_AGENT_HOST=10.0.0.5\nDD_TRACE_AGENT_URL=unix:///var/run/datadog/apm.socket\nWhere does the tracer send traces?",
+  "options": [
+   "To `10.0.0.5:8126`, because `DD_AGENT_HOST` is more specific",
+   "To the Unix domain socket, because `DD_TRACE_AGENT_URL` takes priority",
+   "To both, so a copy reaches each Agent endpoint"
+  ],
+  "answer": 1,
+  "explanation": "`DD_TRACE_AGENT_URL` takes priority over the Agent host and port settings, and `DD_AGENT_HOST` is ignored when it is set. The URL can be `http://` or `unix://`.",
+  "notes": [
+   "`DD_AGENT_HOST` is ignored whenever `DD_TRACE_AGENT_URL` is set.",
+   "Correct: the URL wins. Without either setting, the default is the UDS `/var/run/datadog/apm.socket` if it exists, otherwise `http://localhost:8126`.",
+   "The tracer submits to a single endpoint and does not duplicate traces."
+  ],
+  "ref": "https://ddtrace.readthedocs.io/en/stable/configuration.html",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-014",
+  "topic": "APM & Tracing",
+  "subtopic": "Unified Service Tagging",
+  "difficulty": "easy",
+  "q": "Which three environment variables let the Python tracer apply the unified service tags?",
+  "options": [
+   "`DD_SERVICE`, `DD_ENV`, `DD_VERSION`",
+   "`DD_SERVICE`, `DD_TAGS`, `DD_TRACE_AGENT_PORT`",
+   "`DD_AGENT_HOST`, `DD_ENV`, `DD_TRACE_ENABLED`"
+  ],
+  "answer": 0,
+  "explanation": "Unified service tagging uses three reserved tags: `env`, `service`, and `version`. For APM apps you set `DD_ENV`, `DD_SERVICE`, and `DD_VERSION`, and the tracer applies them to traces (and to logs when log injection is on).",
+  "notes": [
+   "Correct: these map to the reserved `service`, `env`, and `version` tags.",
+   "`DD_TAGS` adds arbitrary global tags, and `DD_TRACE_AGENT_PORT` is the Agent's trace port. Neither is a UST variable.",
+   "`DD_AGENT_HOST` points the tracer at the Agent, and `DD_TRACE_ENABLED` turns tracing on or off."
+  ],
+  "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-015",
+  "topic": "APM & Tracing",
+  "subtopic": "Distributed Tracing",
+  "difficulty": "medium",
+  "q": "Service A calls service B over HTTP, and both are traced with `ddtrace`. How do B's spans end up in the same trace as A's?",
+  "options": [
+   "The Agent matches spans from A and B by their timestamps and host names",
+   "Both services set the same `DD_SERVICE` so their spans merge",
+   "A injects trace context into the HTTP headers; B extracts it"
+  ],
+  "answer": 2,
+  "explanation": "Distributed tracing propagates context in request headers. The client injects it (`HTTPPropagator.inject`), and the server extracts it (`HTTPPropagator.extract`) into its active context. Integrations such as Flask, Django, and Requests do this automatically.",
+  "notes": [
+   "The Agent does not stitch traces by time. The trace ID has to be propagated.",
+   "Giving two services the same service name mislabels them and does not link their traces.",
+   "Correct: header propagation carries the trace ID across the call. Default styles are `datadog,tracecontext,baggage`."
+  ],
+  "ref": "https://ddtrace.readthedocs.io/en/stable/advanced_usage.html",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-016",
+  "topic": "APM & Tracing",
+  "subtopic": "Context Propagation",
+  "difficulty": "hard",
+  "q": "This code starts a worker thread inside a traced block:\ndef _target(trace_ctx):\n    tracer.context_provider.activate(trace_ctx)\n    with tracer.trace(\"second_thread\"):\n        do_work()\n\nwith tracer.trace(\"main_thread\"):\n    t = threading.Thread(target=_target, args=(tracer.current_trace_context(),))\n    t.start()\nWhy does `_target` call `tracer.context_provider.activate(trace_ctx)`?",
+  "options": [
+   "To start a new trace for the thread so the two traces stay separate",
+   "So `second_thread` joins the main thread's trace instead of starting a new one",
+   "To flush the `main_thread` span to the Agent before the thread runs"
+  ],
+  "answer": 1,
+  "explanation": "ddtrace's documented way to continue a trace in another thread is to pass `tracer.current_trace_context()` to the thread and activate it there. Spans created in the thread then join the same trace instead of being unlinked.",
+  "notes": [
+   "Activation does the opposite: it links the thread's spans to the existing trace.",
+   "Correct: activating the passed context makes new spans in the thread children of the original trace.",
+   "Activation sets the active context. It does not send anything to the Agent."
+  ],
+  "ref": "https://ddtrace.readthedocs.io/en/stable/advanced_usage.html",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-017",
+  "topic": "APM & Tracing",
+  "subtopic": "Logs Injection",
+  "difficulty": "easy",
+  "q": "What does logs injection (`DD_LOGS_INJECTION=true`) do in a `ddtrace`-instrumented Python app?",
+  "options": [
+   "Adds `dd.trace_id`, `dd.span_id` and similar fields to log records to link logs and traces",
+   "Ships the app's log files to Datadog through the Agent's trace receiver on port `8126`",
+   "Turns every log line into its own span inside the currently active trace"
+  ],
+  "answer": 0,
+  "explanation": "Logs injection adds `dd.trace_id`, `dd.span_id`, `dd.service`, `dd.env`, and `dd.version` to log records so you can correlate logs with traces. Recent `ddtrace` versions enable it by default; older versions need `DD_LOGS_INJECTION=true`.",
+  "notes": [
+   "Correct: log records carry trace and span IDs (plus the UST fields) for correlation.",
+   "Logs injection only enriches log records. Log shipping is a separate path.",
+   "Log lines stay log lines. Only the IDs of the active trace and span are added to them."
+  ],
+  "ref": "https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/python/",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-018",
+  "topic": "APM & Tracing",
+  "subtopic": "Logs Injection",
+  "difficulty": "medium",
+  "q": "A service runs under `ddtrace-run` with logs injection enabled, but its log lines show no trace IDs. Its logging setup is:\nlogging.basicConfig(format=\"%(asctime)s %(levelname)s %(message)s\")\nWhat should you change?",
+  "options": [
+   "Set `DD_TRACE_DEBUG=true` so the tracer prints the IDs into every log line",
+   "Point `DD_TRACE_AGENT_PORT` at the Datadog log intake so IDs get attached",
+   "Add `dd.*` fields such as `%(dd.trace_id)s` to the format string"
+  ],
+  "answer": 2,
+  "explanation": "Logs injection adds the attributes to each record, but a standard library log format must reference them. Include `dd.service`, `dd.env`, `dd.version`, `dd.trace_id`, and `dd.span_id` in the format string.",
+  "notes": [
+   "`DD_TRACE_DEBUG` turns on the tracer's own debug logs. It does not change your app's log format.",
+   "`DD_TRACE_AGENT_PORT` is the Agent's trace port and has nothing to do with log formatting.",
+   "Correct: the format string has to include the injected `dd.*` attributes for them to appear."
+  ],
+  "ref": "https://ddtrace.readthedocs.io/en/stable/advanced_usage.html",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-019",
+  "topic": "APM & Tracing",
+  "subtopic": "Trace Filtering",
+  "difficulty": "hard",
+  "q": "A service registers this filter:\nfrom ddtrace.trace import tracer, TraceFilter\n\nclass DropHealthChecks(TraceFilter):\n    def process_trace(self, trace):\n        for span in trace:\n            if span.resource == \"GET /health\":\n                return None\n        return trace\n\ntracer.configure(trace_processors=[DropHealthChecks()])\nWhat happens to a trace in which one span has resource `GET /health`?",
+  "options": [
+   "The whole trace is dropped in the tracer and never sent to the Agent",
+   "Only the matching span is removed; the rest of the trace is sent",
+   "The trace is sent, and Datadog's retention filters discard it"
+  ],
+  "answer": 0,
+  "explanation": "A `TraceFilter`'s `process_trace` receives the whole trace. Returning `None` drops the entire trace, and returning `trace` passes it on. Filters are registered with `tracer.configure(trace_processors=[...])` and run in order before anything is sent.",
+  "notes": [
+   "Correct: returning `None` discards the full trace before it leaves the application.",
+   "The filter works on the whole trace. This code returns `None` for all of it, not only one span.",
+   "Filtering happens in the tracer before sending. Retention filters are separate tag-based controls in the Datadog UI."
+  ],
+  "ref": "https://ddtrace.readthedocs.io/en/stable/advanced_usage.html",
+  "verified": "2026-10"
+ },
+ {
+  "id": "apm-020",
+  "topic": "APM & Tracing",
+  "subtopic": "Troubleshooting",
+  "difficulty": "medium",
+  "q": "To troubleshoot missing traces, a pod's tracer starts with:\nDD_TRACE_LOG_LEVEL=WARNING\nDD_TRACE_DEBUG=true\nAt which level does the `ddtrace` logger log?",
+  "options": [
+   "`WARNING`, because `DD_TRACE_LOG_LEVEL` is the more specific setting",
+   "`DEBUG`, because `DD_TRACE_DEBUG` takes precedence over `DD_TRACE_LOG_LEVEL`",
+   "None: conflicting log settings stop the tracer from starting at all"
+  ],
+  "answer": 1,
+  "explanation": "`DD_TRACE_DEBUG` enables the tracer's debug logging and takes precedence over `DD_TRACE_LOG_LEVEL`. The docs use `DD_TRACE_DEBUG=true ddtrace-run ...` to debug missing traces.",
+  "notes": [
+   "`DD_TRACE_LOG_LEVEL` only applies when debug mode is not turned on.",
+   "Correct: debug mode wins. Use `DD_TRACE_LOG_FILE` to send these logs to a file.",
+   "The two settings can be combined; one simply overrides the other."
+  ],
+  "ref": "https://ddtrace.readthedocs.io/en/stable/configuration.html",
+  "verified": "2026-10"
+ }
+]

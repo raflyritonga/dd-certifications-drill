@@ -1,0 +1,527 @@
+[
+  {
+    "id": "ap-inst-001",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "easy",
+    "q": "A developer adds the Datadog SDK to a Flask service and starts it, but writes no tracing code. What does Datadog capture?",
+    "options": [
+      "Nothing until spans are created with the tracing API or added from the Dynamic Instrumentation page.",
+      "Only runtime metrics, because spans require a custom instrumentation call for each endpoint.",
+      "Spans for supported frameworks and libraries, generated automatically as soon as the SDK is loaded."
+    ],
+    "answer": 2,
+    "explanation": "Spans are generated automatically by default as soon as the SDK is loaded. This is auto-instrumentation, and it covers supported frameworks and libraries without extra code.",
+    "notes": [
+      "Wrong: custom spans are optional; auto-instrumentation already creates spans once the SDK is loaded.",
+      "Wrong: the SDK traces supported libraries automatically; runtime metrics are a separate opt-in feature.",
+      "Correct: auto-instrumentation starts creating spans for supported frameworks and libraries when the SDK loads."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-002",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "easy",
+    "q": "A platform team must start tracing about 200 Java and Python services on Linux VMs. Application teams cannot change code or build pipelines this quarter. Which approach does Datadog recommend?",
+    "options": [
+      "Single Step Instrumentation, which loads the Datadog SDKs at runtime with one command.",
+      "Manually managed Datadog SDKs, added to each service's dependencies and start command.",
+      "Dynamic Instrumentation, creating a span for each service's entry point from the Datadog UI without a redeploy."
+    ],
+    "answer": 0,
+    "explanation": "Single Step Instrumentation is the recommended starting point: Datadog installs and loads SDKs into application processes at runtime with a single command and no code changes, and auto-instrumentation then captures traces from supported frameworks.",
+    "notes": [
+      "Correct: SSI needs no code changes and gives fast, consistent instrumentation across services.",
+      "Wrong: manually managed SDKs require code or build changes, which the teams cannot make.",
+      "Wrong: Dynamic Instrumentation adds custom spans to services that already run a Datadog SDK; it does not install SDKs."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/#sdk-setup",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-003",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "easy",
+    "q": "According to Datadog's comparison of SDK setup methods, when should a team move from Single Step Instrumentation to manually managed SDKs?",
+    "options": [
+      "When they want to add custom spans without redeploying the application.",
+      "When they need granular control over SDK behavior and configuration.",
+      "When they want auto-instrumentation for supported frameworks and libraries."
+    ],
+    "answer": 1,
+    "explanation": "Manually managed SDKs give full control through environment variables and code. Datadog suggests moving to them when you need granular control over SDK behavior and configuration.",
+    "notes": [
+      "Wrong: adding spans without a redeploy is what Dynamic Instrumentation is for.",
+      "Correct: manually managed SDKs are the step up when you need full control of SDK configuration.",
+      "Wrong: SSI already provides auto-instrumentation; you do not need manual SDKs for it."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/#sdk-setup",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-004",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "An engineer installs the Agent on a new Linux VM with the Agent 7 install script. Which variable in the install command turns on Single Step Instrumentation for the host?",
+    "options": [
+      "`DD_APM_INSTRUMENTATION_ENABLED=true`",
+      "`DD_APM_INSTRUMENTATION_ENABLED=host`",
+      "`DD_APM_ENABLED=host`"
+    ],
+    "answer": 1,
+    "explanation": "The Linux install command sets `DD_APM_INSTRUMENTATION_ENABLED=host` along with `DD_API_KEY` and `DD_SITE`. The variable takes a platform value (for example `docker` on a Docker host), not a Boolean.",
+    "notes": [
+      "Wrong: this variable takes a platform value such as `host` or `docker`, not `true`.",
+      "Correct: `DD_APM_INSTRUMENTATION_ENABLED=host` enables SSI on a Linux host or VM.",
+      "Wrong: `DD_APM_ENABLED` is the Agent's trace-receiver switch (true/false); it does not enable SSI."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/linux/#new-agent-installation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-005",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "By default, Single Step Instrumentation on a Linux host installs the latest Datadog SDKs. A team wants to stay on major version 1 of the Java SDK. How do they pin it?",
+    "options": [
+      "Set `DD_VERSION=1` in each Java service's environment before restarting it.",
+      "Add a `ddTraceVersions` block with `java: \"1\"` to `datadog.yaml` on the host.",
+      "Add `DD_APM_INSTRUMENTATION_LIBRARIES=java:1` to the Agent install command."
+    ],
+    "answer": 2,
+    "explanation": "On Linux hosts and Docker, you pin SDK versions by adding `DD_APM_INSTRUMENTATION_LIBRARIES` to the install command, with comma-separated `language:major` pairs such as `java:1,python:3`.",
+    "notes": [
+      "Wrong: `DD_VERSION` is the unified service tag for your application's version, not the SDK version.",
+      "Wrong: `ddTraceVersions` belongs in Kubernetes targeting blocks in the Helm or Operator config, not in `datadog.yaml` on a host.",
+      "Correct: `DD_APM_INSTRUMENTATION_LIBRARIES` takes `language:major` pairs to pin SDK versions."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/linux/#new-agent-installation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-006",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "SSI is enabled cluster-wide on Kubernetes, and the Agent version does not support instrumentation rules. One Deployment must stop being instrumented while every other workload stays traced. Which Admission Controller method do the docs describe?",
+    "options": [
+      "Set `DD_TRACE_ENABLED=false` in the Deployment's containers so the injector skips those pods on restart.",
+      "Label the pod template `admission.datadoghq.com/enabled: \"false\"` and restart; other mutating webhooks are disabled for it too.",
+      "Label the namespace `admission.datadoghq.com/enabled: \"false\"`; only SSI is turned off and other webhooks keep working."
+    ],
+    "answer": 1,
+    "explanation": "To remove SSI from specific services with the Admission Controller, set the `admission.datadoghq.com/enabled` label to `\"false\"` in the pod spec, apply it and restart the services. The docs warn that this also disables other mutating webhooks, so use it with caution.",
+    "notes": [
+      "Wrong: the injector runs before the SDK reads its variables, so `DD_TRACE_ENABLED=false` does not stop SSI from loading the SDK.",
+      "Correct: the pod label disables pod mutation, which removes SSI and other mutating webhooks for those pods.",
+      "Wrong: the documented label goes on the pod template, and it disables other mutating webhooks as well, not only SSI."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/kubernetes/#use-the-datadog-admission-controller",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-007",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "easy",
+    "q": "A service is already traced with Single Step Instrumentation. The team now needs custom spans that wrap complex business logic and should live permanently with the code. Which option fits Datadog's comparison?",
+    "options": [
+      "Code-based custom instrumentation with explicit tracing API calls",
+      "Dynamic Instrumentation rules configured in the Datadog UI",
+      "Manually managed SDKs, which add these spans automatically"
+    ],
+    "answer": 0,
+    "explanation": "Datadog's span customization comparison says to progress to code-based custom instrumentation when you need complex instrumentation logic or want spans permanently defined in code. It needs code changes and a deployment, and it can be combined with SSI.",
+    "notes": [
+      "Correct: explicit tracing API calls in code suit complex logic and spans that are permanently defined in code.",
+      "Wrong: Dynamic Instrumentation is for adding spans without code changes or redeployments; its rules live in Datadog, not in the code.",
+      "Wrong: manually managed SDKs change how the SDK is set up and configured; they do not create custom spans for business logic."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/#span-customization",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-008",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "A Helm values file enables SSI with this target block:\n\ntargets:\n  - name: \"login\"\n    namespaceSelector:\n      matchNames: [\"login-service\"]\n\nThe team also wants the Continuous Profiler on for just these workloads. Which key should they add to this target block?",
+    "options": [
+      "`ddTraceVersions`, with an entry for the profiler version",
+      "`ddTraceConfigs`, with `DD_PROFILING_ENABLED` set to `auto`",
+      "`podSelector`, with a `matchLabels` entry of `profiling: enabled`"
+    ],
+    "answer": 1,
+    "explanation": "`ddTraceConfigs` in a target block sets SDK configuration for the matching workloads, including enabling SDK-dependent products. Datadog's examples set `DD_PROFILING_ENABLED` to `auto` this way.",
+    "notes": [
+      "Wrong: `ddTraceVersions` chooses the tracer SDK version per language; it does not turn on products.",
+      "Correct: `ddTraceConfigs` passes environment variables such as `DD_PROFILING_ENABLED` to the target's workloads.",
+      "Wrong: `podSelector` only chooses which pods match; a label does not turn on the profiler."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/kubernetes/#target-specific-workloads",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-009",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "hard",
+    "q": "A Java service runs with `dd-java-agent.jar` and `DD_TRACE_OTEL_ENABLED=true`. The team adds an OpenTelemetry instrumentation extension for a library that the Datadog SDK also instruments, and now each call shows up as two spans. They want to keep the OpenTelemetry spans. What do the docs say to do?",
+    "options": [
+      "Unset `DD_TRACE_OTEL_ENABLED` so that only one of the two instrumentations creates spans.",
+      "Register an OpenTelemetry SpanProcessor that drops the duplicate spans before export.",
+      "Disable the Datadog instrumentation for that library and keep the OpenTelemetry one."
+    ],
+    "answer": 2,
+    "explanation": "When you replace a Datadog instrumentation with its OpenTelemetry equivalent, the docs say to disable the Datadog instrumentation to prevent duplicate spans in the trace. `DD_TRACE_OTEL_ENABLED=true` must stay set for the Datadog SDK to process the OpenTelemetry instrumentation.",
+    "notes": [
+      "Wrong: `DD_TRACE_OTEL_ENABLED=true` is a prerequisite for OpenTelemetry instrumentation with the Datadog SDK; unsetting it loses the OpenTelemetry spans the team wants.",
+      "Wrong: OpenTelemetry SDK-specific operations such as SpanProcessors are not supported with Datadog SDKs.",
+      "Correct: disabling the overlapping Datadog instrumentation removes the duplicate spans."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/instrument/dd_sdks/instrumentation_libraries/#prerequisites",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-010",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "hard",
+    "q": "On a Linux host, SSI instrumentation rules are configured in this order:\n1. Allow Rule: Working Directory equals `/app/checkout`\n2. Block Rule: Language equals `python`\nDefault behavior: Block Instrumentation.\nA Python process starts with working directory `/app/checkout`. What happens?",
+    "options": [
+      "It is blocked, because a Block Rule always overrides an Allow Rule.",
+      "It is blocked, because the default behavior applies whenever the rules conflict.",
+      "It is instrumented, because rules are evaluated in order and the first matching rule wins."
+    ],
+    "answer": 2,
+    "explanation": "Instrumentation rules are evaluated in order, and once a process matches a rule, the later rules are ignored. The Allow Rule matches first, so the process is instrumented.",
+    "notes": [
+      "Wrong: there is no block-over-allow priority; rule order decides.",
+      "Wrong: the default only applies to processes that match no rule.",
+      "Correct: the process matches the Allow Rule first, so the Block Rule is never evaluated."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/linux/#define-instrumentation-rules",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-011",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "easy",
+    "q": "Live Debugger and Dynamic Instrumentation both work on running services without a redeploy. What does Dynamic Instrumentation add, and how long does it stay active?",
+    "options": [
+      "Logpoints that capture variable snapshots and expire when the Debug Session ends",
+      "Dynamic spans, span tags and metrics that stay active until you disable them",
+      "Breakpoints that pause the process so an engineer can step through code"
+    ],
+    "answer": 1,
+    "explanation": "Dynamic Instrumentation adds custom APM instrumentation: dynamic spans, span tags and metrics that remain active until you disable them. Live Debugger logpoints capture logs and snapshots and expire when the Debug Session ends.",
+    "notes": [
+      "Wrong: auto-expiring logpoints with snapshots are Live Debugger, not Dynamic Instrumentation.",
+      "Correct: DI's spans, span tags and metrics persist until disabled.",
+      "Wrong: neither product pauses execution; Live Debugger logpoints are non-breaking."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dynamic_instrumentation/#live-debugger-vs-dynamic-instrumentation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-012",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "A team on Agent 7.52 with unified service tagging tries to add a dynamic span to a Python service. The instrumentation is never applied. Their `datadog.yaml` contains:\n\nremote_configuration:\n  enabled: false\n\nWhat is the problem?",
+    "options": [
+      "Remote Configuration must be enabled in the Agent to deliver instrumentations.",
+      "Dynamic Instrumentation needs Agent 7.60 or later, so the Agent must be upgraded first.",
+      "Dynamic Instrumentation supports only Java services, so the Python service cannot use it."
+    ],
+    "answer": 0,
+    "explanation": "Dynamic Instrumentation requires Agent 7.49.0 or higher, unified service tagging, and Remote Configuration enabled in the Agent. Here Remote Configuration is turned off, so the Agent never receives the instrumentation from Datadog.",
+    "notes": [
+      "Correct: Remote Configuration is how Datadog sends instrumentation configs to the running service.",
+      "Wrong: the minimum Agent version is 7.49.0, and 7.52 meets it.",
+      "Wrong: Python is supported (`ddtrace` 2.2.0+ for manual enablement, 3.10.0+ for in-app enablement)."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dynamic_instrumentation/#datadog-configuration",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-013",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "easy",
+    "q": "A .NET service uses an SDK version below the minimum for in-app enablement, so the team enables Dynamic Instrumentation manually. Which environment variable do they set to `true`?",
+    "options": [
+      "`DD_LIVE_DEBUGGER_ENABLED`",
+      "`DD_REMOTE_CONFIGURATION_ENABLED`",
+      "`DD_DYNAMIC_INSTRUMENTATION_ENABLED`"
+    ],
+    "answer": 2,
+    "explanation": "Manual enablement sets `DD_DYNAMIC_INSTRUMENTATION_ENABLED=true` together with `DD_SERVICE`, `DD_ENV` and `DD_VERSION`. Java can use the `-Ddd.dynamic.instrumentation.enabled=true` system property instead.",
+    "notes": [
+      "Wrong: no such variable is documented; even Live Debugger is enabled manually with `DD_DYNAMIC_INSTRUMENTATION_ENABLED`.",
+      "Wrong: this Agent setting controls Remote Configuration, which must already be on; it does not enable DI in the SDK.",
+      "Correct: `DD_DYNAMIC_INSTRUMENTATION_ENABLED=true` enables Dynamic Instrumentation in the SDK."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dynamic_instrumentation/#configure-dynamic-instrumentation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-014",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "An engineer creates a dynamic metric on `CartService.checkout()`, chooses the count type, and leaves the metric expression empty. What does the metric report?",
+    "options": [
+      "Nothing, because every dynamic metric type requires a metric expression.",
+      "The number of times the method runs, adding one per invocation.",
+      "A sample of invocations, because metric instrumentations are rate limited."
+    ],
+    "answer": 1,
+    "explanation": "For count metrics the expression is optional; if you omit it, every invocation increments the count by one. Gauge and histogram metrics require an expression, and metric instrumentations are not rate limited.",
+    "notes": [
+      "Wrong: only gauge and histogram require an expression; it is optional for count.",
+      "Correct: without an expression, a count metric adds one each time the method runs.",
+      "Wrong: dynamic metrics are not rate limited and run on every invocation."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dynamic_instrumentation/#creating-dynamic-metrics",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-015",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "hard",
+    "q": "Which condition is valid in the Dynamic Instrumentation expression language for an instrumentation on a method?",
+    "options": [
+      "`@duration > 200 && len(order.items) > 5`",
+      "`order.getTotal() > 100 && order.isPaid()`",
+      "`order.retries + 1 > 3 || order.total > 100`"
+    ],
+    "answer": 0,
+    "explanation": "The expression language supports contextual variables such as `@duration` (milliseconds, at method exit), functions such as `len()`, and comparison and logical operators. It does not allow method calls or arithmetic.",
+    "notes": [
+      "Correct: `@duration`, `len()` and `&&` are all supported in conditions.",
+      "Wrong: calling methods is not allowed, because it could cause side effects.",
+      "Wrong: arithmetic such as `retries + 1` is not supported."
+    ],
+    "ref": "https://docs.datadoghq.com/dynamic_instrumentation/expression-language/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-016",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "hard",
+    "q": "A team creates a dynamic span tag that records `customer.tier` from a method deep in a request. They want to filter traces by this tag in APM. Which span should they attach it to?",
+    "options": [
+      "A new dynamic span created for that method, since span tags can only go on dynamic spans",
+      "Any span in the trace, picked by its span ID when the tag is created",
+      "The service entry span, since internal spans are not indexed by default"
+    ],
+    "answer": 2,
+    "explanation": "A dynamic span tag adds a tag to either the active span or the service entry span. Internal spans are not indexed by default and may not be searchable, so the service entry span is the right target for filtering.",
+    "notes": [
+      "Wrong: dynamic span tags are added to existing spans (active or service entry); they do not need a dynamic span.",
+      "Wrong: you cannot pick an arbitrary span; the tag goes on the active span or the service entry span.",
+      "Correct: tagging the service entry span keeps the tag on an indexed, searchable span."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dynamic_instrumentation/#creating-dynamic-span-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-017",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "easy",
+    "q": "A team is starting code-based custom instrumentation for new services. They want vendor-neutral code but still want Datadog's native implementation and features. Which API do Datadog's docs recommend?",
+    "options": [
+      "The OpenTelemetry API, implemented by the Datadog SDK",
+      "The Datadog API, imported from the Datadog SDK package",
+      "The OpenTracing API, through the Datadog tracer"
+    ],
+    "answer": 0,
+    "explanation": "The custom instrumentation page marks the OpenTelemetry API as recommended. Datadog SDKs implement the OpenTelemetry API, so code stays vendor-neutral while using Datadog's implementation, features and products.",
+    "notes": [
+      "Correct: OTel API with the Datadog SDK is the recommended, vendor-neutral option.",
+      "Wrong: the Datadog API works well but ties your code to Datadog, so it is not vendor-neutral.",
+      "Wrong: OpenTracing is legacy; the project is archived and unsupported."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-018",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "A Node.js service already uses the Datadog SDK (`dd-trace`). Another team proposes also starting the official OpenTelemetry SDK in the same process to export some spans over OTLP. What do Datadog's best practices say?",
+    "options": [
+      "Avoid it: using a Datadog SDK and an OpenTelemetry SDK in one app leads to undefined behavior.",
+      "Do it: this hybrid is the recommended Datadog SDK + DDOT setup in the compatibility table.",
+      "Do it, as long as both SDKs export to the same Datadog Agent so it can merge the spans."
+    ],
+    "answer": 0,
+    "explanation": "Datadog's best practices say that in most cases you should not use both a Datadog SDK and an OpenTelemetry SDK in the same application, because this leads to undefined behavior. Python is named as an exception that needs both installed; to write OpenTelemetry code, use the OpenTelemetry API with the Datadog SDK instead.",
+    "notes": [
+      "Correct: mixing the two SDKs in one application is advised against because the behavior is undefined.",
+      "Wrong: the Datadog SDK + DDOT setup uses the Datadog SDK with the Datadog or OpenTelemetry API, not a second OpenTelemetry SDK.",
+      "Wrong: sending both to the same Agent does not change the advice; running both SDKs in one app is still undefined behavior."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/compatibility/#best-practices",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-019",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "A Java service runs with `dd-java-agent.jar`. The team must trace `store.db.SessionManager.saveSession` and `loadSession`, but they cannot change application code. What should they use?",
+    "options": [
+      "Add the `@Trace` annotation to both methods, then rebuild and redeploy the JAR.",
+      "Set `-Ddd.tags=methods:saveSession,loadSession` on the JVM command line at startup.",
+      "Set `-Ddd.trace.methods=store.db.SessionManager[saveSession,loadSession]` at startup."
+    ],
+    "answer": 2,
+    "explanation": "The `dd.trace.methods` system property gives visibility into methods without changing application code. You list several methods of the same class inside brackets.",
+    "notes": [
+      "Wrong: `@Trace` works, but it is a code change, which the team cannot make.",
+      "Wrong: `dd.tags` adds tags to every span; it does not create spans for methods.",
+      "Correct: `dd.trace.methods` traces the listed methods with no code change."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/server-side/?api_type=dd_api&prog_lang=java#datadog-trace-methods-java",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-020",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "In a Python service using `ddtrace`, a payment error is caught several spans below the request's entry point. The team wants the local root span marked as an error with the exception type and traceback. Which approach does the Datadog API provide?",
+    "options": [
+      "Call `set_exc_info()` with the exception details on `tracer.current_root_span()`.",
+      "Get the active span with `tracer.current_span()` and set `span.error = 1` on it before it finishes.",
+      "Call `tracer.set_tags({\"error\": True})` so every span in the trace carries the error."
+    ],
+    "answer": 0,
+    "explanation": "`tracer.current_root_span()` returns the local root span, and `set_exc_info(exc_type, exc_val, exc_tb)` sets the error type, marks the span as an error and adds the traceback.",
+    "notes": [
+      "Correct: `current_root_span()` plus `set_exc_info()` flags the local root span with full exception details.",
+      "Wrong: `current_span()` returns the active child span, and `error = 1` adds no type or traceback.",
+      "Wrong: `tracer.set_tags()` sets global tags on every span created, which is not the same as flagging the root span."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/server-side/?api_type=dd_api&prog_lang=python#setting-errors-on-a-span-python",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-021",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "easy",
+    "q": "In a flame graph, the `http.request POST /charge/` span of a payments service takes most of the request time but has no direct child spans. What does Datadog's custom method guide suggest?",
+    "options": [
+      "Raise the trace sampling rate so more child spans are kept for that endpoint.",
+      "Add custom spans to the methods behind that endpoint to see where the time goes.",
+      "Turn on Live Search so the missing child spans appear in the Trace Explorer."
+    ],
+    "answer": 1,
+    "explanation": "A long span with no direct child spans is a clue that the request needs more instrumentation. The guide traces the business method (`BackupLedger.write`) and adds child spans with custom tags.",
+    "notes": [
+      "Wrong: sampling decides which traces are kept; it does not create spans that were never instrumented.",
+      "Correct: custom spans on the methods behind the endpoint show where the time is spent.",
+      "Wrong: Live Search shows ingested spans; it cannot show spans that were never created."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/instrument_custom_method/#instrumenting-your-code",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-022",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "An Android app initializes the Datadog SDK for OpenTelemetry-based tracing with `TrackingConsent.PENDING`, because the user has not answered the consent prompt yet. What happens to the spans the app creates?",
+    "options": [
+      "They are dropped, and nothing is collected until consent becomes `GRANTED`.",
+      "They are collected and batched, but not sent until a new consent value is set.",
+      "They are sent to Datadog but hidden in the UI until consent becomes `GRANTED`."
+    ],
+    "answer": 1,
+    "explanation": "With `TrackingConsent.PENDING`, the SDK starts collecting and batching data but does not send it to the data collection endpoint. It waits for the new tracking consent value to decide what to do with the batched data.",
+    "notes": [
+      "Wrong: collecting nothing at all is the `NOT_GRANTED` behavior.",
+      "Correct: pending consent means collect and batch locally, then wait for the consent decision.",
+      "Wrong: nothing is sent to Datadog while consent is pending."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/client-side/android/#setup",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-023",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "hard",
+    "q": "A Java service runs with `dd-java-agent.jar` and traces `SessionManager.saveSession` with `-Ddd.trace.methods=store.db.SessionManager[saveSession]`. Developers replace this with a plain `@Trace` annotation on the method, with no arguments. How does the span's operation name change?",
+    "options": [
+      "It stays `trace.annotation`, because both approaches use the same instrumentation.",
+      "It changes from `trace.annotation` to `saveSession`, the method's name.",
+      "It changes from `saveSession` to `trace.annotation`, the annotation's default."
+    ],
+    "answer": 1,
+    "explanation": "With `dd.trace.methods`, the operation name is `trace.annotation` and the resource name is `SessionManager.saveSession`. The `@Trace` annotation's `operationName` defaults to the method's name and can be customized, which is the only difference between the two approaches.",
+    "notes": [
+      "Wrong: the two approaches differ exactly in their operation and resource names.",
+      "Correct: `dd.trace.methods` uses `trace.annotation`, while `@Trace` defaults `operationName` to the method name.",
+      "Wrong: this reverses the defaults; `trace.annotation` is what `dd.trace.methods` produces."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/server-side/?api_type=dd_api&prog_lang=java#trace-annotations-java",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-024",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "An OpenTelemetry-instrumented app runs on a managed serverless platform where the team cannot run a Datadog Agent or an OpenTelemetry Collector. How can it send telemetry to Datadog?",
+    "options": [
+      "Send OTLP straight to Datadog's OTLP intake endpoint (direct OTLP ingest).",
+      "Send OTLP to the DDOT Collector, which is embedded in the Datadog Agent.",
+      "Send OTLP to a Datadog Agent running on another host, over port 4317."
+    ],
+    "answer": 0,
+    "explanation": "When running an Agent or Collector is not feasible, such as on serverless or managed platforms, you can send OpenTelemetry data directly to Datadog's OTLP intake endpoints.",
+    "notes": [
+      "Correct: direct OTLP ingest needs no intermediate Agent or Collector.",
+      "Wrong: DDOT runs inside the Datadog Agent, which the team cannot deploy.",
+      "Wrong: OTLP ingest in the Agent requires an Agent on the same host as the instrumented app."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/setup/agentless/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inst-025",
+    "topic": "Application Instrumentation",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "medium",
+    "q": "A mobile team adds client-side custom instrumentation to an Android app with Datadog's OpenTelemetry tracing integration. Which credential must the app use to initialize the Datadog SDK?",
+    "options": [
+      "A Datadog API key restricted to the trace intake",
+      "A Datadog application key tied to a service account",
+      "A Datadog client token"
+    ],
+    "answer": 2,
+    "explanation": "The Android SDK is initialized with the application context, a tracking consent and a Datadog client token. For security reasons, you must use a client token, not a Datadog API key.",
+    "notes": [
+      "Wrong: API keys must not be embedded in client apps; the docs require a client token instead.",
+      "Wrong: application keys are for the Datadog API, not for sending telemetry from mobile apps.",
+      "Correct: client-side SDKs authenticate with a client token."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/client-side/android/#setup",
+    "verified": "2026-11"
+  }
+]

@@ -1,3 +1,6 @@
-materials/
+# materials/
 .claude/
 .DS_Store
+# private study sets: never commit
+dd-*/materials/examtopics.json
+dd-*/materials/extra-sets.js

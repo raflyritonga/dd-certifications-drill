@@ -1,0 +1,947 @@
+[
+  {
+    "id": "lm-srch-001",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "An engineer types this query in the Log Explorer:\n\nservice:payment status:error rejected\n\nHow are the three terms combined?",
+    "options": [
+      "With `AND`: a log must match all three terms.",
+      "With `OR`: a log must match at least one of the terms.",
+      "`service` and `status` with `AND`, then `rejected` with `OR`"
+    ],
+    "answer": 0,
+    "explanation": "When no operator is written between terms, log search uses `AND` by default, so every term must match.",
+    "notes": [
+      "Correct: `AND` is the default operator when none is specified.",
+      "Wrong: `OR` must be written explicitly; it is not the default.",
+      "Wrong: every unwritten operator is the default `AND`; the free-text term `rejected` is ANDed with the filters too."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-002",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "A teammate runs this query:\n\nservice:checkout -status:info\n\nWhich logs are returned?",
+    "options": [
+      "Logs from every service except `checkout` that have the `info` status",
+      "`checkout` logs whose status is anything other than `info`",
+      "All `checkout` logs, plus every log whose status is not `info`"
+    ],
+    "answer": 1,
+    "explanation": "The `-` operator excludes the term that follows it, and the two terms are joined by the implicit `AND`. The result is `checkout` logs that are not `info`.",
+    "notes": [
+      "Wrong: the `-` applies to `status:info`, not to `service:checkout`.",
+      "Correct: `service:checkout` AND NOT `status:info`.",
+      "Wrong: that would need an explicit `OR`; with no operator the terms are joined with `AND`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-003",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "A user pastes a query copied from a chat app that turned the straight double quotes into curly ones:\n\n“hello world”\n\nHow does log search treat it?",
+    "options": [
+      "As the exact sequence `hello world`, like straight double quotes",
+      "As a literal string that must include the curly quote characters",
+      "As `hello` and `world` in any order; curly quotes are ignored"
+    ],
+    "answer": 2,
+    "explanation": "Sequences must use straight double quotes (`\"`). Search ignores curly quotation marks, so “hello world” matches logs that contain `hello` and `world` in any order.",
+    "notes": [
+      "Wrong: only straight double quotes create a sequence; curly quotes do not.",
+      "Wrong: search ignores curly quotation marks rather than matching them.",
+      "Correct: the curly quotes are dropped, leaving two terms joined by the implicit `AND`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-004",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "You need error logs coming from either the `checkout` service or the `payments` service. Which query should you use?",
+    "options": [
+      "`status:error service:(checkout AND payments)`",
+      "`status:error service:(checkout OR payments)`",
+      "`status:error -service:(checkout OR payments)`"
+    ],
+    "answer": 1,
+    "explanation": "Grouping values in parentheses with `OR` matches either service, and the implicit `AND` keeps only error logs.",
+    "notes": [
+      "Wrong: a log has one `service` value, so requiring both returns nothing.",
+      "Correct: either service, and only `status:error`.",
+      "Wrong: the `-` excludes both services, the opposite of what is needed."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-005",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "Which statement about the Boolean operators in log search is correct?",
+    "options": [
+      "They are case-sensitive, so write `AND` and `OR` in uppercase.",
+      "They are case-insensitive, so `and`, `And` and `AND` behave the same.",
+      "Log search uses `&&` and `||` instead of `AND` and `OR`."
+    ],
+    "answer": 0,
+    "explanation": "The docs describe `AND`, `OR` and `-` as case-sensitive Boolean operators, shown in uppercase.",
+    "notes": [
+      "Correct: the operators are case-sensitive and written in uppercase.",
+      "Wrong: the operators are case-sensitive, so lowercase forms are not treated as operators.",
+      "Wrong: `&&` and `||` are listed as special characters that need escaping in log search; symbolic operators belong to metric queries."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-006",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "Your JSON logs contain a custom attribute named `url`. Which query filters on the value `www.datadoghq.com` in that attribute?",
+    "options": [
+      "`#url:www.datadoghq.com`",
+      "`url:www.datadoghq.com`",
+      "`@url:www.datadoghq.com`"
+    ],
+    "answer": 2,
+    "explanation": "Custom attributes are searched with the `@` prefix. Without it, `key:value` is treated as a tag or reserved attribute.",
+    "notes": [
+      "Wrong: the `#` prefix is used for calculated fields, not log attributes.",
+      "Wrong: without `@`, `url:` is read as a tag key, not the `url` attribute.",
+      "Correct: `@` marks an attribute search."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#attributes-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-007",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "Which of these attributes can be searched WITHOUT the `@` prefix?",
+    "options": [
+      "`http.status_code`",
+      "`trace_id`",
+      "`network.client.ip`"
+    ],
+    "answer": 1,
+    "explanation": "Reserved attributes such as `host`, `source`, `status`, `service`, `trace_id` and `message` do not need the `@` prefix.",
+    "notes": [
+      "Wrong: `http.status_code` is a standard attribute and needs `@`.",
+      "Correct: `trace_id` is a reserved attribute.",
+      "Wrong: `network.client.ip` is a standard attribute and needs `@`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#reserved-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-008",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "A developer wants to run `@order.region:emea`, but nobody has created a facet for `order.region`. What happens?",
+    "options": [
+      "It works; attribute and tag searches do not need a facet.",
+      "The search fails until someone creates a facet for `order.region`.",
+      "It returns only logs ingested after a facet is created for it."
+    ],
+    "answer": 0,
+    "explanation": "Defining a facet is not required to search on attributes and tags; `key:value` queries work without a declared facet.",
+    "notes": [
+      "Correct: attribute and tag searches do not require a facet.",
+      "Wrong: no facet is required for a `key:value` search.",
+      "Wrong: facet content is populated only for new logs, but the search itself does not depend on a facet."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#attributes-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-009",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "Which query returns logs whose `http.response_time` measure is greater than 100?",
+    "options": [
+      "`@http.response_time>100`",
+      "`@http.response_time:gt(100)`",
+      "`@http.response_time:>100`"
+    ],
+    "answer": 2,
+    "explanation": "Numerical operators come after the colon of a `key:value` pair, for example `@http.response_time:>100`.",
+    "notes": [
+      "Wrong: the colon between the attribute and the value is missing.",
+      "Wrong: there is no `gt()` function in log search; use `>`.",
+      "Correct: the operator follows the colon."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#numerical-values",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-010",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "Which query returns all logs with a 4xx HTTP status code?",
+    "options": [
+      "`@http.status_code:(400 TO 499)`",
+      "`@http.status_code:{400-499}`",
+      "`@http.status_code:[400 TO 499]`"
+    ],
+    "answer": 2,
+    "explanation": "Numerical ranges use square brackets and `TO`, for example `@http.status_code:[400 TO 499]`.",
+    "notes": [
+      "Wrong: parentheses group values or terms; they do not define a range.",
+      "Wrong: curly braces with a hyphen are not log range syntax.",
+      "Correct: `[min TO max]` is the range syntax."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#numerical-values",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-011",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "A team created a dimension facet on `http.status_code` with the string type. They want `@http.status_code:[200 TO 299]` to filter by range. What change enables this?",
+    "options": [
+      "Add the facet to a facet group called Numeric.",
+      "Give the dimension facet an integer type.",
+      "Prefix the query with `*:` so it runs as a full-text search."
+    ],
+    "answer": 1,
+    "explanation": "Qualitative facets can be string or integer type. An integer type adds range filtering such as `http.status_code:[200 TO 299]`.",
+    "notes": [
+      "Wrong: facet groups only change how the facet list is displayed; they do not affect search.",
+      "Correct: integer-type dimensions support range filtering.",
+      "Wrong: full-text search is for matching strings across attributes; range filtering needs an integer-type facet."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#types",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-012",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "The query `@cart.total:>50` returns no logs, although logs with `cart.total` equal to 80 exist. What is the most likely cause?",
+    "options": [
+      "`cart.total` has not been added as a numerical facet.",
+      "The `>` operator only works on reserved attributes such as `status`.",
+      "Numerical comparisons need the value in double quotes, as in `>\"50\"`."
+    ],
+    "answer": 0,
+    "explanation": "To search a numerical attribute with `<`, `>`, `<=` or `>=`, you must first add it as a facet.",
+    "notes": [
+      "Correct: numerical operators work on numerical facets.",
+      "Wrong: comparisons work on any numerical facet, not only reserved attributes.",
+      "Wrong: quoting turns the value into a string; numbers are written without quotes."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#numerical-values",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-013",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "A `duration` measure uses the unit nanosecond. Service A logs `duration` in milliseconds and service B logs it in microseconds. What lets one query like `duration:>20ms` give correct results for both?",
+    "options": [
+      "Multiply A by 1,000,000 and B by 1,000 in a pipeline.",
+      "Set a different unit on the `duration` measure for each service.",
+      "Query each service separately with a different unit suffix."
+    ],
+    "answer": 0,
+    "explanation": "The unit is a property of the measure, not of the field. Normalize the values (for example with an Arithmetic Processor) to the measure's unit, then query with units such as `20ms`.",
+    "notes": [
+      "Correct: scaling both to the measure's unit (nanoseconds), for example with an Arithmetic Processor, makes one query consistent.",
+      "Wrong: a measure has a single unit; it cannot differ per service.",
+      "Wrong: the unit suffix is interpreted against the measure's one unit, so mixed raw values still give wrong results."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#units",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-014",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "Which free-text query matches the log message `hello beautiful world`?",
+    "options": [
+      "`\"hello world\"`",
+      "`hello\\ world`",
+      "`hello world`"
+    ],
+    "answer": 2,
+    "explanation": "Unquoted words are joined by the implicit `AND` and can appear anywhere in the message. A quoted sequence or an escaped space requires the words to be next to each other.",
+    "notes": [
+      "Wrong: a sequence in double quotes needs the exact phrase `hello world`.",
+      "Wrong: an escaped space matches consecutive words, and `beautiful` sits between them.",
+      "Correct: both words appear in the message, so it matches."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#multiple-terms-with-exact-match-example",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-015",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "A user types only `timeout` in the search bar, with no prefix. Which fields are searched?",
+    "options": [
+      "Every attribute and tag on the log, including the message",
+      "`message`, `@title`, `@error.message` and `@error.stack`",
+      "Only the `message` attribute and the `service` tag"
+    ],
+    "answer": 1,
+    "explanation": "A free-text term searches only the `message`, `@title`, `@error.message` and `@error.stack` attributes. Use `*:timeout` to search all attributes.",
+    "notes": [
+      "Wrong: searching all attributes needs the full-text syntax `*:timeout`.",
+      "Correct: free text covers the message and the title/error fields.",
+      "Wrong: tags such as `service` are not searched by free text."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#single-term-example",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-016",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "You want to find the word `timeout` in any log attribute, not only in the message. Which query should you use?",
+    "options": [
+      "`@*:timeout`",
+      "`all:timeout`",
+      "`*:timeout`"
+    ],
+    "answer": 2,
+    "explanation": "The full-text syntax `*:search_term` searches all log attributes, including the message.",
+    "notes": [
+      "Wrong: `@` must be followed by an attribute name; `@*` is not the full-text syntax.",
+      "Wrong: `all:` would be read as a tag key named `all`.",
+      "Correct: `*:` performs a full-text search across all attributes."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#full-text-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-017",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "An engineer tries to use the full-text query `*:\"card declined\"` in several places. Where will it NOT work?",
+    "options": [
+      "As the filter of a log-based metric",
+      "In the search query of a log monitor",
+      "In a log widget on a dashboard"
+    ],
+    "answer": 0,
+    "explanation": "Full-text search works in monitor, dashboard and notebook queries. It cannot be used in index, archive, pipeline, rehydration or log-based metric filters, or in Live Tail.",
+    "notes": [
+      "Correct: log-based metric filters do not support the full-text syntax.",
+      "Wrong: full-text search works in monitor queries.",
+      "Wrong: full-text search works in dashboard queries."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#full-text-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-018",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "A log message reads `waiting until next renew time`. Which query matches it?",
+    "options": [
+      "`waiting*time`",
+      "`waiting**time`",
+      "`\"waiting*time\"`"
+    ],
+    "answer": 1,
+    "explanation": "A single `*` matches only within one word. The double wildcard `**` matches any characters, including spaces and punctuation between words.",
+    "notes": [
+      "Wrong: a single `*` does not cross word boundaries.",
+      "Correct: `**` matches across words.",
+      "Wrong: inside double quotes the `*` is ignored, so this is not a wildcard search."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#multi-character-wildcard",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-019",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "Which query matches messages where the word `waiting` is directly followed by a word starting with `un`, such as `waiting until`?",
+    "options": [
+      "`\"waiting un*\"`",
+      "`waiting\\ un*`",
+      "`waiting OR un*`"
+    ],
+    "answer": 1,
+    "explanation": "An escaped space matches consecutive words, and each word can contain wildcards, for example `waiting\\ un*`.",
+    "notes": [
+      "Wrong: wildcards have no effect inside double quotes.",
+      "Correct: the escaped space links consecutive words and keeps the wildcard.",
+      "Wrong: `OR` matches either term anywhere, not two consecutive words."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#multi-character-wildcard",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-020",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "What does the query `\"*test*\"` (with the double quotes) search for in the log message?",
+    "options": [
+      "Any word that contains `test`, such as `pretests`",
+      "The literal text `*test*`, asterisks included",
+      "Only the word `test`; `*` is ignored inside quotes"
+    ],
+    "answer": 2,
+    "explanation": "Wildcards only work outside double quotes. Inside them, `*` is treated like other punctuation and ignored.",
+    "notes": [
+      "Wrong: that would require the wildcard outside quotes: `*test*`.",
+      "Wrong: punctuation is not searchable in free text, so asterisks are not matched literally.",
+      "Correct: the asterisks are ignored, leaving the word `test`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#multi-character-wildcard",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-021",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "Which query returns logs from every service whose name ends with `mongo`?",
+    "options": [
+      "`service:*mongo`",
+      "`service:mongo*`",
+      "`*mongo`"
+    ],
+    "answer": 0,
+    "explanation": "Wildcards work within tag and attribute values, so `service:*mongo` matches service names ending in `mongo`.",
+    "notes": [
+      "Correct: a leading `*` matches any prefix.",
+      "Wrong: `mongo*` matches names that start with `mongo`.",
+      "Wrong: without a key, the wildcard searches only the log message."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#multi-character-wildcard",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-022",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "A user searches `*NETWORK*` and expects matches from an attribute `@net.iface`, but those logs are missing. Why?",
+    "options": [
+      "Without an attribute prefix, it searches only the log message.",
+      "Wildcards are not allowed at the start of a search term.",
+      "Free-text search is case-sensitive, so `NETWORK` misses lowercase values."
+    ],
+    "answer": 0,
+    "explanation": "A wildcard search with no attribute prefix searches only the log message, not attributes. Add the attribute key or use full-text search.",
+    "notes": [
+      "Correct: the term is searched in the message only.",
+      "Wrong: leading wildcards are allowed, for example `*web`.",
+      "Wrong: free-text search is not case-sensitive (`hello` matches `Hello, world!`); the issue is which field is searched."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#multi-character-wildcard",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-023",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "The attribute `my_attribute` has the value `hello world`. Which query matches it with a single-character wildcard?",
+    "options": [
+      "`@my_attribute:hello_world`",
+      "`@my_attribute:hello?world`",
+      "`@my_attribute:hello%world`"
+    ],
+    "answer": 1,
+    "explanation": "The `?` wildcard matches a single special character or space in an attribute or tag value.",
+    "notes": [
+      "Wrong: `_` is a literal underscore, not a wildcard.",
+      "Correct: `?` stands for the space.",
+      "Wrong: `%` is a SQL wildcard, not log search syntax."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#search-wildcard",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-024",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "The attribute `my_attribute` has the value `hello:world`. Which query matches it?",
+    "options": [
+      "`@my_attribute:'hello:world'`",
+      "`@my_attribute:hello::world`",
+      "`@my_attribute:\"hello:world\"`"
+    ],
+    "answer": 2,
+    "explanation": "A value with special characters must be escaped with `\\` or wrapped in double quotes, for example `@my_attribute:\"hello:world\"` or `@my_attribute:hello\\:world`.",
+    "notes": [
+      "Wrong: single quotes are not a quoting mechanism in log search.",
+      "Wrong: the escape character is `\\`, not a second colon.",
+      "Correct: double quotes protect the colon."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#attributes-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-025",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "Which query finds logs whose `http.url` starts with `/api-v1/`?",
+    "options": [
+      "`@http.url:\\/api-v1\\/*`",
+      "`@http.url:/api-v1/`",
+      "`@http.url:/api\\-v1/*`"
+    ],
+    "answer": 2,
+    "explanation": "The hyphen is a special character and must be escaped; `/` is not special and needs no escape. A trailing `*` matches the rest of the path.",
+    "notes": [
+      "Wrong: it escapes the slashes, which is not needed, and leaves the hyphen unescaped.",
+      "Wrong: the hyphen is unescaped and there is no wildcard, so it is not a prefix match.",
+      "Correct: the hyphen is escaped and the wildcard covers the rest."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#attributes-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-026",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "When writing an attribute value in a log query, which character does NOT need to be escaped?",
+    "options": [
+      "`/`",
+      "`:`",
+      "`#`"
+    ],
+    "answer": 0,
+    "explanation": "The docs list `-`, `!`, `&&`, `||`, `>`, `<`, parentheses, braces, brackets, `\"`, `*`, `?`, `:`, `\\`, `#` and spaces as special. `/` is explicitly not special.",
+    "notes": [
+      "Correct: `/` is not a special character.",
+      "Wrong: `:` is special and must be escaped or quoted.",
+      "Wrong: `#` is special (it also prefixes calculated fields)."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#escape-special-characters-and-spaces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-027",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "Log messages contain text such as `ticket #4411` and you need to search on `#4411` with the `#` included. What do the docs recommend?",
+    "options": [
+      "Escape it as `\\#4411` in a free-text search of the message.",
+      "Parse it into an attribute with a Grok parser and search that.",
+      "Wrap it in double quotes so the message search keeps the `#`."
+    ],
+    "answer": 1,
+    "explanation": "Special characters in a log message are not searchable. Parse them into an attribute with the Grok Parser and search on that attribute.",
+    "notes": [
+      "Wrong: escaping does not make special characters in the message searchable.",
+      "Correct: extract it into an attribute, then search the attribute.",
+      "Wrong: quoting creates a sequence, but punctuation in the message is still not searchable."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#escape-special-characters-and-spaces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-028",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "`@user.name:john` misses logs where the value is `John`. How can you get case-insensitive results?",
+    "options": [
+      "Add a facet on `user.name`, which makes searches on it case-insensitive.",
+      "Use full-text search, or the Grok `lowercase` filter at parse time.",
+      "Wrap the value in double quotes, as in `@user.name:\"john\"`."
+    ],
+    "answer": 1,
+    "explanation": "Attribute searches are case-sensitive. Full-text search gives case-insensitive results, or you can use the `lowercase` filter in the Grok parser.",
+    "notes": [
+      "Wrong: creating a facet does not change case sensitivity.",
+      "Correct: both options are documented ways to get case-insensitive matches.",
+      "Wrong: double quotes handle special characters and spaces; attribute searches stay case-sensitive."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#attributes-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-029",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "A log message contains `please contact my.friend today`. Which free-text query matches it?",
+    "options": [
+      "`*friend`",
+      "`friend`",
+      "`\"friend\"`"
+    ],
+    "answer": 0,
+    "explanation": "A period between two letters does not split words, so `my.friend` is one word and `friend` does not match it. A wildcard such as `*friend` matches part of the word.",
+    "notes": [
+      "Correct: the leading wildcard matches the end of `my.friend`.",
+      "Wrong: `my.friend` is a single word, so `friend` alone does not match.",
+      "Wrong: quoting does not change word splitting; it still looks for the whole word `friend`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#how-free-text-search-splits-words",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-030",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "A log message reads `payment-gateway started`. Which statement about free-text search is true?",
+    "options": [
+      "Only `payment-gateway` matches, because hyphenated text stays one word.",
+      "Only `payment\\-gateway` matches, because the hyphen must be escaped.",
+      "The query `gateway` matches, because a hyphen between letters splits words."
+    ],
+    "answer": 2,
+    "explanation": "A hyphen between letters splits the text into separate words, so `payment-gateway` becomes `payment` and `gateway`.",
+    "notes": [
+      "Wrong: a letter-hyphen-letter pattern is split into two words.",
+      "Wrong: separators are not searchable, so `gateway` alone already matches.",
+      "Correct: `gateway` is its own word."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#how-free-text-search-splits-words",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-031",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "Some messages contain `don't` with a straight apostrophe and others contain `don’t` with a curly apostrophe. Which query matches both?",
+    "options": [
+      "`don't`",
+      "`\"don't\"`",
+      "`don*`"
+    ],
+    "answer": 2,
+    "explanation": "Straight and curly apostrophes are different characters, so `don't` does not match `don’t`. A wildcard such as `don*` matches both.",
+    "notes": [
+      "Wrong: the straight apostrophe does not match the curly one.",
+      "Wrong: quoting does not make the two apostrophes equal.",
+      "Correct: the wildcard covers both apostrophe styles."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#how-free-text-search-splits-words",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-032",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "Some orders fail several times before succeeding. You want error logs only for orders that never ended with a `status:success` log. How should you build the search?",
+    "options": [
+      "Main query `status:error -status:success` with no subquery",
+      "Main query `status:error`, a subquery on `status:success`, and the `NOT IN` operator on the order ID",
+      "Main query `status:success`, a subquery on `status:error`, and the `IN` operator on the order ID"
+    ],
+    "answer": 1,
+    "explanation": "A subquery with `NOT IN` removes logs whose attribute value (the order ID) also appears in the subquery results.",
+    "notes": [
+      "Wrong: a log has one status, so `-status:success` changes nothing; it does not correlate by order ID.",
+      "Correct: `NOT IN` drops orders that later succeeded.",
+      "Wrong: this returns success logs for orders that also had errors, the opposite of the goal."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/advanced_search/#filter-outdated-or-superseded-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-033",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "Which query returns logs whose `network.client.ip` falls in the 10.0.0.0/8 block?",
+    "options": [
+      "`CIDR(@network.client.ip,10.0.0.0/8)`",
+      "`@network.client.ip:10.0.0.0/8`",
+      "`@network.client.ip:CIDR(10.0.0.0/8)`"
+    ],
+    "answer": 0,
+    "explanation": "The `CIDR()` function takes the attribute first, followed by one or more CIDR blocks.",
+    "notes": [
+      "Correct: `CIDR(<attribute>, <block>)` is the syntax.",
+      "Wrong: a plain `key:value` compares strings, not IP ranges.",
+      "Wrong: the attribute goes inside `CIDR()`, not before it."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#search-using-cidr-notation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-034",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "Which statement about the `CIDR()` search function is correct?",
+    "options": [
+      "It accepts several CIDR blocks and supports both IPv4 and IPv6.",
+      "It supports IPv4 blocks only.",
+      "It works in the Log Explorer but not in Live Tail or log monitors."
+    ],
+    "answer": 0,
+    "explanation": "`CIDR()` takes one or more blocks, supports IPv4 and IPv6, and works in Log Explorer, Live Tail, dashboard log widgets, log monitors and log configurations.",
+    "notes": [
+      "Correct: multiple blocks, IPv4 and IPv6.",
+      "Wrong: IPv6 notation is also supported.",
+      "Wrong: it also works in Live Tail and log monitors."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#search-using-cidr-notation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-035",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "You want VPC logs whose client IP is NOT in 13.0.0.0/8 and whose destination IP IS in 15.0.0.0/8. Which query does this?",
+    "options": [
+      "`source:vpc CIDR(@network.client.ip, -13.0.0.0/8, 15.0.0.0/8)`",
+      "`source:vpc CIDR(@network.destination.ip, 15.0.0.0/8) OR CIDR(@network.client.ip, 13.0.0.0/8)`",
+      "`source:vpc NOT(CIDR(@network.client.ip, 13.0.0.0/8)) CIDR(@network.destination.ip, 15.0.0.0/8)`"
+    ],
+    "answer": 2,
+    "explanation": "Wrap a `CIDR()` call in `NOT()` to exclude a block, and combine it with a second `CIDR()` on the destination attribute.",
+    "notes": [
+      "Wrong: blocks cannot be negated with `-` inside `CIDR()`, and both blocks would apply to the client IP.",
+      "Wrong: `OR` returns logs matching either condition and does not exclude 13.0.0.0/8.",
+      "Correct: excludes the client subnet and requires the destination subnet."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#search-using-cidr-notation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-036",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "One log has `users.names` set to `Peter`; another has `users.names` set to `[\"Peter\", \"Anna\"]`. In the facet panel, you click the value `Peter`. Which logs are returned?",
+    "options": [
+      "Only the log whose value is exactly the string `Peter`",
+      "Both logs",
+      "Only the log whose value is an array"
+    ],
+    "answer": 1,
+    "explanation": "Selecting a facet value returns logs where the attribute equals that value or is an array that contains it.",
+    "notes": [
+      "Wrong: arrays that contain `Peter` also match.",
+      "Correct: a single value and an array containing it both match.",
+      "Wrong: the log with the single value `Peter` also matches."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#arrays",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-037",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "CloudWatch logs for Windows hold an array of JSON objects under `Event.EventData.Data`, each with a `Name` key. How do you find logs where one of those objects has `Name` equal to `ObjectServer`?",
+    "options": [
+      "Create a facet on `Event.EventData.Data`, then select `ObjectServer`.",
+      "Search `@Event.EventData.Data.Name:ObjectServer`.",
+      "Search `@Event.EventData.Data[Name]:ObjectServer`."
+    ],
+    "answer": 1,
+    "explanation": "You cannot create a facet on an array of JSON objects, but you can search it with the full path, for example `@Event.EventData.Data.Name:ObjectServer`.",
+    "notes": [
+      "Wrong: facets cannot be created on arrays of JSON objects without first extracting the attribute with a Grok parser.",
+      "Correct: the dotted path searches inside the array of objects.",
+      "Wrong: bracket notation is not log search syntax."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#arrays",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-038",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "What does the query `@user_perms:(4 6)` return when `user_perms` is an array attribute?",
+    "options": [
+      "Logs whose `user_perms` array contains `4` or `6`",
+      "Logs whose `user_perms` array contains a value from 4 to 6",
+      "Logs whose `user_perms` array contains both `4` and `6`"
+    ],
+    "answer": 2,
+    "explanation": "Listing values in parentheses (with the implicit `AND`) matches arrays that contain all of the listed values.",
+    "notes": [
+      "Wrong: matching either value would need `OR`, as in `(4 OR 6)`.",
+      "Wrong: a range uses `[4 TO 6]`.",
+      "Correct: both values must be in the array."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#nested-array-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-039",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "Some hosts carry a tag `canary` that has no key. Which query finds logs with this tag?",
+    "options": [
+      "`tags:canary`",
+      "`canary`",
+      "`@tags:canary`"
+    ],
+    "answer": 0,
+    "explanation": "For tags that do not follow the `key:value` format, search with `tags:<MY_TAG>`.",
+    "notes": [
+      "Correct: `tags:` searches key-less tags.",
+      "Wrong: a bare word is a free-text search of the message, not a tag search.",
+      "Wrong: `@` marks an attribute; tags are searched without it."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-040",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "Your logs inherit the tag `env:prod` from their host. Which query filters on that tag?",
+    "options": [
+      "`@env:prod`",
+      "`env:prod`",
+      "`#env:prod`"
+    ],
+    "answer": 1,
+    "explanation": "Tags are searched with `key:value` and no prefix; logs inherit tags from their hosts and integrations.",
+    "notes": [
+      "Wrong: `@env` would look for an attribute named `env`, not the tag.",
+      "Correct: tags use `key:value` with no prefix.",
+      "Wrong: `#` references calculated fields."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-041",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "You created a calculated field named `request_duration` in the Log Explorer. How do you reference it in a search query?",
+    "options": [
+      "`@request_duration`",
+      "`$request_duration`",
+      "`#request_duration`"
+    ],
+    "answer": 2,
+    "explanation": "Calculated fields are referenced with the `#` prefix in queries, aggregations and other calculated fields.",
+    "notes": [
+      "Wrong: `@` is for log attributes.",
+      "Wrong: `$` is used for template variables, not calculated fields.",
+      "Correct: `#` is the calculated field prefix."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/calculated_fields/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-042",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "After you select a facet in the search bar and type `:`, in what order does autocomplete list the values?",
+    "options": [
+      "By descending log count over the past 15 minutes",
+      "Alphabetically, A to Z",
+      "By descending log count over the selected time range"
+    ],
+    "answer": 0,
+    "explanation": "Once a facet is chosen and `:` is entered, autocomplete shows values in descending order by log count from the past 15 minutes.",
+    "notes": [
+      "Correct: values are ranked by log count in the past 15 minutes.",
+      "Wrong: values are ordered by log count, not alphabetically.",
+      "Wrong: the count window is the past 15 minutes, not the query's time range."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search/#autocomplete",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-043",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "How many of your recent searches does the Log Explorer search bar keep and suggest as you type?",
+    "options": [
+      "25",
+      "100",
+      "50"
+    ],
+    "answer": 1,
+    "explanation": "The search bar retains your 100 most recent searches and suggests them during autocomplete.",
+    "notes": [
+      "Wrong: the limit is 100, not 25.",
+      "Correct: the 100 most recent searches are retained.",
+      "Wrong: the limit is 100, not 50."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search/#autocomplete",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-044",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "Which of these is an official log status value you can filter on with `status:`?",
+    "options": [
+      "`fatal`",
+      "`severe`",
+      "`notice`"
+    ],
+    "answer": 2,
+    "explanation": "Official statuses follow Syslog severities: emerg, alert, critical, error, warning, notice, info, debug, plus OK. `fatal` is remapped to emerg.",
+    "notes": [
+      "Wrong: strings starting with `f` such as `fatal` are remapped to `emerg`; `fatal` is not itself a status.",
+      "Wrong: `severe` is not an official status; a status remapper maps strings beginning with `s` to `OK`.",
+      "Correct: `notice` is severity 5."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/log_status_remapper/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-srch-045",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "Which query returns logs that do NOT contain the `http.status_code` attribute at all?",
+    "options": [
+      "`-@http.status_code:*`",
+      "`@http.status_code:null`",
+      "`@http.status_code:-*`"
+    ],
+    "answer": 0,
+    "explanation": "Combining `-` with a `*` wildcard value excludes every log that has the attribute, leaving logs without it.",
+    "notes": [
+      "Correct: `-@attr:*` matches logs missing the attribute.",
+      "Wrong: this searches for the literal string `null`.",
+      "Wrong: `-` goes before the attribute, not before the value."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#attributes-search",
+    "verified": "2026-11"
+  }
+]

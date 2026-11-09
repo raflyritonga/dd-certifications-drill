@@ -1,0 +1,632 @@
+[
+  {
+    "id": "lm-excl-001",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "easy",
+    "q": "In the Log Explorer facet panel, every value of the `service` facet is selected. You click the checkbox next to `web-store` only. What happens to the search?",
+    "options": [
+      "Logs from `web-store` are removed from the results and all other services stay selected.",
+      "The search switches to show only logs from `web-store`, clearing the other service selections.",
+      "The `service` facet is hidden from the facet panel for your user."
+    ],
+    "answer": 0,
+    "explanation": "In the facet panel, a checkbox adds or removes that single value from the selected list. Clicking the value itself (not the checkbox) toggles between only that value and all values.",
+    "notes": [
+      "Correct: unchecking one value removes it from the list of all values, so it is excluded while the rest remain.",
+      "Wrong: switching to only one value is what clicking the value name does, not its checkbox.",
+      "Wrong: hiding a facet is done from the cog icon with Hide Facet."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#facet-panel",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-002",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "easy",
+    "q": "You want error logs from the `payments` service, but not the ones sent by the host `canary-01`. Which Log Explorer query does this?",
+    "options": [
+      "`service:payments status:error OR -host:canary-01`",
+      "`service:payments status:error -host:canary-01`",
+      "`service:payments status:error host:-canary-01`"
+    ],
+    "answer": 1,
+    "explanation": "The `-` operator placed before a term excludes it, and terms with no operator between them are combined with `AND`. So the query keeps payments errors and drops those from `canary-01`.",
+    "notes": [
+      "Wrong: `OR` turns the host term into an alternative (a union) instead of an extra condition, so the query also matches logs that are not payments errors.",
+      "Correct: implicit `AND` plus `-host:canary-01` excludes that host from the payments error logs.",
+      "Wrong: the `-` exclusion operator goes before the whole term (`-host:canary-01`); placed inside the value it is not the documented way to negate a filter."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-003",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "A teammate runs this query:\n\n`service:api -@http.status_code:*`\n\nWhich logs does it return?",
+    "options": [
+      "`api` logs where the `http.status_code` attribute is present but its value is empty or zero.",
+      "`api` logs with any status code except 2xx.",
+      "`api` logs that do not contain the `http.status_code` attribute at all."
+    ],
+    "answer": 2,
+    "explanation": "`@attribute:*` matches logs that have the attribute, and the `-` prefix negates it. `-@http.status_code:*` therefore returns logs that do not contain the attribute.",
+    "notes": [
+      "Wrong: the query tests whether the attribute exists, not its value.",
+      "Wrong: no range is given; excluding 2xx would need a query such as `-@http.status_code:[200 TO 299]`.",
+      "Correct: `-@http.status_code:*` searches all logs not containing that attribute."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#attributes-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-004",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "A team lead wants a role to edit exclusion filters only on the `marketing-web` index, without being able to change exclusion filters on other indexes. How is this done?",
+    "options": [
+      "Grant the role `logs_modify_indexes`, which is scoped to one index when assigned from the Roles page.",
+      "Remove the role's global `logs_write_exclusion_filters`, then grant it to the role on that index's settings.",
+      "Create a restriction query on `index:marketing-web` and give the role `logs_read_data`."
+    ],
+    "answer": 1,
+    "explanation": "`logs_write_exclusion_filters` can be global or limited to a subset of indexes. To limit it, remove the global grant and add the role on the index page in the \"Grant editing Exclusion Filters of this index to\" field (UI only).",
+    "notes": [
+      "Wrong: `logs_modify_indexes` is a global permission covering all indexes.",
+      "Correct: remove the global grant, then add the role in the index's \"Grant editing Exclusion Filters of this index to\" field (UI only).",
+      "Wrong: restriction queries limit which logs a role can read, not who edits exclusion filters."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/logs-rbac-permissions/#logs_write_exclusion_filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-005",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "easy",
+    "q": "A security team must keep network firewall logs for many months. The logs are rarely searched, but when an incident happens they need fast queries on them right away. Which storage option fits best?",
+    "options": [
+      "Standard Indexing with a 15-day retention",
+      "Log Archives with rehydration on demand",
+      "Flex Logs"
+    ],
+    "answer": 2,
+    "explanation": "Datadog positions Flex Logs for logs that must be kept long term but sometimes need to be queried urgently, such as security, transaction and network logs. Standard Indexing is for frequent, short-term querying; archives are for rarely queried long-term storage.",
+    "notes": [
+      "Wrong: Standard Indexing is meant for logs that are queried frequently and retained short term, such as application logs.",
+      "Wrong: archiving is for logs that are infrequently queried and stored long term; it does not give urgent, live querying.",
+      "Correct: Flex Logs is for logs retained long term that sometimes need to be queried urgently, such as security and network logs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/flex_logs/#when-to-use-flex-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-006",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "An admin creates a new index with the filter `*:payment` so that any log containing \"payment\" in any attribute is routed there. What is the problem?",
+    "options": [
+      "Index filters must use the `@` prefix, so the filter must be `@*:payment`.",
+      "Full-text search syntax (`*:`) cannot be used to define index filters.",
+      "Index filters cannot use wildcards; only exact `key:value` pairs are allowed."
+    ],
+    "answer": 1,
+    "explanation": "Full-text search (`*:search_term`) works in the Log Explorer, monitors, dashboards and notebooks, but it cannot be used to define index filters, archive filters, pipeline filters, rehydration filters, log-based metric filters, or in Live Tail.",
+    "notes": [
+      "Wrong: `@*:` is not valid syntax; the issue is that full-text syntax is unsupported in index filters.",
+      "Correct: the docs list index filters among the places where full-text syntax cannot be used.",
+      "Wrong: wildcard values such as `service:*mongo` are valid search syntax; the problem is the full-text `*:` form."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#full-text-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-007",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "In the Log Explorer facet panel, every value of the `status` facet is selected. You click the value name `error` itself, not the checkbox next to it. What happens to the search?",
+    "options": [
+      "The search is scoped to `error` logs only; clicking the value again goes back to all values",
+      "`error` logs are removed from the results and every other status stays selected",
+      "The word `error` is added to the search bar as a free-text term, so any log mentioning it matches"
+    ],
+    "answer": 0,
+    "explanation": "Clicking a facet value toggles the search between that single value and all values. Clicking a value's checkbox instead adds or removes just that value from the selection.",
+    "notes": [
+      "Correct: clicking the value narrows the search to that one value, and clicking it again returns to all values.",
+      "Wrong: that is what clicking the checkbox does when every value is selected: it removes that one value.",
+      "Wrong: the facet panel filters on the `status` facet, not on free text in the message."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#facet-panel",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-008",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "easy",
+    "q": "A developer changes the facets and visualization in their Log Explorer and updates their **default view**. Who sees that change?",
+    "options": [
+      "Every user in the organization, the next time they open the Log Explorer.",
+      "Only users in the developer's team.",
+      "Only the developer."
+    ],
+    "answer": 2,
+    "explanation": "The default view is only accessible and viewable to you, and updating it has no impact on your organization. All other (non-default) saved views are shared across the organization.",
+    "notes": [
+      "Wrong: that describes custom saved views, which are shared org-wide; the default view is personal.",
+      "Wrong: there is no team-level sharing of the default view.",
+      "Correct: the default view is personal to the user."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/saved_views/#default-view",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-009",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "During triage you hide the `@http.useragent` facet in the Log Explorer. You have not updated any saved view. What is the effect?",
+    "options": [
+      "The facet is hidden for every user in the organization.",
+      "The facet disappears only from your facet list and autocomplete, and queries that use it still work.",
+      "Queries that reference `@http.useragent` stop returning results until the facet is unhidden."
+    ],
+    "answer": 1,
+    "explanation": "Hiding facets is specific to your own troubleshooting context and does not affect teammates unless you update a Saved View. Hidden facets are still valid for search queries.",
+    "notes": [
+      "Wrong: hiding is personal and only spreads through an updated shared Saved View.",
+      "Correct: the facet is hidden from your list, autocomplete and analytics dropdowns, but remains valid in search.",
+      "Wrong: hidden facets are still valid for search queries, for example in a copied Explorer link."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#hide-facets",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-010",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "easy",
+    "q": "Your organization has three log indexes. In the Log Explorer, how can you limit a search to logs stored in the `audit` index only?",
+    "options": [
+      "Use the `index` facet, for example `index:audit`.",
+      "Open Live Tail and filter on `index:audit`.",
+      "Change the order of the indexes so that `audit` is first."
+    ],
+    "answer": 0,
+    "explanation": "The index facet appears when the organization has multiple indexes (or active historical views) and is used to scope a query to a subset of indexes.",
+    "notes": [
+      "Correct: the `index` facet scopes the query to selected indexes.",
+      "Wrong: Live Tail shows logs as they are ingested, before and regardless of indexing; it does not scope to stored index data.",
+      "Wrong: index order controls where new logs are routed, not which index you search."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#index-facet",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-011",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "Indexes are ordered as follows:\n\n1. `api-index` filter: `service:api`\n2. `errors-index` filter: `status:error`\n3. `main` filter: `*`\n\nA log arrives with `service:api` and `status:error`. Where is it indexed?",
+    "options": [
+      "In `errors-index`, because status filters take priority over service filters.",
+      "In both `api-index` and `errors-index`.",
+      "In `api-index` only."
+    ],
+    "answer": 2,
+    "explanation": "Logs enter the first index whose filter they match. The log matches `api-index` first, so it is stored there and is not evaluated by later indexes.",
+    "notes": [
+      "Wrong: there is no attribute priority; only the order of the index list matters.",
+      "Wrong: a log enters a single index, the first match.",
+      "Correct: first matching index wins, and `api-index` is first."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#indexes-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-012",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "A team deletes the index `payments-30d` and later tries to create a new index named `payments-30d` for a different retention. What happens?",
+    "options": [
+      "It fails: an index cannot be recreated with the same name as a deleted one.",
+      "The new index is created and the deleted index's logs become searchable again.",
+      "It succeeds after the old logs age out of their retention period."
+    ],
+    "answer": 0,
+    "explanation": "The docs warn that you cannot recreate an index with the same name as a deleted one. The deleted index stops accepting logs and its logs are no longer queryable.",
+    "notes": [
+      "Correct: index names of deleted indexes cannot be reused.",
+      "Wrong: deleted index data is not restored, and the name cannot be reused.",
+      "Wrong: aging out only removes the deleted index from the Indexes page; it does not free the name."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#delete-indexes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-013",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "An engineer adds an exclusion filter to the `main` index, types a name, and saves it without changing any other setting. What does the filter do?",
+    "options": [
+      "It excludes 100% of the logs flowing into `main`.",
+      "Nothing until it is toggled active, because new filters start inactive.",
+      "It excludes 50% of logs as a default sample."
+    ],
+    "answer": 0,
+    "explanation": "Defaults for a new exclusion filter are query `*`, sampling rule Exclude 100% of logs, and toggle active. Saved as-is, it removes every log from that index.",
+    "notes": [
+      "Correct: default query `*`, default rule exclude 100%, default toggle active.",
+      "Wrong: the default toggle is active.",
+      "Wrong: the default sampling rule is to exclude 100%, not 50%."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#exclusion-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-014",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "hard",
+    "q": "An index has these active exclusion filters, in this order:\n\n1. `service:web` - exclude 50% of logs\n2. `status:debug` - exclude 100% of logs\n\nA `status:debug` log from `service:web` arrives. What is its outcome?",
+    "options": [
+      "It is always excluded, because the 100% filter overrides the 50% filter.",
+      "It is excluded with 75% probability, because both filters apply in sequence.",
+      "It has a 50% chance of being indexed, because only the first matching filter applies."
+    ],
+    "answer": 2,
+    "explanation": "Logs are processed only by the first active exclusion filter they match. A log that matches a filter ignores all following filters, even if it is not sampled out.",
+    "notes": [
+      "Wrong: there is no override by rate; order decides.",
+      "Wrong: a log is never sampled by more than one exclusion filter.",
+      "Correct: filter 1 matches first, so only its 50% sampling applies."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#exclusion-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-015",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "easy",
+    "q": "A 100% exclusion filter drops all `status:info` logs from an index. Which of these can you still do with those info logs?",
+    "options": [
+      "Build a Log Explorer timeseries from them.",
+      "See them in Live Tail.",
+      "Trigger a log monitor on them."
+    ],
+    "answer": 1,
+    "explanation": "Excluded logs are discarded from indexes but still flow through Live Tail, can generate log-based metrics, and are archived. Explorer analytics and log monitors work on indexed logs.",
+    "notes": [
+      "Wrong: Log Explorer analytics run over indexed logs, and these logs were excluded from the index.",
+      "Correct: Live Tail shows both indexed and non-indexed logs.",
+      "Wrong: log monitors query indexed logs, and these were excluded."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#exclusion-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-016",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "You want the Log Explorer to show logs from 12AM Monday of the current week up to now, and keep updating as time passes. Which custom time frame do you type in the time selector?",
+    "options": [
+      "`1w`",
+      "`last week`",
+      "`week to date`"
+    ],
+    "answer": 2,
+    "explanation": "`week to date` is a calendar-aligned time frame that covers the current week from 12AM Monday until the present. `1w` is a sliding window of the past 7 days, and `last week` is the full previous calendar week.",
+    "notes": [
+      "Wrong: `1w` is a sliding window of the past week (the last 7 days), not aligned to Monday.",
+      "Wrong: `last {unit}` returns the full previous calendar unit, so `last week` is the week before this one.",
+      "Correct: `week to date` covers the current week from 12AM Monday until present."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/guide/custom_time_frames/#calendar-aligned-dates",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-017",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "An exclusion filter on `env:production` is set to exclude 90% of logs, sampled by `@user.email`. What is kept in the index?",
+    "options": [
+      "All logs for roughly 10% of users; logs for the other users are excluded.",
+      "A random 10% of all production logs, sampled log by log regardless of which user sent them.",
+      "The first 10% of each user's logs each day."
+    ],
+    "answer": 0,
+    "explanation": "When the sampling rule applies to groups defined by the unique values of an attribute, all logs sharing a value are kept or excluded together. This gives the full picture for a subset of users.",
+    "notes": [
+      "Correct: sampling by `@user.email` keeps or drops whole users, so about 10% of users keep all their logs.",
+      "Wrong: that is per-log sampling, which does not keep complete sessions per user.",
+      "Wrong: sampling is not time-ordered or capped per day."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#sampling-consistently-with-higher-level-entities",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-018",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "hard",
+    "q": "An exclusion filter samples individual logs (no attribute chosen) at 70%. Some of the logs carry trace IDs. How does Datadog decide which of those logs to keep?",
+    "options": [
+      "It keeps the logs with the highest status first, then samples the rest at random.",
+      "It samples on the trace IDs when present, so kept logs are more likely to correlate with sampled traces.",
+      "It ignores trace IDs; individual sampling is uniformly random per log."
+    ],
+    "answer": 1,
+    "explanation": "If the sampling rate applies to individual logs, sampling is performed on the existence of trace IDs in the logs when present. This increases the chance that kept logs match sampled traces.",
+    "notes": [
+      "Wrong: status has no role in exclusion-filter sampling.",
+      "Correct: individual-log sampling uses trace IDs when present to favor trace-correlated logs.",
+      "Wrong: the docs say trace IDs are used when present."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#exclusion-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-019",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "An index reaches its daily quota at 09:00, hours before the quota resets. What happens to new logs that match this index for the rest of the quota period?",
+    "options": [
+      "They are not indexed, but still appear in Live Tail and are sent to archives.",
+      "They are held in a buffer and indexed once the quota resets at 2:00pm UTC.",
+      "They are dropped at intake and no longer appear in Live Tail or archives."
+    ],
+    "answer": 0,
+    "explanation": "After the daily quota is reached, logs are no longer indexed. They are still available in Live Tail, sent to archives, and used to generate metrics from logs.",
+    "notes": [
+      "Correct: over-quota logs are not indexed but still flow to Live Tail, archives and log-based metrics.",
+      "Wrong: over-quota logs are not queued for later indexing; they are simply not indexed.",
+      "Wrong: the quota only limits indexing; the logs are still ingested, shown in Live Tail and archived."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#set-daily-quota",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-020",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "hard",
+    "q": "Logs for a single request can land in two different indexes. You want every log of a given `request_id` to be either kept or excluded together across both indexes. What should you configure?",
+    "options": [
+      "One exclusion filter in the first index only, because it applies before routing to the second.",
+      "An exclusion filter in each index, both sampling by `@request_id`, with the rates set to add up to 100%.",
+      "An exclusion filter in each index with the same sampling rate and the same `@request_id` attribute."
+    ],
+    "answer": 2,
+    "explanation": "For consistent sampling across indexes, create one exclusion rule in each index using the same sampling rate and the same attribute that defines the higher-level entity, and double-check filters and order.",
+    "notes": [
+      "Wrong: exclusion filters only affect the index they belong to.",
+      "Wrong: rates must be identical, not complementary.",
+      "Correct: same rate and same attribute in every index keeps sampling decisions consistent."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#sampling-consistently-with-higher-level-entities",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-021",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "A 100% exclusion filter on `status:debug` is normally active. During an incident at 14:00 you toggle it to inactive. Which debug logs can you now search in the Log Explorer?",
+    "options": [
+      "All debug logs from the index retention period, including those excluded before 14:00.",
+      "Only debug logs that arrive after the filter was toggled inactive.",
+      "Only debug logs from the past 15 minutes, which are kept in a buffer."
+    ],
+    "answer": 1,
+    "explanation": "Toggling an exclusion filter to inactive makes it ignored for new logs flowing into the index. Logs excluded earlier were never indexed and do not return.",
+    "notes": [
+      "Wrong: excluded logs were discarded from the index and cannot reappear by toggling.",
+      "Correct: the toggle affects new logs only.",
+      "Wrong: there is no 15-minute index buffer for excluded logs; recent logs are only visible in Live Tail."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#switch-off-switch-on",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-022",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "easy",
+    "q": "An index has a daily quota and no custom reset time. When does the quota reset?",
+    "options": [
+      "At 00:00 UTC",
+      "At midnight in the organization's time zone",
+      "At 2:00pm UTC"
+    ],
+    "answer": 2,
+    "explanation": "By default, index daily quotas reset automatically at 2:00pm UTC. A custom reset time can be set when editing the index.",
+    "notes": [
+      "Wrong: midnight UTC is a common guess, but the default reset is 2:00pm UTC.",
+      "Wrong: the default is a fixed UTC time, not an org time zone.",
+      "Correct: the default reset time is 2:00pm UTC."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#set-daily-quota",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-023",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "easy",
+    "q": "When setting a warning threshold for an index daily quota, what is the lowest percentage you can set?",
+    "options": [
+      "50%",
+      "10%",
+      "80%"
+    ],
+    "answer": 0,
+    "explanation": "The warning threshold is an optional percentage of the daily quota with a minimum of 50%. An event is generated when it is reached.",
+    "notes": [
+      "Correct: the minimum warning threshold is 50%.",
+      "Wrong: 10% is below the allowed minimum.",
+      "Wrong: 80% is the level Datadog recommends for a quota monitor, not the minimum threshold."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#set-daily-quota",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-024",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "hard",
+    "q": "An index has a daily quota of 10 million logs. Today 30 million logs match its index filter, and an exclusion filter removes 25 million of them. What happens?",
+    "options": [
+      "The quota is hit after the first 10 million matching logs, before exclusion filters run.",
+      "The quota is not reached, because it counts only the 5 million logs left after exclusion filters.",
+      "The quota is reached, because it counts all 30 million ingested logs."
+    ],
+    "answer": 1,
+    "explanation": "The daily quota applies to logs that should have been stored, that is after exclusion filters are applied. Only 5 million logs count toward the 10 million quota.",
+    "notes": [
+      "Wrong: exclusion filters are applied before the quota is counted.",
+      "Correct: the quota counts logs left after exclusion filters.",
+      "Wrong: ingested volume is not what the index quota limits."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#set-daily-quota",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-025",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "You want to be alerted, per index, as soon as any index hits its daily quota. Which approach do the Datadog best practices describe?",
+    "options": [
+      "A log monitor on `status:error \"quota\"` grouped by `service`.",
+      "A metric monitor on `datadog.estimated_usage.logs.ingested_bytes`, grouped by `host`, with the threshold set to the quota.",
+      "An event monitor on `source:datadog datadog_index:* \"daily quota reached\"`, grouped by `datadog_index`."
+    ],
+    "answer": 2,
+    "explanation": "An event with the `datadog_index` tag is generated when an index daily quota is reached. The documented monitor searches `source:datadog datadog_index:* \"daily quota reached\"` and groups by `datadog_index` for a multi-alert.",
+    "notes": [
+      "Wrong: quota events are Datadog events, not application error logs.",
+      "Wrong: ingested bytes do not indicate whether an index quota was reached, and `host` does not identify the index.",
+      "Correct: the quota-reached event monitor grouped by `datadog_index` alerts per index."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/best-practices-for-log-management/#alert-on-indexes-reaching-their-daily-quota",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-026",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "Your contract only includes 15-day retention, but an auditor needs 30 days on one index for a short time. What lets you choose 30 days without a contract change?",
+    "options": [
+      "Have an Org Management user enable out-of-contract retention in Organization Settings, then set 30 days.",
+      "Move the index to Flex Logs Starter, whose shortest retention option is 30 days.",
+      "Set `num_retention_days` to 30 through the API, which is not limited by the contract."
+    ],
+    "answer": 0,
+    "explanation": "Users with Org Management can enable out-of-contract retention periods per org. Users with Modify Index can then pick 3, 7, 15, 30, 45 or 60 days, which incurs on-demand charges.",
+    "notes": [
+      "Correct: once a user with Org Management enables out-of-contract retention periods, users with Modify Index can pick 30 days (on-demand charges apply).",
+      "Wrong: Flex Logs Starter retention options are 3, 6, 12 or 15 months.",
+      "Wrong: retention can only be set to values allowed in your account configuration; the API does not bypass that."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/org_settings/#out-of-contract-retention-periods-for-log-indexes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-027",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "You graph `datadog.estimated_usage.logs.ingested_events` and want to count only logs that were actually indexed. Which tag filter do you add?",
+    "options": [
+      "`datadog_index:N/A`",
+      "`datadog_is_excluded:false`",
+      "`status:indexed`"
+    ],
+    "answer": 1,
+    "explanation": "The log usage metrics carry the `datadog_is_excluded` tag. Filtering on `datadog_is_excluded:false` counts indexed logs instead of all ingested logs.",
+    "notes": [
+      "Wrong: `N/A` marks logs that were ingested but not routed by any inclusion or exclusion rule.",
+      "Correct: `datadog_is_excluded:false` keeps only logs that were not excluded, that is indexed logs.",
+      "Wrong: `status` reflects the log status such as `info` or `warning`, not indexing."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/best-practices-for-log-management/#alert-on-indexed-logs-volume-since-the-beginning-of-the-month",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-028",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "medium",
+    "q": "An index has both tiers enabled: Standard Tier retention 7 days and Flex Tier retention 60 days. How are its logs stored?",
+    "options": [
+      "7 days in Standard, then 60 more days in Flex (67 days in total).",
+      "60 days in Flex and 7 days in Standard at the same time.",
+      "7 days in Standard, then 53 days in Flex (60 days in total)."
+    ],
+    "answer": 2,
+    "explanation": "With both tiers, logs stay in the Standard Tier for its retention, then move to the Flex Tier for the rest of the Flex retention. The docs example: 3 days Standard plus Flex 90 days gives 87 days in Flex.",
+    "notes": [
+      "Wrong: the Flex retention is the total, not added on top.",
+      "Wrong: the tiers are sequential, not parallel copies.",
+      "Correct: the Flex retention value is the total, so Flex holds the logs for the remaining 53 days."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/flex_logs/#configure-storage-tiers",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-029",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "easy",
+    "q": "A team moved an index entirely to the Flex Tier (Standard Tier removed). Which feature can no longer use those logs?",
+    "options": [
+      "Dashboard widgets",
+      "Log monitors",
+      "Log Explorer search with Include Flex Logs turned on"
+    ],
+    "answer": 1,
+    "explanation": "Monitors and Watchdog are not supported in Flex Logs. Dashboards are supported, and the Log Explorer can query Flex logs with the Include Flex Logs toggle next to the time picker.",
+    "notes": [
+      "Wrong: dashboards are supported on Flex Logs.",
+      "Correct: monitor queries are not supported for Flex Logs.",
+      "Wrong: the Include Flex Logs toggle adds Flex Tier logs to Explorer results."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/flex_logs/#search-flex-logs-tier",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-excl-030",
+    "topic": "Log Analysis",
+    "subtopic": "Filtering and Excluding",
+    "difficulty": "hard",
+    "q": "In the Patterns view you select a noisy pattern, but its Add Exclusion Filter button is disabled. What is the most likely reason?",
+    "options": [
+      "Fewer than half of the logs in that pattern fall into a single index.",
+      "The pattern contains logs from more than one service.",
+      "The pattern was computed over a time range longer than the past 15 minutes."
+    ],
+    "answer": 0,
+    "explanation": "Add Exclusion Filter opens the index configuration pre-filled for the index holding most of the pattern's logs. The button is disabled if less than half of the logs in the pattern fall into a single index.",
+    "notes": [
+      "Correct: without a majority index, Datadog cannot pick an index to pre-fill.",
+      "Wrong: patterns are split by service and status, and that does not disable the button.",
+      "Wrong: no time-range limit is documented for the button."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/getting-started-lwl/",
+    "verified": "2026-11"
+  }
+]

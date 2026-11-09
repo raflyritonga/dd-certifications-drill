@@ -1,0 +1,527 @@
+[
+  {
+    "id": "ap-ret-001",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "easy",
+    "q": "Which set of spans does a Trace Explorer query search while the page shows the Live Search indicator?",
+    "options": [
+      "Every span ingested in the last 15 minutes, with no sampling applied",
+      "Only spans indexed by retention filters during the last 15 minutes",
+      "A uniform 1% sample of the spans ingested in the last 15 minutes"
+    ],
+    "answer": 0,
+    "explanation": "Live Search shows spans as soon as the Agent sends them, before retention filters run. All ingested spans from the last 15 minutes (rolling) are available, displayed without any sampling.",
+    "notes": [
+      "Correct: Live Search covers all ingested spans for a rolling 15-minute window, unsampled.",
+      "Wrong: Live Search runs before retention filters; it is not limited to indexed spans.",
+      "Wrong: the 1% flat sample belongs to the Intelligent retention filter, not to Live Search."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#live-search-for-15-minutes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-002",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "A support ticket arrives about a request for `customer_id:8812` that failed 40 minutes ago. No retention filter targets that customer. The engineer sets the Trace Explorer time range to `Past 1 Hour` and searches for the tag. What should they expect?",
+    "options": [
+      "Every ingested span for that customer, because a 1-hour range still searches all ingested data",
+      "Only spans that a retention filter indexed, since ranges over 15 minutes search indexed data",
+      "No spans at all, because the Trace Explorer cannot search time ranges longer than 15 minutes"
+    ],
+    "answer": 1,
+    "explanation": "Ingested spans are only searchable for a rolling 15 minutes. Choosing a time range greater than 15 minutes switches the Trace Explorer to indexed data, so only spans kept by a retention filter (custom or intelligent) can match.",
+    "notes": [
+      "Wrong: all ingested spans are only available for the last 15 minutes; a 1-hour range does not extend Live Search.",
+      "Correct: past 15 minutes, only spans indexed by retention filters are searchable.",
+      "Wrong: longer ranges are allowed; they just search indexed spans instead of live data."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#indexed-spans-search-with-15-day-retention",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-003",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "easy",
+    "q": "In the Trace Explorer, how does a user switch from Live Search to searching indexed spans?",
+    "options": [
+      "Add `retained_by:*` to the search query to include indexed spans",
+      "Turn on the Indexed Data toggle in the facet panel on the left",
+      "Set the time selector to any period longer than 15 minutes"
+    ],
+    "answer": 2,
+    "explanation": "Live Search is the default view. Changing the time selector in the top right to a period greater than 15 minutes switches the search to indexed spans.",
+    "notes": [
+      "Wrong: `retained_by` is a facet on retained spans, not the switch between live and indexed search.",
+      "Wrong: there is no Indexed Data toggle in the facet panel; the time selector controls the mode.",
+      "Correct: any time range over 15 minutes searches indexed data."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#indexed-spans-search-with-15-day-retention",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-004",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "easy",
+    "q": "An auditor asks for a payment span from three weeks ago. It was indexed at the time by a custom retention filter, `payments-over-100`, and the account uses the default indexed span retention. Can it still be found in the Trace Explorer?",
+    "options": [
+      "No, spans indexed by custom retention filters are kept for 15 days",
+      "Yes, spans indexed by custom retention filters are kept for 30 days",
+      "Yes, indexed spans stay searchable for 15 months like metrics"
+    ],
+    "answer": 0,
+    "explanation": "Once a custom retention filter indexes a span, it is retained for 15 days by default. A span from three weeks ago is past that window.",
+    "notes": [
+      "Correct: by default, custom retention filters keep indexed spans for 15 days.",
+      "Wrong: 30 days applies to spans indexed by the Intelligent retention filter, not custom filters.",
+      "Wrong: 15 months is the retention of metrics, not of indexed spans."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-005",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "easy",
+    "q": "How long are spans kept when they are indexed by the Datadog Intelligent retention filter (diversity sampling and 1% flat sampling)?",
+    "options": [
+      "15 days",
+      "30 days",
+      "8 days"
+    ],
+    "answer": 1,
+    "explanation": "Both parts of the Intelligent retention filter, diversity sampling and the flat 1% sample, retain what they capture for 30 days.",
+    "notes": [
+      "Wrong: 15 days is the retention for spans indexed by custom retention filters.",
+      "Correct: diversity sampling and one percent flat sampling retain spans for 30 days.",
+      "Wrong: 8 days is the default retention for profiler flame graphs, not spans."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#datadog-intelligent-retention-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-006",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "An engineer opens an indexed `checkout` span from five days ago. The flame graph shows child spans from the `inventory` service, which no retention filter targets. They then search `service:inventory` over the same day and get no results. Why?",
+    "options": [
+      "The `inventory` spans were removed after 15 minutes, so the flame graph shows only placeholders for them",
+      "Only indexed spans are searchable; the trace view still shows non-indexed spans",
+      "Child spans are only searchable during the first 24 hours after the parent span is indexed"
+    ],
+    "answer": 1,
+    "explanation": "Clicking an indexed span always shows its complete trace context, including spans that were not indexed. Only spans indexed by retention filters are searchable, so a query that matches only non-indexed spans returns nothing.",
+    "notes": [
+      "Wrong: the trace view shows the full parent and child context of an indexed span, not placeholders.",
+      "Correct: you can see the whole trace, but only spans indexed by retention filters are searchable.",
+      "Wrong: there is no 24-hour searchability window for child spans."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#create-your-own-retention-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-007",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "During a canary rollout an engineer builds a useful timeseries in Live Search and wants to export it to a dashboard and a monitor. What applies?",
+    "options": [
+      "Export works directly, and the widget keeps showing Live Search data for 15 minutes",
+      "Export works only after the stream is paused with the Pause/Play button",
+      "Export to dashboards and monitors is only possible with retained (indexed) spans"
+    ],
+    "answer": 2,
+    "explanation": "In the Live Search timeseries view, exporting to dashboards and monitors is only possible using retained spans. From the indexed search timeseries view, the query can be exported to a dashboard, monitor or notebook.",
+    "notes": [
+      "Wrong: Live Search data cannot be exported to dashboards or monitors.",
+      "Wrong: Pause/Play only pauses the live list stream; it does not enable exporting.",
+      "Correct: only retained spans can be exported to dashboards and monitors."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#live-search-for-15-minutes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-008",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "A team is writing a six-month review comparing request rate, error rate and latency of the `orders-api` service month by month. Which APM data still covers the whole period?",
+    "options": [
+      "The `orders-api` trace metrics, such as hits, errors and latency",
+      "Indexed `orders-api` spans in the Trace Explorer",
+      "The span summary and resource statistics on the service page"
+    ],
+    "answer": 0,
+    "explanation": "Trace metrics are computed from 100% of traffic and stored as Datadog metrics, whose tags and values are retained for 15 months. Indexed spans last 15 or 30 days, and service/resource statistics 30 days.",
+    "notes": [
+      "Correct: metrics are kept 15 months, so trace metrics cover a six-month review.",
+      "Wrong: indexed spans are retained for 15 days (custom filters) or 30 days (intelligent filter).",
+      "Wrong: span summaries and service/resource statistics are retained for up to 30 days."
+    ],
+    "ref": "https://docs.datadoghq.com/data_security/data_retention_periods/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-009",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "Product managers want a 12-month trend of the average `@cart.value` on `checkout` spans. Most of those spans are ingested but never indexed. What should the team set up?",
+    "options": [
+      "A custom retention filter on `service:checkout` with a 100% span rate",
+      "A trace-level retention filter so that Trace Queries can aggregate the value",
+      "A custom metric generated from spans in APM > Generate Metrics"
+    ],
+    "answer": 2,
+    "explanation": "Metrics generated from spans are built from ingested spans whether or not a retention filter indexes them, and are stored as custom metrics with 15-month retention.",
+    "notes": [
+      "Wrong: a retention filter only keeps spans for 15 days, far short of 12 months.",
+      "Wrong: Trace Queries run on indexed traces, which are kept for 15 or 30 days, not a year.",
+      "Correct: span-based custom metrics use ingested spans and are retained for 15 months."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/generate_metrics/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-010",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "A new account has no custom retention filters. A trace analytics monitor on `service:search` counts far fewer spans than the Trace Explorer shows for the same query and time range. What explains this?",
+    "options": [
+      "Trace analytics monitors evaluate only the first 15 minutes of each time range",
+      "Trace analytics monitors exclude spans indexed by the Intelligent filter",
+      "Trace analytics monitors read the 1% flat sample instead of diversity sampling"
+    ],
+    "answer": 1,
+    "explanation": "Spans indexed by the Intelligent retention filter are excluded from trace analytics monitor evaluation. Monitors use spans from custom retention filters, so with none configured the monitor sees far fewer spans.",
+    "notes": [
+      "Wrong: monitors do not use the 15-minute Live Search window.",
+      "Correct: intelligent-filter spans appear in the Trace Explorer but are excluded from trace analytics monitors.",
+      "Wrong: both diversity sampling and the 1% flat sample are part of the Intelligent filter, and both are excluded."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/#trace-retention",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-011",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "easy",
+    "q": "By default, how long does the Continuous Profiler keep flame graphs, call graphs and thread timelines?",
+    "options": [
+      "8 days",
+      "15 days",
+      "30 days"
+    ],
+    "answer": 0,
+    "explanation": "By default, flame graphs, call graphs and thread timelines are retained for eight days.",
+    "notes": [
+      "Correct: profile visualizations are retained for 8 days by default.",
+      "Wrong: 15 days is the retention of spans indexed by custom retention filters.",
+      "Wrong: 30 days (one month) is the retention of profile metrics, not profile visualizations."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/#explore-datadog-profiler",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-012",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "hard",
+    "q": "During an incident three months ago, an engineer opened a trace in the Datadog UI and pasted its link into the postmortem. The trace was indexed by a custom retention filter with default retention. According to Datadog's data retention periods, what happens when someone opens the link today?",
+    "options": [
+      "The trace is gone, because spans indexed by custom retention filters expire after 15 days",
+      "The trace is gone, because only traces exported to a notebook are kept for 1 year",
+      "The trace still opens, because viewed traces are retained for the duration of the account"
+    ],
+    "answer": 2,
+    "explanation": "The Data Retention Periods table lists APM viewed traces as retained for the duration of the account, separately from the 15 or 30 days for indexed spans. A trace that was opened in the UI therefore outlives the normal indexed span window.",
+    "notes": [
+      "Wrong: 15 days is the default for indexed spans, but viewed traces are kept for the duration of the account.",
+      "Wrong: the 1-year notebook rule applies to Continuous Profiler flame graphs, not to traces.",
+      "Correct: APM viewed traces are retained for the duration of the account."
+    ],
+    "ref": "https://docs.datadoghq.com/data_security/data_retention_periods/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-013",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "After fixing a memory leak, an engineer wants to keep the flame graph that proved the cause so it can be reviewed in next year's architecture audit. What should they do?",
+    "options": [
+      "Export the flame graph to a notebook",
+      "Add a custom retention filter on the profiled service",
+      "Generate a custom metric from the profile in APM > Generate Metrics"
+    ],
+    "answer": 0,
+    "explanation": "Flame graphs are kept for 8 days by default, but a flame graph exported to a notebook is retained for one year.",
+    "notes": [
+      "Correct: exporting a flame graph to a notebook keeps it for 1 year.",
+      "Wrong: retention filters index spans for 15 days; they do not apply to profiles.",
+      "Wrong: Generate Metrics creates metrics from spans or traces, not from profiles, and would not keep the flame graph."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/#explore-datadog-profiler",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-014",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "hard",
+    "q": "Three months ago an engineer opened one specific profile in the Datadog UI while debugging. They never exported it. According to Datadog's data retention periods, what is true today?",
+    "options": [
+      "It is gone, because every profile is deleted after the default 8 days",
+      "Only its profile metrics remain, because those are kept for 30 days",
+      "It is still available: profiles opened in the UI are kept 1 year"
+    ],
+    "answer": 2,
+    "explanation": "The Data Retention Periods table lists individual profiles opened in the UI at least once as retained for 1 year, separate from the 8-day default for flame graphs, call graphs and thread timelines.",
+    "notes": [
+      "Wrong: 8 days is the default for profiles that were never opened or exported.",
+      "Wrong: profile metrics are kept for 30 days, which would also have expired after three months.",
+      "Correct: profiles opened in the UI at least once are retained for 1 year."
+    ],
+    "ref": "https://docs.datadoghq.com/data_security/data_retention_periods/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-015",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "hard",
+    "q": "In Error Tracking, an issue's last error occurrence was five months ago. Per Datadog's default retention periods, what can still be viewed?",
+    "options": [
+      "The issue, but not its error samples, which are kept for 30 days",
+      "The issue and all of its error samples, which are both kept for 15 months",
+      "Nothing, because issues are deleted 15 days after their last error"
+    ],
+    "answer": 0,
+    "explanation": "Error Tracking keeps issues for 1 year after last activity, while error samples are retained for 30 days. Five months later the issue exists but its samples have expired.",
+    "notes": [
+      "Correct: issues last 1 year after last activity; error samples last 30 days.",
+      "Wrong: 15 months is metric retention; error samples are only kept 30 days.",
+      "Wrong: issues are kept for 1 year after last activity, not 15 days."
+    ],
+    "ref": "https://docs.datadoghq.com/data_security/data_retention_periods/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-016",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "An SRE wants to compare the resource statistics of `GET /search` today with the same week 45 days ago. The resource page has no data that far back. Where should they look instead?",
+    "options": [
+      "The Trace Explorer, filtered on `retained_by:diversity_sampling`",
+      "The APM trace metrics for that resource, in the Metric Explorer",
+      "The Catalog entry, after extending its retention in `service.datadog.yaml`"
+    ],
+    "answer": 1,
+    "explanation": "Span summaries and service and resource statistics are retained for up to 30 days. For deeper analysis, Datadog points to the APM trace metrics in the Metric Explorer, which are kept as metrics.",
+    "notes": [
+      "Wrong: diversity-sampled spans are kept for only 30 days, so 45 days ago is out of range.",
+      "Correct: trace metrics in the Metric Explorer go beyond the 30-day statistics window.",
+      "Wrong: `service.datadog.yaml` holds service metadata; it cannot extend statistics retention."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/#what-appears-in-catalog",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-017",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "A nightly batch service is instrumented with APM and sent traces between 01:00 and 02:00. At 09:00 it is missing from the Catalog list with `env:prod` selected. What is the most likely reason?",
+    "options": [
+      "Catalog removes a service and its metadata after 6 hours without new traces",
+      "It has not emitted performance data in the past hour for the selected `env`",
+      "Catalog only lists services that a retention filter is indexing"
+    ],
+    "answer": 1,
+    "explanation": "If APM-instrumented services do not appear in the Catalog list, it is likely because they have not emitted performance data in the past hour for the selected `env` or primary tag.",
+    "notes": [
+      "Wrong: service metadata is retained for the duration of the account, not removed after hours.",
+      "Correct: the list reflects services with performance data in the past hour for the selected env.",
+      "Wrong: Catalog listing does not depend on retention filters."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/troubleshooting/#apm-instrumented-services-not-appearing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-018",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "easy",
+    "q": "Which monthly span allotment comes with each APM host?",
+    "options": [
+      "1 million indexed spans and 150 GB of ingested spans",
+      "150 GB of indexed spans and 1 million ingested spans",
+      "1 million indexed spans and 50 GB of ingested spans"
+    ],
+    "answer": 0,
+    "explanation": "Every APM host (APM, APM Pro and APM Enterprise) includes 1 million indexed spans and 150 GB of ingested spans per month. Usage above that is billed separately.",
+    "notes": [
+      "Correct: 1M indexed spans and 150 GB ingested spans per APM host per month.",
+      "Wrong: the units are swapped; indexed spans are counted (1M) and ingested spans are measured in GB (150 GB).",
+      "Wrong: the ingested allotment per APM host is 150 GB, not 50 GB."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/billing/apm_tracing_profiler/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-019",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "An organization runs 4 APM hosts. This month it indexed 10 million spans and ingested 500 GB of spans. What usage is billed beyond the included allotments?",
+    "options": [
+      "6 million indexed spans and 350 GB of ingested spans",
+      "6 million indexed spans and no ingested spans",
+      "10 million indexed spans and no ingested spans"
+    ],
+    "answer": 1,
+    "explanation": "4 hosts include 4 million indexed spans and 600 GB of ingested spans. 10M - 4M = 6M indexed spans of overage, and 500 GB stays under the 600 GB ingested allotment.",
+    "notes": [
+      "Wrong: 4 hosts include 600 GB ingested, so 500 GB has no overage.",
+      "Correct: 6M indexed spans are over the 4M allotment; 500 GB is under the 600 GB allotment.",
+      "Wrong: the first 4M indexed spans are included with the 4 hosts."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/billing/apm_tracing_profiler/#apm-hosts-indexed-spans-and-extra-ingested-spans",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-020",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "hard",
+    "q": "A team runs its traced services on AWS Fargate instead of hosts. What span volume does each Fargate task include in APM pricing?",
+    "options": [
+      "1 million indexed spans and 150 GB of ingested spans",
+      "150,000 indexed spans and 15 GB of ingested spans",
+      "195,000 indexed spans and 30 GB of ingested spans"
+    ],
+    "answer": 2,
+    "explanation": "APM pricing for Fargate includes 195,000 indexed spans and 30 GB of ingested spans per task. The 1M/150 GB allotment is per APM host.",
+    "notes": [
+      "Wrong: 1M indexed and 150 GB ingested is the per-APM-host allotment.",
+      "Wrong: 150,000 indexed spans is the Lambda allotment per 1 million invocations, and 15 GB is not a documented allotment.",
+      "Correct: each Fargate task includes 195,000 indexed spans and 30 GB of ingested spans."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/billing/apm_tracing_profiler/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-021",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "A FinOps analyst reviews indexed span usage. Which indexed spans do NOT count toward the indexed span bill?",
+    "options": [
+      "Spans indexed by the `Error Default` retention filter",
+      "Spans indexed by the Intelligent retention filter",
+      "Spans indexed through a retention filter's trace rate"
+    ],
+    "answer": 1,
+    "explanation": "Spans indexed by the Intelligent retention filter (diversity sampling and 1% flat sampling) are not counted toward indexed span usage and do not impact the bill.",
+    "notes": [
+      "Wrong: `Error Default` is a default retention filter; its spans count like custom filter spans.",
+      "Correct: diversity sampling and 1% flat sampling spans are not counted toward indexed span usage.",
+      "Wrong: a trace rate indexes extra spans and can significantly increase indexed span usage."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#datadog-intelligent-retention-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-022",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "The Retention Filters list has, in this order:\n\n1. `prod-sample`: `env:prod` at 10%\n2. `checkout-all`: `service:checkout env:prod` at 100%\n\nThe team expected every production `checkout` span to be indexed. What actually happens?",
+    "options": [
+      "About 10% are indexed, because `prod-sample` matches first and decides",
+      "All are indexed, because the filter with the highest rate always wins",
+      "About 10% through `prod-sample`, and the other 90% through `checkout-all`"
+    ],
+    "answer": 0,
+    "explanation": "Retention filters are evaluated in list order. A span that matches an earlier filter is kept or dropped there, and a matching filter lower in the list does not catch it.",
+    "notes": [
+      "Correct: `prod-sample` matches first, so only about 10% of those spans are indexed.",
+      "Wrong: order, not the highest rate, decides which filter handles a span.",
+      "Wrong: spans that `prod-sample` drops are already processed; `checkout-all` lower in the list does not catch them."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#retention-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-023",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "hard",
+    "q": "A custom retention filter indexes 100% of `service:payments` spans, with no trace rate set. A week later, the Trace Query `service:payments => service:fraud-check` returns far fewer traces than the number of `payments` spans the filter indexed. What should the team change so future traces are available to Trace Queries?",
+    "options": [
+      "Move the filter to the top of the Retention Filters list",
+      "Set a trace rate on the filter so it indexes the full traces",
+      "Add a second span-level filter for `service:fraud-check` at 100%"
+    ],
+    "answer": 1,
+    "explanation": "Trace Queries run on traces indexed by the Intelligent retention filter and by trace-level retention filters. Spans kept without a trace rate (`retained_by:retention_filter`) are not included, because a trace query needs every span of the trace indexed.",
+    "notes": [
+      "Wrong: filter order changes which filter catches a span, not whether full traces are indexed.",
+      "Correct: a trace rate makes the filter index whole traces, which Trace Queries can use.",
+      "Wrong: span-level filters without a trace rate (`retained_by:retention_filter`) are not used by Trace Queries, which need every span of a trace indexed."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_queries/#how-trace-queries-source-data",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-024",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "easy",
+    "q": "A team's ingested span bill (GB) is too high. One engineer suggests disabling most retention filters. What effect will that have on ingested volume?",
+    "options": [
+      "It cuts ingestion, because spans that are not indexed are no longer sent by the Agent",
+      "It cuts ingestion only for spans older than 15 minutes",
+      "None; retention filters don't change ingestion, ingestion controls do"
+    ],
+    "answer": 2,
+    "explanation": "Retention filters do not affect which traces the Agent collects and sends (ingested). To control ingestion, use the dedicated ingestion controls such as sampling rules.",
+    "notes": [
+      "Wrong: retention filters decide indexing after ingestion; they do not stop spans from being sent.",
+      "Wrong: ingestion is metered when spans arrive, independent of the 15-minute Live Search window.",
+      "Correct: only ingestion controls change ingested volume."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#retention-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-ret-025",
+    "topic": "APM Fundamentals",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "medium",
+    "q": "An analyst graphs indexed `checkout` spans grouped by `@merchant.tier` and wants the proportions to reflect real traffic. Which query term should they add?",
+    "options": [
+      "`retained_by:diversity_sampling`",
+      "`-retained_by:flat_sampled`",
+      "`-retained_by:diversity_sampling`"
+    ],
+    "answer": 2,
+    "explanation": "Diversity sampling is biased toward errors and high latency, so it is not proportionally representative. Excluding it with `-retained_by:diversity_sampling` gives a dataset whose proportions are realistic.",
+    "notes": [
+      "Wrong: this keeps only the diversity-sampled spans, which are biased toward errors and latency.",
+      "Wrong: the 1% flat sample is uniform and representative, so removing it does not help.",
+      "Correct: excluding diversity-sampled spans leaves a representative dataset."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/leveraging_diversity_sampling/",
+    "verified": "2026-11"
+  }
+]

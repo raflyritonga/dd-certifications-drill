@@ -1,0 +1,527 @@
+[
+  {
+    "id": "ap-lib-001",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "easy",
+    "q": "An application container sets `DD_AGENT_HOST` to the Agent's address but sets no port and no `DD_TRACE_AGENT_URL`. To which port does the Datadog SDK send traces?",
+    "options": [
+      "`8125`",
+      "`8126`",
+      "`4318`"
+    ],
+    "answer": 1,
+    "explanation": "`DD_TRACE_AGENT_PORT` defaults to `8126`, the port where the Trace Agent receives traces. If the Agent's `receiver_port` is changed, the SDK port must be changed to match.",
+    "notes": [
+      "Wrong: `8125` is the DogStatsD port, used for metrics such as runtime metrics, not traces.",
+      "Correct: `8126` is the default `DD_TRACE_AGENT_PORT`.",
+      "Wrong: `4318` is the OTLP HTTP port, not the Datadog SDK's default trace port."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/library_config/python/#registry-trace_core",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-002",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "easy",
+    "q": "A service is started with both of these environment variables:\n\nDD_AGENT_HOST=10.0.0.5\nDD_TRACE_AGENT_URL=http://agent.internal:8126\n\nWhere does the SDK send traces?",
+    "options": [
+      "To `http://agent.internal:8126`, because the URL setting takes priority",
+      "To `10.0.0.5:8126`; `DD_AGENT_HOST` always wins",
+      "To both endpoints, since the SDK duplicates traces when two destinations are configured"
+    ],
+    "answer": 0,
+    "explanation": "`DD_TRACE_AGENT_URL` has priority over the host and port settings. When it is set, `DD_AGENT_HOST` is ignored.",
+    "notes": [
+      "Correct: the URL wins, and `DD_AGENT_HOST` is ignored when `DD_TRACE_AGENT_URL` is set.",
+      "Wrong: the precedence is the other way round. The host setting is ignored when a URL is given.",
+      "Wrong: the SDK sends to one Agent endpoint. It does not fan out traces to several destinations."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/library_config/python/#registry-general",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-003",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "A Python service on a Linux host is instrumented with no `DD_AGENT_HOST`, `DD_TRACE_AGENT_PORT`, or `DD_TRACE_AGENT_URL` set. Where does the SDK try to send traces first?",
+    "options": [
+      "`http://localhost:8125`",
+      "The Unix domain socket `/var/run/datadog/dsd.socket`",
+      "The Unix domain socket `/var/run/datadog/apm.socket`"
+    ],
+    "answer": 2,
+    "explanation": "By default the SDK tries the Unix domain socket `/var/run/datadog/apm.socket`. If that socket does not exist, it sends traces to `http://localhost:8126`.",
+    "notes": [
+      "Wrong: port 8125 is DogStatsD. The TCP fallback for traces is `localhost:8126`.",
+      "Wrong: `dsd.socket` is the DogStatsD socket the SDK uses for stats, not traces.",
+      "Correct: `apm.socket` is tried first, then `http://localhost:8126`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/#containers",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-004",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "easy",
+    "q": "A team has not set `DD_RUNTIME_METRICS_ENABLED` anywhere. For which of their services are runtime metrics collected by default?",
+    "options": [
+      "A Java service using `dd-java-agent.jar`",
+      "A Python service started with `ddtrace-run`",
+      "A Node.js service using `dd-trace`"
+    ],
+    "answer": 0,
+    "explanation": "`DD_RUNTIME_METRICS_ENABLED` defaults to `true` for Java and for .NET 6+ (tracer v3.40.0+), and to `false` for every other language.",
+    "notes": [
+      "Correct: Java runtime metrics are enabled by default.",
+      "Wrong: Python runtime metrics are off by default and must be enabled.",
+      "Wrong: Node.js runtime metrics are off by default and must be enabled."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/runtime_metrics/#environment-variables",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-005",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "In a containerized setup, a Go service sends traces fine after `DD_RUNTIME_METRICS_ENABLED=true` was added, but no runtime metrics appear. An earlier hardening change edited the Agent's `datadog.yaml`. Which Agent setting should be checked first?",
+    "options": [
+      "`apm_non_local_traffic: true`, so the Agent accepts traces sent from other containers",
+      "`apm_config.enabled: true`, so the trace receiver on port 8126 keeps running",
+      "`dogstatsd_non_local_traffic: true`, so DogStatsD accepts metrics from other containers"
+    ],
+    "answer": 2,
+    "explanation": "Runtime metrics travel through DogStatsD (UDP 8125 by default), not the trace receiver. In containers, DogStatsD non-local traffic must be enabled. It is on by default, so it must be turned back on if it was disabled.",
+    "notes": [
+      "Wrong: this setting affects trace intake, and traces are already arriving.",
+      "Wrong: the trace receiver is clearly working because traces are arriving; runtime metrics do not use it.",
+      "Correct: runtime metrics are DogStatsD metrics, so the Agent must accept non-local DogStatsD traffic."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/runtime_metrics/#setup-instructions",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-006",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "A Python team cannot use `ddtrace-run` in their deployment. How does the runtime metrics documentation tell them to turn on runtime metrics in code?",
+    "options": [
+      "`from ddtrace import patch` then `patch(runtime_metrics=True)` before the app starts",
+      "`from ddtrace.runtime import RuntimeMetrics` then `RuntimeMetrics.enable()`",
+      "`tracer.set_tags({\"runtime_metrics\": True})`"
+    ],
+    "answer": 1,
+    "explanation": "Python runtime metrics can be enabled with the env var or in code with `RuntimeMetrics.enable()` from `ddtrace.runtime`. The in-code method applies only when the app is not run with `ddtrace-run`.",
+    "notes": [
+      "Wrong: `patch()` enables integrations such as `redis` or `aiobotocore`, not runtime metrics.",
+      "Correct: this is the documented in-code way to enable runtime metrics without `ddtrace-run`.",
+      "Wrong: `set_tags` only adds a global tag to spans; it does not start metric collection."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/runtime_metrics/#code-based-configuration",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-007",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "A Java service reports runtime metrics, but the Metrics tab of the flame graph shows nothing for its traces. What does the runtime metrics troubleshooting section say to check?",
+    "options": [
+      "That the `env` tag (case-sensitive) is set and matches across the environment",
+      "That `DD_TRACE_DEBUG=true` is set, so the SDK attaches runtime metrics to each span",
+      "That `DD_RUNTIME_METRICS_RUNTIME_ID_ENABLED` is set to `false` on that Java service"
+    ],
+    "answer": 0,
+    "explanation": "To link runtime metrics in flame graphs, the `env` tag must be set and must match exactly, including case, across the environment.",
+    "notes": [
+      "Correct: a missing or mismatched `env` tag breaks the link between runtime metrics and flame graphs.",
+      "Wrong: debug mode only adds verbose logging; it does not link metrics to traces.",
+      "Wrong: the `runtime_id` tag helps correlation per process. Turning it off would not fix the link."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/runtime_metrics/#troubleshooting",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-008",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "In the JSON of a `DATADOG TRACER CONFIGURATION` startup log line, which key shows whether the SDK could reach the Datadog Agent?",
+    "options": [
+      "`agent_url`",
+      "`enabled_env_setting`",
+      "`agent_error`"
+    ],
+    "answer": 2,
+    "explanation": "In languages that run an Agent connectivity check, the configuration JSON includes an `agent_error` key that indicates whether the Agent is reachable.",
+    "notes": [
+      "Wrong: `agent_url` only shows where the SDK is trying to send traces, not whether it succeeded.",
+      "Wrong: this Python key records the environment setting for enabling tracing, not Agent reachability.",
+      "Correct: `agent_error` reports the connectivity result, for example a connection-refused message."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/tracer_startup_logs/#startup-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-009",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "easy",
+    "q": "A Node.js team on `dd-trace` 5.x sees no `DATADOG TRACER CONFIGURATION` line in their logs. What should they set to get startup logs?",
+    "options": [
+      "`DD_TRACE_LOG_LEVEL=info`",
+      "`DD_TRACE_STARTUP_LOGS=true`",
+      "`DD_INSTRUMENTATION_TELEMETRY_ENABLED=true`"
+    ],
+    "answer": 1,
+    "explanation": "Node.js startup logs are disabled by default starting in SDK version 2.x. Enable them with `DD_TRACE_STARTUP_LOGS=true`.",
+    "notes": [
+      "Wrong: the log level does not turn on startup logs, which are off by default in Node.js 2.x+.",
+      "Correct: this is the documented way to enable Node.js startup logs.",
+      "Wrong: instrumentation telemetry sends diagnostic data to Datadog; it does not print the startup configuration."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/tracer_startup_logs/#startup-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-010",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "easy",
+    "q": "Which statement about SDK debug mode (`DD_TRACE_DEBUG`) is correct?",
+    "options": [
+      "It is on by default at `WARN` level and starts writing once a log file path is set",
+      "It is recommended in production for faster support",
+      "It is off by default and not recommended in production"
+    ],
+    "answer": 2,
+    "explanation": "Debug mode is disabled by default. Datadog does not recommend enabling it in production because it increases the number of events sent to your loggers; use it only for debugging.",
+    "notes": [
+      "Wrong: debug mode is disabled by default.",
+      "Wrong: the docs advise against enabling it in production.",
+      "Correct: off by default and meant only for debugging."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/tracer_debug_logs/#enable-debug-mode",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-011",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "hard",
+    "q": "A Python app sets its root logger to `DEBUG`. The logs are now flooded with `ddtrace` debug messages, even though `DD_TRACE_DEBUG` is not set. Which change, documented for ddtrace v4.4.0+, stops this without touching the root logger?",
+    "options": [
+      "Set `DD_TRACE_LOG_LEVEL=CRITICAL`",
+      "Set `DD_TRACE_DEBUG=false` explicitly so debug output is forced off",
+      "Set `DD_TRACE_STARTUP_LOGS=false` to silence the tracer's own output"
+    ],
+    "answer": 0,
+    "explanation": "When the root logger is at `DEBUG`, the `ddtrace` logger inherits that level. `DD_TRACE_LOG_LEVEL` (v4.4.0+) sets the ddtrace logger's level separately. Another option is `logging.getLogger(\"ddtrace\").setLevel(logging.WARNING)`.",
+    "notes": [
+      "Correct: `DD_TRACE_LOG_LEVEL` overrides the level ddtrace would otherwise inherit from the root logger.",
+      "Wrong: debug mode is already off. The messages come from the ddtrace logger inheriting the root logger's level.",
+      "Wrong: this only disables the startup configuration logs, not the inherited debug output."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/tracer_debug_logs/#enable-debug-mode",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-012",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "Support asks a team to send a tracer flare with application debug logs from the Fleet Automation page, instead of collecting logs by hand. Which requirement must already be met?",
+    "options": [
+      "`DD_TRACE_DEBUG=true` must already be set on the application before the flare is requested",
+      "Remote Configuration must be enabled with an RC-capable API key, and the SDK must be a supported version",
+      "Agent log collection (`logs_enabled: true`) must be on so the flare can upload the tracer logs"
+    ],
+    "answer": 1,
+    "explanation": "Automated debug log collection needs Remote Configuration enabled, an API key configured for Remote Configuration, and a supported SDK version (Java, Python, Node.js or .NET). Debug mode can be turned on in the flare form itself.",
+    "notes": [
+      "Wrong: the flare form has a Debug mode toggle and resets the log level afterward, so you do not set it beforehand.",
+      "Correct: Remote Configuration and a supported SDK version are the prerequisites.",
+      "Wrong: Agent log collection is not a prerequisite for sending a tracer flare."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/tracer_debug_logs/#prerequisites",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-013",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "easy",
+    "q": "Where in Datadog do you change a service's SDK settings (for example log injection) at runtime, without restarting the service?",
+    "options": [
+      "The service's Setup Guidance tab, using its built-in configuration editing panel",
+      "Organization Settings > Remote Configuration, from the SDK status table for the service",
+      "The service page: Service Config > SDK & Agent Configurations"
+    ],
+    "answer": 2,
+    "explanation": "Configuration at runtime is edited from the service's Full Page in the Software Catalog, under Service Info > Service Config > SDK & Agent Configurations. You select an environment and click Edit on the row.",
+    "notes": [
+      "Wrong: the Setup Guidance tab no longer has an editing panel; it shows a banner pointing to SDK & Agent Configurations.",
+      "Wrong: that page enables Remote Configuration and shows SDK statuses. It is not where SDK settings are edited.",
+      "Correct: SDK & Agent Configurations is the main place to edit configuration at runtime."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/runtime_config/#using-configuration-at-runtime",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-014",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "hard",
+    "q": "Which of these SDK settings can be changed with Configuration at Runtime from the Datadog UI?",
+    "options": [
+      "HTTP header tags (`DD_TRACE_HEADER_TAGS`)",
+      "Runtime metrics collection (`DD_RUNTIME_METRICS_ENABLED`)",
+      "The Agent endpoint (`DD_TRACE_AGENT_URL`)"
+    ],
+    "answer": 0,
+    "explanation": "The supported options are sampling rate, log injection, HTTP header tags, custom span tags (`DD_TAGS`), resource-based sampling rules and Adaptive Sampling.",
+    "notes": [
+      "Correct: HTTP header tags are on the list of options supported at runtime.",
+      "Wrong: runtime metrics is not one of the options supported at runtime.",
+      "Wrong: the Agent endpoint is not configurable at runtime. Remote Configuration itself depends on reaching the Agent."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/runtime_config/#supported-configuration-options",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-015",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "hard",
+    "q": "In the Remote Configuration UI, an SDK shows the status `UNAUTHORIZED`. What fixes it?",
+    "options": [
+      "Set `remote_config.enabled: true` in the Agent's `datadog.yaml`",
+      "Enable the Remote Configuration capability on the API key used by the Agent that the SDK reports through",
+      "Upgrade the SDK to a release that supports Remote Configuration for tracing"
+    ],
+    "answer": 1,
+    "explanation": "`UNAUTHORIZED` means the SDK's Agent uses an API key without the `APM Remote Configuration Read` permission. The fix is to enable the Remote Configuration capability on that API key.",
+    "notes": [
+      "Wrong: that fixes the `DISABLED` status, where the Agent has Remote Configuration turned off.",
+      "Correct: `UNAUTHORIZED` is an API key permission problem.",
+      "Wrong: an SDK without Remote Configuration support shows `NOT DETECTED`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/remote_config/#review-remote-configuration-status-of-sdks",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-016",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "A Linux host's `application_monitoring.yaml` sets `DD_PROFILING_ENABLED: true` under `apm_configuration_default`. One service on that host is started with `DD_PROFILING_ENABLED=false` in its environment. What happens for that service?",
+    "options": [
+      "Profiling is enabled, because host-level settings override settings on the process",
+      "The SDK refuses to start because the two configuration sources conflict",
+      "Profiling stays off; the environment variable wins over the file"
+    ],
+    "answer": 2,
+    "explanation": "Values set through environment variables override the settings in `application_monitoring.yaml`. The file supplies host-wide defaults for services that do not set the value themselves.",
+    "notes": [
+      "Wrong: the precedence is the other way round. Environment variables win.",
+      "Wrong: there is no conflict error; the environment variable simply takes precedence.",
+      "Correct: the process environment variable overrides the host file."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/library_config/application_monitoring_yaml/#configuration-steps",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-017",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "easy",
+    "q": "In `/etc/datadog-agent/application_monitoring.yaml`, under which top-level key do you put SDK settings such as `DD_DATA_STREAMS_ENABLED: true`?",
+    "options": [
+      "`apm_configuration_default`",
+      "`apm_config`",
+      "`sdk_configuration_default`"
+    ],
+    "answer": 0,
+    "explanation": "SDK settings in `application_monitoring.yaml` go under the `apm_configuration_default` block. Every instrumented service on the host inherits them, and the services must be restarted to apply changes.",
+    "notes": [
+      "Correct: `apm_configuration_default` is the documented block.",
+      "Wrong: `apm_config` is the Agent's APM section in `datadog.yaml`, not the SDK block in this file.",
+      "Wrong: there is no such block. The documented name is `apm_configuration_default`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/library_config/application_monitoring_yaml/#configuration-steps",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-018",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "A Java service runs with:\n\nDD_ENV=prod\njava -javaagent:/opt/dd-java-agent.jar -Ddd.env=staging -jar app.jar\n\nWhich `env` value does the tracer use?",
+    "options": [
+      "`prod`, because environment variables always win",
+      "`staging`, because the system property takes priority",
+      "Neither; the tracer falls back to `none` when the two values disagree"
+    ],
+    "answer": 1,
+    "explanation": "Every Java SDK option has a system property and an environment variable form. When both are set for the same key, the system property takes priority.",
+    "notes": [
+      "Wrong: for the Java SDK, the system property wins over the environment variable.",
+      "Correct: `-Ddd.env=staging` wins over `DD_ENV=prod`.",
+      "Wrong: there is no conflict fallback; the system property is used."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/library_config/java/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-019",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "A Java team's JDBC Datasource spans are missing. The integration is listed among the Java integrations that are disabled by default. Which environment variable turns it on?",
+    "options": [
+      "`DD_INTEGRATIONS_ENABLED=true`",
+      "`DD_TRACE_METHODS=javax.sql.DataSource[getConnection]`",
+      "`DD_INTEGRATION_JDBC_DATASOURCE_ENABLED=true`"
+    ],
+    "answer": 2,
+    "explanation": "Java integrations that are off by default are enabled one at a time. The Java compatibility page documents `DD_INTEGRATION_JDBC_DATASOURCE_ENABLED=true` (or `-Ddd.integration.jdbc-datasource.enabled=true`) for JDBC Datasource.",
+    "notes": [
+      "Wrong: this is the global switch for all integrations and is already `true` by default; it does not turn on integrations that are disabled by default.",
+      "Wrong: `DD_TRACE_METHODS` traces specific class methods; it does not enable an integration.",
+      "Correct: this is the documented setting for enabling the JDBC Datasource integration."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/compatibility/java/#database-integrations-disabled-by-default",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-020",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "A Python service is run with `ddtrace-run`, but outgoing calls made with `urllib3` produce no spans. Which setting enables that integration?",
+    "options": [
+      "`DD_PATCH_MODULES=urllib3:true`",
+      "`DD_URLLIB3_SERVICE=urllib3`",
+      "`DD_TRACE_REQUESTS_ENABLED=true`"
+    ],
+    "answer": 0,
+    "explanation": "The urllib3 integration is not enabled by default. Enable it with `DD_PATCH_MODULES` (format `module:bool`) or `DD_TRACE_URLLIB3_ENABLED`, together with `ddtrace-run` or `import ddtrace.auto`.",
+    "notes": [
+      "Correct: `DD_PATCH_MODULES` overrides which modules are patched, so it can turn urllib3 on.",
+      "Wrong: `DD_<INTEGRATION>_SERVICE` only renames the integration's service; it does not enable patching.",
+      "Wrong: the `requests` integration is already on by default and traces calls made through `requests`, not direct `urllib3` calls."
+    ],
+    "ref": "https://ddtrace.readthedocs.io/en/stable/integrations.html#urllib3",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-021",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "easy",
+    "q": "An engineer runs `ddtrace-run --info` to check a service's tracer configuration. A sampling change they made in application code does not appear in the output. Why?",
+    "options": [
+      "`--info` reports the Agent's configuration rather than the SDK's own settings",
+      "`--info` shows only environment variable configuration, not configuration changes made in code",
+      "`--info` caches its output from the previous run until ddtrace is reinstalled"
+    ],
+    "answer": 1,
+    "explanation": "`ddtrace-run --info` prints a readable tracer health check and configuration, but it does not reflect configuration changes made in code. It shows only environment variable configuration.",
+    "notes": [
+      "Wrong: `--info` shows the tracer's own configuration and health, not the Agent's settings.",
+      "Correct: code-level changes are not reflected in `--info` output.",
+      "Wrong: the output is not cached; it is limited to environment variable configuration."
+    ],
+    "ref": "https://ddtrace.readthedocs.io/en/stable/advanced_usage.html#ddtrace-run",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-022",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "A ddtrace trace filter is registered with `tracer.configure(trace_processors=[DropHealth()])`:\n\nclass DropHealth(TraceFilter):\n    def process_trace(self, trace):\n        for span in trace:\n            if span.resource == \"GET /health\":\n                return None\n        return trace\n\nWhat happens to a trace that contains a `GET /health` span?",
+    "options": [
+      "Only the matching span is removed",
+      "The trace is sent, but the matching span is marked with an error",
+      "The whole trace chunk is discarded before it is sent to the Agent"
+    ],
+    "answer": 2,
+    "explanation": "A trace filter's `process_trace` returns the trace to pass it on, or `None` to discard it. Returning `None` drops the whole trace chunk before it is sent to the Agent.",
+    "notes": [
+      "Wrong: returning `None` drops the whole trace, not one span.",
+      "Wrong: filters do not mark errors. `None` means the trace is discarded.",
+      "Correct: `None` discards the trace, so it never reaches the Agent."
+    ],
+    "ref": "https://ddtrace.readthedocs.io/en/stable/advanced_usage.html#trace-filtering",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-023",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "medium",
+    "q": "A Python service traced with `ddtrace` returns HTTP 404 for unknown products. The team wants those server spans flagged as errors, while 5xx responses stay errors and other 4xx codes such as 401 do not. Which setting does this?",
+    "options": [
+      "`DD_TRACE_HTTP_SERVER_ERROR_STATUSES=404,500-599`",
+      "`DD_TRACE_HTTP_SERVER_ERROR_STATUSES=404`",
+      "`DD_TRACE_HTTP_SERVER_ERROR_STATUSES=400-599`"
+    ],
+    "answer": 0,
+    "explanation": "`DD_TRACE_HTTP_SERVER_ERROR_STATUSES` (default `500-599`) is a comma-separated list of status codes or ranges treated as errors on HTTP server spans. The value replaces the default, so the 5xx range must be listed again next to `404`.",
+    "notes": [
+      "Correct: listing `404` together with `500-599` flags 404s and keeps 5xx responses as errors.",
+      "Wrong: the value overrides the default `500-599`, so only 404 would be an error status and 5xx status codes would no longer flag server spans as errors.",
+      "Wrong: `400-599` flags every 4xx code, including 401, which the team does not want marked as an error."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/library_config/python/#registry-trace_propagation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-024",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "hard",
+    "q": "A service named `checkout` is configured with:\n\nDD_TRACE_SAMPLING_RULES='[{\"service\":\"checkout\",\"sample_rate\":0.5},{\"service\":\"checkout\",\"resource\":\"GET /health\",\"sample_rate\":0}]'\n\nAt what rate are traces with the root resource `GET /health` sampled?",
+    "options": [
+      "0%, because the more specific rule with a `resource` field always wins",
+      "50%, because rules are evaluated in order and the first matching rule decides",
+      "The Agent's automatic rate; `sample_rate` 0 is invalid"
+    ],
+    "answer": 1,
+    "explanation": "Sampling rules are evaluated in the order listed, and the first matching rule sets the trace's sample rate. The service-only rule comes first and matches `GET /health` too, so those traces get 50%. To drop health checks, the resource rule must come first.",
+    "notes": [
+      "Wrong: specificity does not matter. Order does, so the earlier service-wide rule matches first.",
+      "Correct: first match wins, and the first rule matches every `checkout` trace.",
+      "Wrong: `sample_rate` accepts values from 0.0 to 1.0 inclusive, so 0 is valid."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/library_config/python/#registry-trace_sampling",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lib-025",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Tracing Libraries",
+    "difficulty": "hard",
+    "q": "A Python service runs with `ddtrace-run`. After upgrading from ddtrace 2.x to 4.x, the team sees `dd.trace_id` and `dd.span_id` values in their application logs, although they never configured log correlation. They want to turn this off. What should they set?",
+    "options": [
+      "`DD_TRACE_STARTUP_LOGS=false`",
+      "`DD_LOGS_ENABLED=false`",
+      "`DD_LOGS_INJECTION=false`"
+    ],
+    "answer": 2,
+    "explanation": "Since ddtrace v3.10.0, `DD_LOGS_INJECTION` defaults to `true`, so the tracer injects trace context into logs when `ddtrace-run` or `import ddtrace.auto` is used. Set `DD_LOGS_INJECTION=false` to turn it off.",
+    "notes": [
+      "Wrong: this only stops the tracer's startup configuration logs, not the trace IDs in application logs.",
+      "Wrong: `DD_LOGS_ENABLED` is an Agent log collection setting; it does not control SDK log injection.",
+      "Correct: log injection is on by default in current ddtrace, and this setting disables it."
+    ],
+    "ref": "https://ddtrace.readthedocs.io/en/stable/configuration.html#dd-logs-injection",
+    "verified": "2026-11"
+  }
+]

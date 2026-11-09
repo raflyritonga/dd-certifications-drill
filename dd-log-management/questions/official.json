@@ -1,0 +1,527 @@
+[
+  {
+    "id": "lm-official-01",
+    "topic": "Official practice set",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "",
+    "q": "Why are logs important?",
+    "options": [
+      "They help break down slow requests by time spent in code on CPU, GC, lock contention, and I/O.",
+      "They help identify trends over long periods of time.",
+      "They help pinpoint the cause of problems and are written records for audit/compliance purpose."
+    ],
+    "answer": 2,
+    "explanation": "Logs are timestamped records of what happened, so they help pinpoint the cause of problems during troubleshooting and serve as written records for security audits and compliance. Datadog's log docs describe logs as essential for root cause detection, compliance tracking and security audits.",
+    "notes": [
+      "Wrong: breaking down time spent on CPU, GC, locks and I/O is what code profiling (Continuous Profiler) does, not logs.",
+      "Wrong: long-term trends are better tracked with metrics; Datadog generates log-based metrics for long-term KPIs because indexed logs age out with retention.",
+      "Correct: logs pinpoint root causes and act as an audit/compliance record."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-02",
+    "topic": "Official practice set",
+    "subtopic": "Search Syntax",
+    "difficulty": "",
+    "q": "Which log search query should be used to find logs with an error status that contain the indication of their info severity in their log message?",
+    "options": [
+      "status:error and info",
+      "error and severity:info",
+      "status:error and severity:info"
+    ],
+    "answer": 0,
+    "explanation": "`status:error` filters on the reserved `status` attribute, and the bare term `info` is a free-text search that only looks in the `message` (plus `@title`, `@error.message` and `@error.stack`). That combination returns error logs whose message mentions info. Current docs: Boolean operators are case-sensitive, so a lowercase `and` is not the `AND` operator; since `AND` is the default, write `status:error info` or `status:error AND info`.",
+    "notes": [
+      "Correct: `status:error` matches the reserved status attribute; free-text `info` searches the message.",
+      "Wrong: free-text `error` only searches the message, and `severity:info` (no `@`, not a reserved attribute) filters on a `severity` tag, the reverse of what is asked.",
+      "Wrong: `severity:info` filters on a `severity` tag (an attribute would need `@severity`); it does not search the message text for info."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#full-text-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-03",
+    "topic": "Official practice set",
+    "subtopic": "Logging Formats",
+    "difficulty": "",
+    "q": "Which logging format is automatically parsed by Datadog?",
+    "options": [
+      "XML",
+      "JSON",
+      "IIS"
+    ],
+    "answer": 1,
+    "explanation": "Datadog automatically parses JSON-formatted logs. Other formats need a Grok Parser or an integration pipeline to extract attributes.",
+    "notes": [
+      "Wrong: XML is not parsed automatically; it needs a parser such as the XML Grok filter.",
+      "Correct: Datadog automatically parses JSON-formatted logs.",
+      "Wrong: IIS logs are parsed by the IIS integration pipeline (set via `source`), not by automatic format detection."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-04",
+    "topic": "Official practice set",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "",
+    "q": "Which of the following is a key benefit of using Logging Without Limits",
+    "options": [
+      "generating metrics",
+      "archiving all logs",
+      "detecting anomalies"
+    ],
+    "answer": 1,
+    "explanation": "Logging without Limits decouples ingestion from indexing, so you can collect, process and archive all of your logs and only index what you need to search. Archiving everything for audits and compliance is the benefit Datadog keys here. Current docs: the same decoupling also lets you generate log-based metrics and run Cloud SIEM detection on all ingested logs, so option A is arguably also a benefit; the key remains archiving.",
+    "notes": [
+      "Debatable: log-based metrics over the full ingest stream are also enabled by decoupling, but Datadog keys archiving.",
+      "Correct: decoupling ingestion from indexing lets you archive all logs cost-effectively.",
+      "Wrong: anomaly detection is a monitor/Watchdog feature, not the defining benefit of Logging without Limits."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-05",
+    "topic": "Official practice set",
+    "subtopic": "Log Emission",
+    "difficulty": "",
+    "q": "By default, which directory contains logs for processes running on a Linux distribution?",
+    "options": [
+      "/tmp/",
+      "/etc/logrotate/",
+      "/var/log/"
+    ],
+    "answer": 2,
+    "explanation": "On Linux, processes write their logs under `/var/log/` by convention, for example `/var/log/nginx/access.log`. Datadog's file-permission guide notes that logs in `/var/log` are only readable by root by default, which is why the `dd-agent` user may need extra permissions.",
+    "notes": [
+      "Wrong: `/tmp/` holds temporary files and is cleared on reboot; it is not the log directory.",
+      "Wrong: `/etc/` holds configuration; logrotate's config lives in `/etc/logrotate.d/`, not the logs themselves.",
+      "Correct: `/var/log/` is the default Linux log directory."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/setting-file-permissions-for-rotating-logs/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-06",
+    "topic": "Official practice set",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "",
+    "q": "Which Datadog product should be used to automatically detect security signals from logs?",
+    "options": [
+      "Datadog SIEM",
+      "Datadog CSPM",
+      "Datadog AppSec"
+    ],
+    "answer": 0,
+    "explanation": "Cloud SIEM analyzes incoming logs with detection rules and generates security signals. Logging without Limits lets it detect threats in all ingested logs without requiring them to be indexed.",
+    "notes": [
+      "Correct: Cloud SIEM runs detection rules on logs and generates security signals.",
+      "Wrong: CSPM (Cloud Security Misconfigurations) checks cloud resource configuration against compliance rules; it does not detect threats from logs.",
+      "Wrong: AppSec (now App and API Protection) protects services from application-level attacks using tracing data, not log detection rules."
+    ],
+    "ref": "https://docs.datadoghq.com/security/cloud_siem/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-07",
+    "topic": "Official practice set",
+    "subtopic": "Visualizing",
+    "difficulty": "",
+    "q": "What is the maximum number of facets supported by Timeseries and Table visualizations?",
+    "options": [
+      "3",
+      "4",
+      "5"
+    ],
+    "answer": 0,
+    "explanation": "In the Log Explorer, the Timeseries visualization can be split by up to three facets, and the Table visualization shows top values from up to three facets. Current docs are inconsistent: the Visualize page still says three, while the Log Analytics page now says the Fields aggregation supports up to four dimensions for Timeseries, Table, Tree Map and Pie Chart.",
+    "notes": [
+      "Correct: the Visualize docs allow splitting Timeseries and Table by up to three facets.",
+      "Debatable: the Log Analytics page now lists up to four dimensions, but Datadog keys 3.",
+      "Wrong: no current doc page allows five facets."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-08",
+    "topic": "Official practice set",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "",
+    "q": "How would a URL be generated that dynamically links to the appropriate dashboard in an alert’s message?",
+    "options": [
+      "Create an advanced alert condition.",
+      "Add a priority to the alert.",
+      "Use a template variable."
+    ],
+    "answer": 2,
+    "explanation": "Monitor notifications support template (tag) variables such as `{{host.name}}` that are filled in when the alert fires. Placing them inside a URL builds a dynamic link to the right dashboard, host map or monitor.",
+    "notes": [
+      "Wrong: advanced alert conditions control evaluation (missing data, delays), not message links.",
+      "Wrong: priority only sets the alert's P1-P5 severity label.",
+      "Correct: template variables such as `{{host.name}}` build dynamic dashboard URLs in the message."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/notify/variables/#dynamic-links",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-09",
+    "topic": "Official practice set",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "",
+    "q": "On Linux systems, which directory should the Agent’s ‘dd-agent’ user own in order to write to log files?",
+    "options": [
+      "/tmp/log/",
+      "/var/log/datadog/",
+      "/etc/datadog-agent/"
+    ],
+    "answer": 1,
+    "explanation": "The Agent writes its own log files to `/var/log/datadog/` on Linux. Both those files and the directory must be owned by the `dd-agent` user, otherwise the Agent cannot write log entries.",
+    "notes": [
+      "Wrong: `/tmp/log/` is not an Agent directory.",
+      "Correct: `/var/log/datadog/` and its files must be owned by `dd-agent`.",
+      "Wrong: `/etc/datadog-agent/` holds configuration files (such as `datadog.yaml`), not the Agent's log files."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/troubleshooting/permissions/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-10",
+    "topic": "Official practice set",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "",
+    "q": "To present data so it is more easily understood, move a column in the Log Explorer by",
+    "options": [
+      "clicking on a column header’s dropdown menu and selecting an Insert option.",
+      "Move from left to right by dragging and dropping them (6 dots icon).",
+      "clicking on a column header’s dropdown menu and selecting a Move option."
+    ],
+    "answer": 1,
+    "explanation": "Columns in the Log Explorer list are rearranged directly in the table header row by dragging them left or right. The docs call the table's first-row interactions the preferred way to sort, rearrange or remove columns.",
+    "notes": [
+      "Wrong: an Insert action adds a column; the docs name the table's first row (drag and drop) as the way to rearrange existing columns.",
+      "Correct: drag the column by its handle (six dots) in the table header to a new position.",
+      "Wrong: the docs describe rearranging columns by interacting with the table's first row (drag and drop), not a Move menu option."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#lists",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-11",
+    "topic": "Official practice set",
+    "subtopic": "Aggregations",
+    "difficulty": "",
+    "q": "Which of the following should be done to visualize log counts by facet in the Log Explorer?",
+    "options": [
+      "Click the Group into Fields button, and group by a facet in the dropdown list.",
+      "Click the Group into Patterns button, and group by status and service.",
+      "Click the Group into Patterns button, and group by status."
+    ],
+    "answer": 0,
+    "explanation": "Grouping into Fields aggregates indexed logs into groups by the chosen facet values and can show the count of logs per group. Patterns instead cluster logs with similar `message` values, grouping results by Status and Service by default.",
+    "notes": [
+      "Correct: Group into Fields, then pick the facet to group by, gives log counts per facet value.",
+      "Wrong: Patterns cluster logs by similar message values; grouping by status and service is just the Patterns default, not a count per chosen facet.",
+      "Wrong: Patterns cluster logs by message structure; grouping the patterns by status does not give log counts by a facet."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#group-logs-by-fields",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-12",
+    "topic": "Official practice set",
+    "subtopic": "Metric Generation",
+    "difficulty": "",
+    "q": "Which of the following should be done to aggregate logs into long-term key performance indicators (KPIs)?",
+    "options": [
+      "Click the Export button and select Generate New Metric.",
+      "Click the Export button and select Export to Dashboard.",
+      "Click the Export button and select Export to Monitor."
+    ],
+    "answer": 0,
+    "explanation": "From the Log Explorer Export menu you can create a metric to aggregate your logs into long-term KPIs as they are ingested. Log-based metrics are retained for 15 months, unlike indexed logs.",
+    "notes": [
+      "Correct: exporting to a new metric creates a log-based metric for long-term KPIs.",
+      "Wrong: a dashboard widget still queries indexed logs, which age out with index retention.",
+      "Wrong: a monitor alerts on thresholds; it does not store long-term KPIs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/export/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-13",
+    "topic": "Official practice set",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "",
+    "q": "Logs provide insight into an application by helping users understand",
+    "options": [
+      "why the application failed.",
+      "how the application performed.",
+      "the application queue size."
+    ],
+    "answer": 0,
+    "explanation": "Logs record discrete events with context, such as error messages and stack traces, so they explain why something failed. Metrics and traces are better suited to how an application performed or a numeric value like queue size.",
+    "notes": [
+      "Correct: logs give the detailed event context that explains failures.",
+      "Wrong: overall performance is usually measured with metrics and APM traces.",
+      "Wrong: queue size is a numeric gauge best tracked as a metric."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-14",
+    "topic": "Official practice set",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "",
+    "q": "How can specific logs be filtered from processing based on value?",
+    "options": [
+      "Set the exclude type with a pattern to test log data against in the Datadog Agent.",
+      "Set the exclude_at_match type with a pattern to test log data against in the Datadog Agent.",
+      "Create a list of filter patterns in the Datadog application."
+    ],
+    "answer": 1,
+    "explanation": "In the Agent's `log_processing_rules`, a rule with `type: exclude_at_match` drops any log whose message contains the pattern, so it is never sent to Datadog.",
+    "notes": [
+      "Wrong: there is no plain `exclude` rule type; valid types include `exclude_at_match`, `include_at_match`, `exclude_truncated`, `mask_sequences` and `multi_line`.",
+      "Correct: `exclude_at_match` filters out logs that match the pattern before they are sent.",
+      "Wrong: Datadog-side index exclusion filters only stop indexing; logs are still ingested and processed."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#exclude-at-match",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-15",
+    "topic": "Official practice set",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "",
+    "q": "If log data is important but contains sensitive material, how can that log be processed with the sensitive data hidden?",
+    "options": [
+      "Add a log processing rule with a ‘mask sequence’ type to match sensitive data patterns and mask it.",
+      "Add a log parsing pipeline to match sensitive data patterns and mask it.",
+      "Mask the log data at the application-level before emitting it."
+    ],
+    "answer": 0,
+    "explanation": "A `log_processing_rules` entry with `type: mask_sequences` makes the Agent replace matches of a regex pattern with a placeholder before the log leaves the host, so the log is still collected with the sensitive data hidden.",
+    "notes": [
+      "Correct: a `mask_sequences` processing rule masks matching sensitive data at collection.",
+      "Wrong: pipelines parse and enrich logs after ingestion; masking in Datadog is done by Sensitive Data Scanner, not a parsing pipeline.",
+      "Wrong: it can work, but it requires code changes; the Datadog answer is the Agent's `mask_sequences` rule."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#scrub-sensitive-data-from-your-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-16",
+    "topic": "Official practice set",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "",
+    "q": "How can string data in a JSON object from a source that does not have an integration be parsed?",
+    "options": [
+      "Parse the data at the application-level prior to emitting the log from the source.",
+      "Use the generic JSON processing pipeline to parse the data.",
+      "Create a custom processing pipeline to parse the data based on the tagged source."
+    ],
+    "answer": 2,
+    "explanation": "Integration pipelines only exist for sources with an integration. For any other source, create a custom pipeline filtered on that log's `source` and add processors such as a Grok Parser to extract the string data. Current docs: Auto-Processing (not available on every site) can now automatically parse custom logs that match no integration or custom pipeline.",
+    "notes": [
+      "Wrong: it avoids parsing in Datadog but forces application changes; Datadog's answer is to parse with a pipeline.",
+      "Wrong: there is no generic JSON pipeline; JSON logs are parsed automatically (with JSON preprocessing for reserved attributes), but string values inside them still need processors in a pipeline.",
+      "Correct: a custom pipeline filtered on the source tag parses that source's logs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-17",
+    "topic": "Official practice set",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "",
+    "q": "How can a sortable column based on a log’s attribute be added to the List View of the Log Explorer?",
+    "options": [
+      "from both the List View “Options” dropdown menu and from the facets panel on the left side of the Explorer",
+      "from only the List View “Options” dropdown menu",
+      "from the Configuration submenu item under Logs in the main navigation"
+    ],
+    "answer": 0,
+    "explanation": "Datadog keys that a sortable attribute column can be added both from the List View Options menu and from the facet panel. Current docs: the facet panel on the left or the log side panel on the right are the preferred ways to add a column, and the Options button now only controls content height and display; sorting is reliable only for faceted attributes.",
+    "notes": [
+      "Correct (per Datadog's key): columns can be added from the Options menu and from the facet panel.",
+      "Wrong: the facet panel (and the log side panel) can also add columns.",
+      "Wrong: Logs Configuration holds pipelines, indexes and similar settings, not Explorer columns."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#lists",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-18",
+    "topic": "Official practice set",
+    "subtopic": "Exporting",
+    "difficulty": "",
+    "q": "From the Log Explorer, how can product stakeholders be notified of business-critical data based on a search query?",
+    "options": [
+      "Export the search query to a new dashboard.",
+      "Export the search query to a new notebook.",
+      "Export the search query to a new monitor."
+    ],
+    "answer": 2,
+    "explanation": "Exporting a Log Explorer search to a monitor creates a log monitor that triggers on thresholds and notifies the chosen recipients, such as product stakeholders.",
+    "notes": [
+      "Wrong: a dashboard shows the data but sends no notifications.",
+      "Wrong: a notebook is for reporting and investigation, not alerting.",
+      "Correct: a monitor alerts people when the query crosses a threshold."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/export/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-19",
+    "topic": "Official practice set",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "",
+    "q": "How are logs collected from JavaScript applications?",
+    "options": [
+      "Datadog SDKs or libraries",
+      "filing a support ticket",
+      "uploading Gzip files to Datadog"
+    ],
+    "answer": 0,
+    "explanation": "Logs from JavaScript web pages are sent with the Datadog Browser Logs SDK (`@datadog/browser-logs`), which forwards logs and frontend errors to Datadog as JSON documents using automatic bulk posts.",
+    "notes": [
+      "Correct: the Browser Logs SDK (a Datadog library) sends JavaScript logs to Datadog.",
+      "Wrong: support tickets are not a log collection method.",
+      "Wrong: there is no Gzip upload method for browser logs; the SDK posts them in bulk automatically."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/javascript/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-20",
+    "topic": "Official practice set",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "",
+    "q": "Which Datadog Agent command allows printing of all configurations loaded in a running Agent?",
+    "options": [
+      "config",
+      "configload",
+      "configcheck"
+    ],
+    "answer": 2,
+    "explanation": "`datadog-agent configcheck` prints all configurations loaded and resolved by a running Agent, which helps confirm a logs config was picked up.",
+    "notes": [
+      "Wrong: `config` is for runtime configuration management (view or change settings such as log level), not listing loaded check configs.",
+      "Wrong: `configload` is not an Agent subcommand.",
+      "Correct: `configcheck` prints all loaded and resolved configurations."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/configuration/agent-commands/#other-commands",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-21",
+    "topic": "Official practice set",
+    "subtopic": "Standard Attributes",
+    "difficulty": "",
+    "q": "Which of the following is a benefit of leveraging Standard Attributes in logs?",
+    "options": [
+      "version control",
+      "easy to search",
+      "API access"
+    ],
+    "answer": 1,
+    "explanation": "Standard attributes give every source the same names for the same data, such as `network.client.ip`, so one facet covers all logs and searching across teams and technologies is easy.",
+    "notes": [
+      "Wrong: standard attributes are a naming convention, not a versioning feature.",
+      "Correct: a shared naming convention makes logs from many sources easy to search and filter with one facet.",
+      "Wrong: API access to logs does not depend on standard attributes."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#standard-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-22",
+    "topic": "Official practice set",
+    "subtopic": "Metric Generation",
+    "difficulty": "",
+    "q": "How long are log-based metrics retained in Datadog?",
+    "options": [
+      "15 days",
+      "15 weeks",
+      "15 months"
+    ],
+    "answer": 2,
+    "explanation": "Log-based metrics summarize the whole ingest stream and are kept at 10-second granularity for 15 months, even when the logs themselves are excluded from indexes.",
+    "notes": [
+      "Wrong: 15 days is a common index retention, not the metric retention.",
+      "Wrong: 15 weeks is not a Datadog retention period.",
+      "Correct: log-based metrics are retained for 15 months."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-23",
+    "topic": "Official practice set",
+    "subtopic": "Log Emission",
+    "difficulty": "",
+    "q": "By default, where are web application browser logs stored?",
+    "options": [
+      "not stored by default",
+      "in the browser application’s directory on the host machine",
+      "on the server that hosts the web application"
+    ],
+    "answer": 0,
+    "explanation": "Browser logs are produced in each visitor's browser console and are not written to the host or web server. To keep them, you must send them to Datadog, for example with the Browser Logs SDK.",
+    "notes": [
+      "Correct: by default browser logs are not stored anywhere; they must be forwarded to be kept.",
+      "Wrong: browser code runs on the visitor's device, not on a host machine's application directory.",
+      "Wrong: client-side console logs never reach the web server unless you send them."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/javascript/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-24",
+    "topic": "Official practice set",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "",
+    "q": "The Datadog Agent tails logs from",
+    "options": [
+      "files on disk.",
+      "TCP/UDP Sockets.",
+      "stdout/stderr"
+    ],
+    "answer": 0,
+    "explanation": "The Agent tails log files on disk (`type: file`, the Tail files method). It also listens for logs on TCP/UDP ports, so those are not tailed. Current docs: the Agent docs also use \"tailing\" for journald and container logs (for example, `start_position` is always `beginning` when tailing a container), so stdout/stderr is arguably also correct; Datadog's key remains files on disk.",
+    "notes": [
+      "Correct: the Agent tails files on disk (`type: file`).",
+      "Wrong: for `tcp`/`udp` inputs the Agent listens on a port; it does not tail sockets.",
+      "Debatable: container stdout/stderr collection is also described as tailing in current docs, but Datadog keys files on disk."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-official-25",
+    "topic": "Official practice set",
+    "subtopic": "Search Syntax",
+    "difficulty": "",
+    "q": "Which query searches logs coming from both nginx and redis?",
+    "options": [
+      "source:nginx AND redis",
+      "source:(-nginx AND redis)",
+      "source:nginx AND source:redis"
+    ],
+    "answer": 2,
+    "explanation": "Datadog keys `source:nginx AND source:redis` as the query that includes both sources by using two separate attribute filters. Current docs: `AND` is an intersection (both terms in the same event), and a log has a single `source`, so this query returns no logs; to see nginx and redis logs together use `source:nginx OR source:redis` or `source:(nginx OR redis)`.",
+    "notes": [
+      "Wrong: `redis` here is a free-text term searched in the message, not a source filter.",
+      "Wrong: `-nginx` excludes nginx logs.",
+      "Correct (per Datadog's key): it filters on both source values; per current docs, `OR` is needed to return both sets."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#overview",
+    "verified": "2026-11"
+  }
+]

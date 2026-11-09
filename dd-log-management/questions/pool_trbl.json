@@ -1,0 +1,737 @@
+[
+  {
+    "id": "lm-trbl-001",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "easy",
+    "q": "A new Linux host has a valid `conf.d/orders.d/conf.yaml` with a `logs:` section, but no logs arrive. `sudo datadog-agent status` shows:\n\n==========\nLogs Agent\n==========\n  Logs Agent is not running\n\nWhat is the most likely cause?",
+    "options": [
+      "The `logs:` section in `conf.yaml` has a YAML indentation error.",
+      "`logs_enabled: true` is not set in `datadog.yaml`.",
+      "The API key in `datadog.yaml` belongs to a different organization."
+    ],
+    "answer": 1,
+    "explanation": "\"Logs Agent is not running\" in the status output means log collection is not enabled in the Agent. Log collection is off by default and is turned on with `logs_enabled: true` in `datadog.yaml` (or `DD_LOGS_ENABLED=true`), followed by a restart.",
+    "notes": [
+      "Wrong: a YAML error in an integration file affects that source; it does not stop the whole Logs Agent from running.",
+      "Correct: this status message means log collection was never enabled in the main config file.",
+      "Wrong: a bad API key causes rejected submissions, but the Logs Agent would still be running."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/troubleshooting/log-collection/#agent-status",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-002",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "easy",
+    "q": "An engineer points the Agent at `/var/log/billing/app.log`, restarts it, and `status` shows the file as tailed with `Status: OK`. The billing app has been idle all day and the file only holds yesterday's lines. Nothing shows up in Datadog. Why?",
+    "options": [
+      "No new lines were written after the Agent started tailing the file.",
+      "The Agent skips any file whose last modification time is more than 18 hours old, so the file is ignored.",
+      "Lines without a recognized timestamp are held by the Agent until a new line arrives."
+    ],
+    "answer": 0,
+    "explanation": "The Agent only collects logs written after it starts tailing or listening for them. To confirm collection works, make sure new log lines are written to the file.",
+    "notes": [
+      "Correct: only lines written after tailing starts are collected, so the old lines are never sent.",
+      "Wrong: the 18-hour limit applies to log timestamps at intake, not to file modification times on the host.",
+      "Wrong: the Agent does not hold lines waiting for a timestamp; it simply has nothing new to read."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#no-new-logs-have-been-written",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-003",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "easy",
+    "q": "On a Linux host, you want to search the Datadog Agent's own log for errors explaining why log collection fails. Which command reads the right file?",
+    "options": [
+      "`sudo grep -i error /etc/datadog-agent/agent.log`",
+      "`sudo grep -i error /opt/datadog-agent/logs/agent.log`",
+      "`sudo grep -i error /var/log/datadog/agent.log`"
+    ],
+    "answer": 2,
+    "explanation": "On Linux the Agent writes its own logs to `/var/log/datadog/`, and the main file is `agent.log`. The troubleshooting guide uses `sudo grep -i error /var/log/datadog/agent.log`.",
+    "notes": [
+      "Wrong: `/etc/datadog-agent/` holds configuration (`datadog.yaml`, `conf.d/`), not Agent logs.",
+      "Wrong: `/opt/datadog-agent/logs` is the log directory on macOS (Agent 7.28+), not Linux.",
+      "Correct: `/var/log/datadog/agent.log` is the main Agent log on Linux."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#check-for-errors-in-the-agent-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-004",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "The Logs Agent section of `datadog-agent status` shows this for a custom source, although the files exist:\n\nCould not find any file matching pattern /srv/app/logs/*.log, check that all its subdirectories are executable\n\nWhat fixes it?",
+    "options": [
+      "Give the Agent user read and execute access on the log directories.",
+      "Raise `logs_config.open_files_limit` in `datadog.yaml` so the wildcard is allowed to match more files.",
+      "Set `start_position: beginning` so the Agent rereads the directory from the start."
+    ],
+    "answer": 0,
+    "explanation": "This is one of the documented permission errors: the Agent user cannot list or traverse the directory. Give the Agent user read and execute permissions on the log directories and read on the files, then restart and recheck status.",
+    "notes": [
+      "Correct: the Agent needs execute to traverse directories and read+execute to list files for a wildcard.",
+      "Wrong: the open files limit caps how many matching files are tailed; here no file matches at all because of permissions.",
+      "Wrong: `start_position` only controls where reading starts in a file; it cannot fix a permission error."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#permission-issues-tailing-log-files",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-005",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "The Agent cannot tail `/var/log/payments/api.log`. You run `namei -m` on the file:\n\nf: /var/log/payments/api.log\n drwxr-xr-x /\n drwxr-xr-x var\n drwxrwxr-x log\n drw-r--r-- payments\n -rw-r--r-- api.log\n\nWhich entry blocks the Agent?",
+    "options": [
+      "`api.log`, because a log file also needs the execute bit to be tailed.",
+      "`payments`, because the directory has no execute permission for other users.",
+      "`log`, because a group-writable directory is skipped by the Agent."
+    ],
+    "answer": 1,
+    "explanation": "The Agent needs execute permission on every directory in the path and read permission on the file. `payments` is `drw-r--r--`, so the Agent user cannot traverse it; `sudo chmod o+rx` on the directory fixes it.",
+    "notes": [
+      "Wrong: files only need read permission; `-rw-r--r--` already lets others read `api.log`.",
+      "Correct: without the execute bit on `payments`, the Agent cannot reach any file inside it.",
+      "Wrong: `drwxrwxr-x` gives others read and execute, which is what the Agent needs; group write does not matter."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#permission-issues-tailing-log-files",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-006",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "hard",
+    "q": "To let the Agent read NGINX logs, an admin runs:\n\nsetfacl -m u:dd-agent:rx /var/log/nginx\n\nAfter a restart, `status` still reports access denied for the existing `/var/log/nginx/access.log`. What is wrong?",
+    "options": [
+      "ACL changes only take effect after the host is rebooted.",
+      "The Agent ignores ACLs; `dd-agent` must be added to the file's owning group.",
+      "Without `-R`, the ACL applies only to the directory, not to the files already in it."
+    ],
+    "answer": 2,
+    "explanation": "A plain `setfacl -m` applies the ACL to the directory itself, not to the log files already inside. Use `setfacl -R -m u:dd-agent:rx /var/log/nginx` for existing files, and add `-d` for files created later.",
+    "notes": [
+      "Wrong: ACLs apply immediately; no reboot is needed.",
+      "Wrong: the documented fix uses ACLs for the `dd-agent` user; group membership is the fallback when ACLs are not available.",
+      "Correct: `-R` is needed so the ACL also covers the files that already exist."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/setting-file-permissions-for-rotating-logs/#granting-dd-agent-read-and-execute-permissions-on-log-directories",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-007",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "On Windows, an admin grants the Agent access to an application's log folder:\n\nicacls \"D:\\app\\logs\" /grant \"ddagentuser:(OI)(CI)(RX)\" /t\n\nWhat do the `(OI)(CI)` flags add?",
+    "options": [
+      "They give `ddagentuser` write access so the Agent can rotate the files.",
+      "Files created later, for example by rotation, inherit the grant.",
+      "They apply the grant recursively to files and subfolders that already exist."
+    ],
+    "answer": 1,
+    "explanation": "`(OI)` and `(CI)` are inheritance rights: future files and folders created in the directory inherit the parent permissions, which matters with log rotation. `(RX)` is read and execute; the `/t` flag is what processes existing files and subfolders recursively.",
+    "notes": [
+      "Wrong: `(RX)` grants read and execute only; the Agent never needs write access to tail logs.",
+      "Correct: object and container inheritance make new, rotated log files inherit the grant.",
+      "Wrong: recursion over existing items comes from the `/t` flag, not from `(OI)(CI)`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#permission-issues-tailing-log-files",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-008",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "The Agent is configured to collect journald logs on a Linux host. Nothing arrives in Datadog, and neither `status` nor `agent.log` shows a permission error. What is the documented fix?",
+    "options": [
+      "Add the `dd-agent` user to the `systemd-journal` group.",
+      "Set `start_position: beginning` in the journald log configuration.",
+      "Run the Agent as `root` so it can read the journal files."
+    ],
+    "answer": 0,
+    "explanation": "Journal files are readable by the `systemd-journal` group, so the Agent user must be added to it (`usermod -a -G systemd-journal dd-agent`). With wrong permissions, journald sends an empty payload, so no explicit error is raised.",
+    "notes": [
+      "Correct: group membership gives the Agent read access to the journal, and the silent failure is expected without it.",
+      "Wrong: `start_position` changes where reading starts; it does not grant access to the journal.",
+      "Wrong: running the Agent as root is explicitly not recommended; the group fix is the documented approach."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#permission-issue-and-journald",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-009",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "A batch platform writes one log file per job into `/data/jobs/`. The Agent source uses `path: /data/jobs/*.log`, and `status` shows:\n\nStatus: OK\n  500 files tailed out of 1300 files matching\n\nWhich `datadog.yaml` setting lets the Agent tail more of them?",
+    "options": [
+      "`logs_config.batch_wait`",
+      "`logs_config.file_wildcard_selection_mode`",
+      "`logs_config.open_files_limit`"
+    ],
+    "answer": 2,
+    "explanation": "`logs_config.open_files_limit` sets the maximum number of files the Agent tails at the same time; it exists to protect performance when wildcards match huge directories. Raising it lets more matching files be tailed, at the cost of more Agent resources.",
+    "notes": [
+      "Wrong: `batch_wait` is how long the HTTPS sender waits to fill a batch (1-10 seconds).",
+      "Wrong: this setting only chooses which files win when matches exceed the limit; it does not raise the limit.",
+      "Correct: this is the cap on files tailed simultaneously."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/increase-number-of-log-files-tailed/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-010",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "hard",
+    "q": "A wildcard path matches `worker-0001.log` through `worker-1200.log`, and `open_files_limit` is 500. `file_wildcard_selection_mode` is not set. Which files does the Agent tail?",
+    "options": [
+      "The 500 files that were written to most recently, regardless of their file names",
+      "`worker-0701.log` through `worker-1200.log`",
+      "`worker-0001.log` through `worker-0500.log`"
+    ],
+    "answer": 1,
+    "explanation": "The default mode, `by_name`, sorts filenames in reverse lexicographic order so files with newer timestamps or higher numbers are tailed first. To prefer recently written files, set `logs_config.file_wildcard_selection_mode: by_modification_time` (Agent 7.40.0+).",
+    "notes": [
+      "Wrong: that is the `by_modification_time` behavior, which is not the default.",
+      "Correct: `by_name` is the default and picks the highest names first.",
+      "Wrong: the order is reverse lexicographic, so the lowest names are dropped, not kept."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#prioritize-tailed-files-by-modification-time",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-011",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "easy",
+    "q": "Your organization uses the Datadog EU site. An Agent was installed on a host with only `api_key` (a valid API key from your EU organization) and `logs_enabled: true` set in `datadog.yaml`. Its logs never appear in your EU organization. What should you change?",
+    "options": [
+      "Add `site: datadoghq.eu` to `datadog.yaml` (or set `DD_SITE`), then restart the Agent.",
+      "Replace the API key with an application key created in the EU organization.",
+      "Set `logs_config.logs_dd_url` to `app.datadoghq.eu` and restart the Agent."
+    ],
+    "answer": 0,
+    "explanation": "By default the Agent sends data to the US site (`app.datadoghq.com`). If your organization is on another site, set the `site` parameter in `datadog.yaml` or the `DD_SITE` environment variable to match it, then restart the Agent.",
+    "notes": [
+      "Correct: the `site` parameter must match your organization's Datadog site.",
+      "Wrong: the Agent authenticates with an API key; application keys are not used for data submission.",
+      "Wrong: `logs_dd_url` is for routing logs to a proxy endpoint, and `app.datadoghq.eu` is the web UI, not an intake."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/troubleshooting/site/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-012",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "easy",
+    "q": "A firewall team is opening outbound access for an Agent v7 host that sends logs with the default transport. Which outbound port must be allowed for logs?",
+    "options": [
+      "TCP 10516",
+      "TCP 8126",
+      "TCP 443"
+    ],
+    "answer": 2,
+    "explanation": "Since Agent 6.19/7.19, logs are sent as compressed HTTPS by default, and by default HTTPS log traffic uses port 443.",
+    "notes": [
+      "Wrong: 10516 is the legacy TCP log port for the US1 site; TCP log collection is deprecated.",
+      "Wrong: 8126 is the local APM trace receiver port, not a log intake port.",
+      "Correct: the default HTTPS transport sends logs over port 443."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/log_transport/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-013",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "hard",
+    "q": "An Agent v7 host booted during a firewall change that blocked outbound HTTPS. The firewall was fixed an hour later, logs now flow, but `status` shows the Logs Agent is still using TCP. Why, and what returns it to HTTPS?",
+    "options": [
+      "The HTTPS test runs only at Agent startup, so restart the Agent.",
+      "The Agent retests HTTPS every 24 hours, so it switches back by itself the next day.",
+      "`compression_level` defaulted to 0, which forces TCP, so set it to 6."
+    ],
+    "answer": 0,
+    "explanation": "When log collection is enabled, the Agent runs an HTTPS connectivity test only at startup; if it fails, the Agent falls back to TCP and keeps it until the next restart. Restart the Agent, and consider enforcing HTTPS with `logs_config.force_use_http: true` so it never falls back.",
+    "notes": [
+      "Correct: the transport decision is made once at startup and does not change until a restart.",
+      "Wrong: there is no periodic retest; the docs say the transport does not change until the next restart.",
+      "Wrong: `compression_level` (0-9, default 6) only sets how much payloads are compressed; it does not choose the transport."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/log_transport/#default-agent-behavior",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-014",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "A host can reach the internet only through a corporate HTTP proxy. The team adds `proxy.http` and `proxy.https` to `datadog.yaml`. Which additional logs setting does Datadog recommend in this setup?",
+    "options": [
+      "`logs_config.logs_no_ssl: true`",
+      "`logs_config.force_use_http: true`",
+      "`logs_config.use_compression: false`"
+    ],
+    "answer": 1,
+    "explanation": "The proxy docs recommend forcing the Agent to send logs over HTTP(S) when a proxy is used, and the transport docs say to always enforce a specific transport behind a proxy. HTTPS logs then use the same proxy settings as other data.",
+    "notes": [
+      "Wrong: `logs_no_ssl` makes the Agent ignore an SSL hostname mismatch in TCP proxy setups (such as HAProxy); it is not the recommended setting for an HTTP proxy.",
+      "Correct: forcing HTTP transport makes logs use the `proxy` settings reliably.",
+      "Wrong: compression is unrelated to proxy routing, and turning it off only increases bandwidth."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/configuration/proxy/#configuration-file",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-015",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "easy",
+    "q": "You want to watch, in real time on the host, the logs the running Agent is processing for the service `checkout`, including their tags and status. Which command does this?",
+    "options": [
+      "`datadog-agent check checkout`",
+      "`datadog-agent configcheck --service checkout`",
+      "`datadog-agent stream-logs --service checkout`"
+    ],
+    "answer": 2,
+    "explanation": "`stream-logs` streams the logs being processed by a running Agent, with integration name, status, timestamp, hostname, service, source, tags and message. It can be filtered with `--service`, `--source` or `--name`.",
+    "notes": [
+      "Wrong: `check` runs an Agent check (an integration) once; it does not stream logs.",
+      "Wrong: `configcheck` prints the loaded configurations; it does not show log lines.",
+      "Correct: `stream-logs` with `--service` shows that service's logs as the Agent sends them."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/troubleshooting/log-collection/#agent-stream-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-016",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "A Kubernetes pod has an Autodiscovery annotation setting `source` and `service` for its logs, but its logs arrive with default tags. You want to confirm which log configuration the Agent on that node resolved for the container ID. Which command shows this?",
+    "options": [
+      "`kubectl exec -it <AGENT_POD> -- agent configcheck`",
+      "`kubectl exec -it <AGENT_POD> -- agent health`",
+      "`kubectl exec -it <AGENT_POD> -- agent diagnose`"
+    ],
+    "answer": 0,
+    "explanation": "`configcheck` prints all configurations loaded and resolved by the running Agent, including a `Log Config` entry and a `Configuration source` that references the container ID. With `container_collect_all` and no specific config, it shows `[{}]`.",
+    "notes": [
+      "Correct: `configcheck` shows the resolved `Log Config` per container.",
+      "Wrong: `health` only prints whether Agent components are healthy.",
+      "Wrong: `diagnose` runs connectivity diagnostics, not a dump of resolved log configurations."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/troubleshooting/log-collection/#agent-configcheck",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-017",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "easy",
+    "q": "Support asks for an Agent flare. Your security team wants to know what the flare sends. Which description is accurate?",
+    "options": [
+      "A copy of every log file the Agent tails, so support can replay the logs.",
+      "The Agent's config files and logs, with secrets such as API keys removed.",
+      "Only the `status` output, because configuration files are never included in a flare."
+    ],
+    "answer": 1,
+    "explanation": "A flare gathers the Agent's configuration files and logs into an archive and removes sensitive information such as passwords, API keys, proxy credentials and SNMP community strings. It asks for confirmation before uploading.",
+    "notes": [
+      "Wrong: the flare holds the Agent's own logs and configs, not your application log files.",
+      "Correct: configuration and Agent logs are collected, with secrets scrubbed.",
+      "Wrong: configuration files are a core part of the flare."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/troubleshooting/send_a_flare/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-018",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "easy",
+    "q": "Logs from a new service appear in Live Tail but never in the Log Explorer. Where should you look first?",
+    "options": [
+      "The Agent's `conf.d` log configuration for that service",
+      "The Agent transport settings in `datadog.yaml`",
+      "The index exclusion filters on the Indexes page"
+    ],
+    "answer": 2,
+    "explanation": "Live Tail shows logs that reached Datadog, before indexing. If logs appear in Live Tail but not in the Log Explorer, check the Indexes configuration page for exclusion filters that could match them (a reached daily quota is the other common cause).",
+    "notes": [
+      "Wrong: the logs already reached Datadog, so collection on the Agent works.",
+      "Wrong: transport problems would stop logs from reaching Live Tail too.",
+      "Correct: an exclusion filter stops logs from being indexed while Live Tail still shows them."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#unexpectedly-dropping-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-019",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "Yesterday afternoon, logs stopped showing in the Log Explorer for a few hours, then came back. Nobody changed the log setup. How can you confirm whether the `main` index reached its daily quota at that time?",
+    "options": [
+      "Search the Event Explorer with the tag `datadog_index:main`.",
+      "Run `datadog-agent status` and read the Logs Agent counters.",
+      "Search Audit Trail for changes to the `main` index."
+    ],
+    "answer": 0,
+    "explanation": "When a daily quota is reached, Datadog generates an event. To check historically, search the Event Explorer with the tag `datadog_index:{index_name}`.",
+    "notes": [
+      "Correct: quota events are tagged with the index name and can be found in the Event Explorer.",
+      "Wrong: the Agent does not know about index quotas; they apply after intake.",
+      "Wrong: Audit Trail records user changes; nobody changed the configuration here."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/#missing-logs---logs-daily-quota-reached",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-020",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "hard",
+    "q": "While checking `datadog.estimated_usage.logs.ingested_events`, you see a large share of datapoints tagged `datadog_index:N/A`. What does this mean?",
+    "options": [
+      "Those logs were removed by an index exclusion filter.",
+      "They match no index; review index order and filters.",
+      "Those logs arrived after their index's daily quota was reached."
+    ],
+    "answer": 1,
+    "explanation": "A `datadog_index` value of `N/A` means the logs do not match any index in your organization. Review index order and filter queries; exclusion status is shown by the separate `datadog_is_excluded` tag.",
+    "notes": [
+      "Wrong: excluded logs carry the index name with `datadog_is_excluded:true`.",
+      "Correct: `N/A` marks logs that no index filter matched.",
+      "Wrong: estimated usage metrics do not respect daily quotas, so a quota does not change the index tag."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/#estimated-usage-metrics",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-021",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "A replay job re-sends application logs that carry their original timestamps from two days earlier. They never show up, not even in Live Tail. Which metric tells you which `service` and `source` are affected?",
+    "options": [
+      "`datadog.estimated_usage.logs.truncated_count`",
+      "`datadog.estimated_usage.logs.ingested_events` filtered on `datadog_is_excluded:true`",
+      "`datadog.estimated_usage.logs.drop_count`"
+    ],
+    "answer": 2,
+    "explanation": "Logs with a timestamp more than 18 hours in the past are dropped at intake. The troubleshooting guide says to find the impacted `service` and `source` with `datadog.estimated_usage.logs.drop_count` and fix the issue at the source.",
+    "notes": [
+      "Wrong: `truncated_count` tracks logs cut at the 1MB size limit, not dropped ones.",
+      "Wrong: excluded logs were ingested and would appear in Live Tail; these were dropped before that.",
+      "Correct: `drop_count` counts events dropped during ingestion, such as too-old logs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/#missing-logs---timestamp-outside-of-the-ingestion-window",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-022",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "A host's clock drifts and its log timestamps are wrong. According to the Log Date Remapper documentation, what is the accepted range for a log's timestamp at submission?",
+    "options": [
+      "Up to 18 hours in the past and 2 hours in the future",
+      "Up to 18 hours in the past, with no limit in the future",
+      "Up to 24 hours in the past and 1 hour in the future"
+    ],
+    "answer": 0,
+    "explanation": "The Log Date Remapper docs state that log events can be submitted up to 18 hours in the past and two hours in the future. Logs older than 18 hours are dropped at intake.",
+    "notes": [
+      "Correct: the documented window is 18 hours back and 2 hours ahead.",
+      "Wrong: there is also a future limit of two hours.",
+      "Wrong: the past limit is 18 hours, not 24, and the future limit is 2 hours."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/log_date_remapper/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-023",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "A Java service writes a single 2 MB line to a file tailed by the Agent. At what size is the Agent configured to split a log?",
+    "options": [
+      "25 KB",
+      "900 KB",
+      "1 MB"
+    ],
+    "answer": 1,
+    "explanation": "The HTTPS API supports logs up to 1MB, but the Agent is configured to split a log at 900 KB (900,000 bytes). Datadog recommends keeping individual logs under 25 KB for best performance.",
+    "notes": [
+      "Wrong: 25 KB is the recommended maximum size of an individual log for best performance, not the Agent's split size.",
+      "Correct: the Agent splits logs at 900 KB.",
+      "Wrong: 1MB is the intake limit; logs above it are truncated at intake, but the Agent splits earlier."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/#custom-log-forwarding",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-024",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "hard",
+    "q": "Logs carry a 40 KiB `@payload` attribute. In the Log Explorer list, the full value is visible, but in a top list grouped by `@payload` the values are cut off. What explains this?",
+    "options": [
+      "The Agent split each log at 900 KB, so the grouped view only sees the first part.",
+      "The logs were truncated at intake because the whole event was larger than 1MB.",
+      "Grouped queries show indexed non-message fields truncated to 25 KiB."
+    ],
+    "answer": 2,
+    "explanation": "Indexed logs have an extra field truncation: 75 KiB for `message` and 25 KiB for other fields. Datadog stores the full text, which shows in regular list queries, but grouped queries on that field display the truncated value.",
+    "notes": [
+      "Wrong: a 40 KiB attribute is far below the 900 KB split size.",
+      "Wrong: intake truncation would cut the stored log, and the list view would not show the full value.",
+      "Correct: grouping on a non-message field over 25 KiB shows the truncated value."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/#truncated-log-messages",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-025",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "easy",
+    "q": "You are in New York and your teammate is in Berlin. Looking at the same log, you see different times in the log side panel. What explains this?",
+    "options": [
+      "Timestamps are stored in UTC and shown in each user's time zone from Preferences.",
+      "The Agent rewrites timestamps to the time zone of whoever runs the query.",
+      "One of you has a Log Date Remapper that only applies to your own view."
+    ],
+    "answer": 0,
+    "explanation": "Log timestamps are stored in UTC and displayed in the user's local time zone. If a time looks wrong, first check the Time zone section in Preferences.",
+    "notes": [
+      "Correct: display time depends on each user's time zone setting.",
+      "Wrong: the Agent does not know who queries the logs; display conversion happens in the UI.",
+      "Wrong: pipeline processors apply to the logs for everyone, not per user."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/logs-not-showing-expected-timestamp/#displayed-timestamp",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-026",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "JSON logs contain `\"event_ts\": \"2026-11-09T08:15:30.120Z\"`, but Datadog shows the time the log was received. What is the documented fix for these JSON logs?",
+    "options": [
+      "Add a Grok Parser with a `date()` matcher on the `message` attribute.",
+      "Add `event_ts` first in the date attributes of Preprocessing for JSON logs.",
+      "Create a facet on `event_ts` so the Log Explorer can sort and filter logs by that time."
+    ],
+    "answer": 1,
+    "explanation": "For JSON logs, the official date comes from the reserved date attributes in Preprocessing for JSON logs. Add `event_ts` to that list and put it first, because the attributes are checked in order; the value is ISO8601, a recognized format.",
+    "notes": [
+      "Wrong: a Grok parse alone does not set the official date, and the value is already a JSON attribute.",
+      "Correct: adding the attribute to the preprocessing date list makes it the log date for new logs.",
+      "Wrong: a facet helps searching, but does not change the log's timestamp."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/logs-not-showing-expected-timestamp/#supported-date-formats",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-027",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "A JSON log uses the default `timestamp` attribute. Which value would NOT be recognized as a date by default?",
+    "options": [
+      "`2026-11-09T08:15:30.120Z`",
+      "`1794212130120`",
+      "`1794212130120000000`"
+    ],
+    "answer": 2,
+    "explanation": "Recognized formats are ISO8601, UNIX epoch in milliseconds, and RFC3164. Timestamps that are only similar, such as epoch in nanoseconds, are not recognized and may be dropped.",
+    "notes": [
+      "Wrong: this is ISO8601, a recognized format.",
+      "Wrong: this is UNIX epoch in milliseconds, which is recognized.",
+      "Correct: this is epoch in nanoseconds, which does not match the supported formats."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/#unable-to-parse-timestamp-key-from-json-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-028",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "easy",
+    "q": "Plain-text logs look like `WARN 2026-11-09 cache miss for key 42`, but every one shows status Info in Datadog. What is the documented fix?",
+    "options": [
+      "Parse the level with a Grok Parser, then add a Log Status Remapper.",
+      "Change the Agent's `log_level` setting to `WARN` and restart it.",
+      "Create a `status` facet so the Explorer reads the level from the message."
+    ],
+    "answer": 0,
+    "explanation": "By default the intake assigns status `INFO`. For raw logs, extract the real level with a Grok Parser (for example the `word()` matcher) into an attribute, then add a Log Status Remapper that uses that attribute.",
+    "notes": [
+      "Correct: parsing the level and remapping it overrides the default Info status for new logs.",
+      "Wrong: the Agent's `log_level` controls the Agent's own logging, not the status of collected logs.",
+      "Wrong: facets do not extract values from free text or change a log's status."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/logs-show-info-status-for-warnings-or-errors/#raw-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-029",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "hard",
+    "q": "A log matches two pipelines. Pipeline 1 (higher in the list) has a Status Remapper on `level_name` (value `notice`). Pipeline 2 has a Status Remapper on `severity_text` (value `error`). Which status does the log get?",
+    "options": [
+      "`error`, because the last status remapper in processing order wins.",
+      "`notice`, because only the first status remapper encountered is applied.",
+      "`info`, because conflicting status remappers cancel each other out."
+    ],
+    "answer": 1,
+    "explanation": "For status remappers, only the first one in pipeline order is considered, and across all pipelines that match a log, only the first status remapper encountered is applied. This is the opposite of the Log Date Remapper, where the last one wins.",
+    "notes": [
+      "Wrong: \"last wins\" is the rule for date remappers, not status remappers.",
+      "Correct: Pipeline 1's remapper is encountered first, so `notice` is used.",
+      "Wrong: remappers do not cancel each other; the first one applies."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/log_status_remapper/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-030",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "The query `datadog.pipelines:false` returns two million logs. Which Log Explorer view helps you see their most common formats so you can start writing parsing rules?",
+    "options": [
+      "Transactions, grouped by `service`",
+      "Timeseries, split by `host`",
+      "Patterns"
+    ],
+    "answer": 2,
+    "explanation": "`datadog.pipelines:false` returns indexed logs without custom attributes after pipeline processing. Pattern aggregation shows the common patterns in those unparsed logs, which helps you create custom pipelines.",
+    "notes": [
+      "Wrong: Transactions group logs by a shared attribute into sessions; they do not show message formats.",
+      "Wrong: a timeseries shows volume over time, not the structure of the messages.",
+      "Correct: Patterns cluster similar messages and are the documented starting point for parsing."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/detect-unparsed-logs/#query-for-unparsed-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-031",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "Logs from a CloudWatch log group never reach Live Tail. The Datadog Forwarder's Monitoring tab shows no data points on the Invocations graph. What should you check next?",
+    "options": [
+      "The log group's subscription filters (the Forwarder trigger)",
+      "Whether the index receiving the Forwarder's logs has hit its daily quota",
+      "Whether `DD_LOG_LEVEL` is set to `debug` on the Forwarder function"
+    ],
+    "answer": 0,
+    "explanation": "No invocations means the Forwarder is not being triggered. Check the triggers: for a CloudWatch log group, look at its Subscriptions or run `aws logs describe-subscription-filters --log-group-name <LOG_GROUP_NAME>`.",
+    "notes": [
+      "Correct: a missing subscription filter means the Forwarder is never invoked.",
+      "Wrong: quotas apply after logs reach Datadog, and the logs are not even in Live Tail.",
+      "Wrong: debug logging helps once the function runs; with no invocations there is nothing to log."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/lambda-logs-collection-troubleshooting-guide/#manage-your-function-triggers",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-032",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "hard",
+    "q": "Datadog fails to automatically create a trigger between a CloudWatch log group and the Forwarder. The Forwarder ARN is in the AWS integration's Log Collection tab, and the integration role has the required permissions. What else does the checklist say to verify?",
+    "options": [
+      "That the log group's retention is set to at least 18 hours.",
+      "That the log group does not already have two subscribers, the maximum allowed.",
+      "That the Forwarder runs in the same AWS account as the Datadog integration role."
+    ],
+    "answer": 1,
+    "explanation": "The automatic trigger checklist: Forwarder ARN in the Log Collection tab, required permissions on the integration role, the extension for Lambda log groups, and a CloudWatch log group that does not already have two subscribers (the maximum).",
+    "notes": [
+      "Wrong: log group retention is not part of the trigger checklist; 18 hours is the intake timestamp limit.",
+      "Correct: a log group can have at most two subscription filters.",
+      "Wrong: the checklist does not mention account placement; it checks the subscriber count."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/lambda-logs-collection-troubleshooting-guide/#automatic-trigger",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-033",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "A Datadog Forwarder has `INCLUDE_AT_MATCH` set to `ERROR` and `EXCLUDE_AT_MATCH` set to `healthcheck`. A log reads `ERROR healthcheck failed on node-3`. What happens to it?",
+    "options": [
+      "It is forwarded, because the include rule is evaluated first.",
+      "It is forwarded with a tag showing it matched an exclude rule.",
+      "It is not forwarded, because a log matching both rules is excluded."
+    ],
+    "answer": 2,
+    "explanation": "If a log matches both `EXCLUDE_AT_MATCH` and `INCLUDE_AT_MATCH`, it is excluded. The Forwarder's DEBUG logs (`DD_LOG_LEVEL=debug`) show when logs are discarded by these filters.",
+    "notes": [
+      "Wrong: exclusion wins when both patterns match.",
+      "Wrong: the Forwarder drops excluded logs; it does not tag and send them.",
+      "Correct: the exclude rule takes precedence, so the log is never sent."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/forwarder/#log-filtering-optional",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-034",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "A team moves its Lambda functions from the Datadog Forwarder to the Datadog Lambda Extension. Since then, every function log appears twice in Datadog. What should they do?",
+    "options": [
+      "Remove the Forwarder subscription from each function's log group.",
+      "Set `DD_SERVERLESS_LOGS_ENABLED=true` on each function so the Extension owns the logs.",
+      "Add an index exclusion filter on `forwardername:*`."
+    ],
+    "answer": 0,
+    "explanation": "The Lambda Extension enables log collection by default. When migrating from the Forwarder, remove the log group subscription, otherwise both paths send the same logs and you see duplicates.",
+    "notes": [
+      "Correct: removing the subscription stops the Forwarder copy at the source.",
+      "Wrong: this enables Extension log collection, which is already on by default and is one of the two copies.",
+      "Wrong: an exclusion filter hides one copy from the index, but both copies are still ingested."
+    ],
+    "ref": "https://docs.datadoghq.com/serverless/aws_lambda/troubleshooting/#use-the-datadog-lambda-extension-instead-of-the-forwarder",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-trbl-035",
+    "topic": "Log Troubleshooting",
+    "subtopic": "Ingestion Issues",
+    "difficulty": "medium",
+    "q": "During traffic spikes, some logs sent through Amazon Kinesis Data Firehose to Datadog go missing. What does the Datadog troubleshooting guide recommend?",
+    "options": [
+      "Raise the Firehose buffer size so fewer, larger batches reach the intake.",
+      "Lower the buffer size; Datadog recommends 2 MiB.",
+      "Switch the Firehose destination to the TCP intake on port 10516."
+    ],
+    "answer": 1,
+    "explanation": "Datadog has an intake limit of 65,536 events per batch and recommends a Kinesis buffer size of 2 MiB. If batches exceed the limit, some logs may be dropped, so lower the buffer size to reduce events per batch.",
+    "notes": [
+      "Wrong: a bigger buffer puts more events in each batch, which makes the limit easier to exceed.",
+      "Correct: a smaller buffer keeps batches under the 65,536-event limit.",
+      "Wrong: TCP log collection is deprecated and is not a Firehose fix."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#batch-limitation-in-kinesis-firehose",
+    "verified": "2026-11"
+  }
+]

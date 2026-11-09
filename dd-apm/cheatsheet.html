@@ -1,0 +1,709 @@
+<div class="sheet">
+  <div class="stack" style="gap:8px">
+    <h2 style="font-size:1.5rem">Cheat sheet</h2>
+    <p class="hint">Everything the exam guide lists, on one page. Checked against the live Datadog docs, <span id="checked"></span>. Each section ends with links to its sources. Sections marked <span class="badge">Exam-heavy</span> come up most.</p>
+    <div class="toc" aria-label="Jump to section">
+      <button data-jumpto="ap-tags">Tags &amp; primary tags</button>
+      <button data-jumpto="ap-retention">Retention periods</button>
+      <button data-jumpto="ap-instr">Libraries &amp; instrumentation</button>
+      <button data-jumpto="ap-sampling">Sampling vs retention</button>
+      <button data-jumpto="ap-profiler">Profiler</button>
+      <button data-jumpto="ap-live">Live vs Retained</button>
+      <button data-jumpto="ap-dash">Service page &amp; dashboards</button>
+      <button data-jumpto="ap-ports">Ports &amp; env vars</button>
+      <button data-jumpto="ap-security">Data security</button>
+      <button data-jumpto="ap-catalog">Software Catalog</button>
+      <button data-jumpto="ap-search">Search syntax</button>
+      <button data-jumpto="ap-deploy">Deployment tracking</button>
+      <button data-jumpto="ap-errors">Error Tracking</button>
+      <button data-jumpto="ap-span">Span summary &amp; Trace View</button>
+      <button data-jumpto="ap-trouble">Troubleshooting</button>
+      <button data-jumpto="ap-monitors">Monitors &amp; SLOs</button>
+    </div>
+  </div>
+
+  <!-- TAGS -->
+  <section class="panel" id="ap-tags">
+    <div class="cs-head"><h2>Unified service tagging and primary tags</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">Three reserved tags tie traces, metrics, logs and profiles together. <b><code>service</code> tracks services</b>, <b><code>version</code> tracks deployments</b>, <code>env</code> is the mandatory primary tag. Needs Agent 6.19 / 7.19+.</p>
+    <div class="facts">
+      <div><span class="label">service</span><b>DD_SERVICE</b><span>On every span. Links APM to logs, infra and custom metrics; scopes monitors to services</span></div>
+      <div><span class="label">env</span><b>DD_ENV</b><span>Default, mandatory primary tag. Untagged data gets <code>env:none</code></span></div>
+      <div><span class="label">version</span><b>DD_VERSION</b><span>Must change with every deploy. Drives Deployment Tracking and Faulty Deployment Detection</span></div>
+      <div><span class="label">Trace metrics</span><b>No custom tags</b><span>Only env, service, version, resource, HTTP status, host tags, second primary tag</span></div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Platform</th><th>How to set env / service / version</th></tr></thead>
+      <tbody>
+        <tr><td>Host process</td><td><code>DD_ENV=prod DD_SERVICE=web DD_VERSION=1.2.3 /bin/my-service</code> (or Chef/Ansible into systemd). Agent-level <code>version</code> is not recommended</td></tr>
+        <tr><td>Kubernetes</td><td>Labels <code>tags.datadoghq.com/env|service|version</code> on <b>both</b> the workload and the pod template, plus <code>DD_ENV</code>/<code>DD_SERVICE</code>/<code>DD_VERSION</code> for APM (downward API or injected by the Admission Controller). Per container: <code>tags.datadoghq.com/&lt;container&gt;.version</code></td></tr>
+        <tr><td>Docker</td><td>Env vars + labels <code>com.datadoghq.tags.env|service|version</code>. Untraced software (Redis, NGINX): labels only</td></tr>
+        <tr><td>ECS / Fargate</td><td><code>environment</code> + <code>dockerLabels</code> on the <b>application</b> container, not the Agent container</td></tr>
+        <tr><td>OpenTelemetry</td><td><code>service.name</code> → service, <code>service.version</code> → version, <code>deployment.environment.name</code> → env. <code>DD_*</code> vars are not read by OTel SDKs</td></tr>
+        <tr><td>Automatic version (APM only)</td><td>Agent 7.52.0+, containers: your value wins, else <code>{image_tag}_{7-char git sha}</code>, else either one</td></tr>
+      </tbody>
+    </table></div>
+    <pre class="code"># Kubernetes Deployment (labels on metadata AND spec.template.metadata)
+labels:
+  tags.datadoghq.com/env: "prod"
+  tags.datadoghq.com/service: "web-store"
+  tags.datadoghq.com/version: "1.4.2"
+env:
+  - name: DD_VERSION
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.labels['tags.datadoghq.com/version']</pre>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Primary tags</h3>
+        <ul class="notes">
+          <li>Scope a whole APM app: requests, latency, errors, Apdex, traces. <code>env</code> + one optional <b>second primary tag</b> (datacenter, AZ, cluster, region)</li>
+          <li>Second primary tag: APM Settings, <b>org admins only</b>, up to <b>2 hours</b> to apply, max <b>100</b> values, must be a <b>host or container tag</b> (span tags from the SDK and tag-enrichment tags cannot be primary tags)</li>
+          <li>Changing it hides history aggregated by the old tag; monitors on the old tag go No Data</li>
+          <li>Set <code>env</code> in the SDK. Different <code>env</code> on tracer and Agent = duplicate tags on trace metrics</li>
+          <li>Don't put env or region in service names (<code>prod-web-store</code>); use env / a primary tag</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Tags on trace metrics</h3>
+        <ul class="notes">
+          <li>Available: <code>env</code>, <code>service</code>, <code>version</code>, <code>resource</code>, <code>http.status_code</code>, <code>http.status_class</code>, <code>rpc.grpc.status_code</code> (7.65+), Agent host tags, additional primary tags</li>
+          <li><b>Custom span tags are NOT available</b> on trace metrics. Need them? APM &gt; Generate Metrics (span-based custom metric, 15 months)</li>
+          <li>Monitor linked to a service when <code>service:&lt;name&gt;</code> is in its tags, its query, or the query groups by service</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="notes hint">
+      <li>Tag rules: start with a letter, max <b>200</b> chars, lowercased (span/metric tags), key = text before the <b>first</b> colon (<code>env:staging:east</code> → key <code>env</code>). Avoid unbounded values (user IDs, timestamps).</li>
+      <li>Agent <code>DD_TAGS</code> is <b>space</b>-separated (<code>"test:this is a test"</code> = 4 tags); tracer <code>DD_TAGS</code> is comma-separated <code>key:value</code>.</li>
+      <li>Reserved tag keys: <code>host</code>, <code>device</code>, <code>source</code>, <code>service</code>, <code>env</code>, <code>version</code>, <code>team</code>. The Agent enforces no precedence: one key can carry several values.</li>
+      <li>Peer tags name inferred services (<code>peer.db.name</code>, <code>peer.service</code>, <code>peer.hostname</code>, <code>peer.messaging.destination</code>...). Tag enrichment (Preview, admin) adds <code>team</code>/<code>system</code> from Catalog metadata, not retroactively.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/getting_started/tagging/" target="_blank" rel="noopener">Getting started with tags</a> <a href="https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/" target="_blank" rel="noopener">Unified service tagging</a> <a href="https://docs.datadoghq.com/tracing/guide/setting_primary_tags_to_scope/" target="_blank" rel="noopener">Primary tags</a> <a href="https://docs.datadoghq.com/tracing/metrics/metrics_namespace/" target="_blank" rel="noopener">Trace metrics namespace</a> <a href="https://docs.datadoghq.com/tracing/services/service_page/#service-monitor" target="_blank" rel="noopener">Service monitor</a> <a href="https://docs.datadoghq.com/tracing/services/inferred_services/" target="_blank" rel="noopener">Inferred services</a> <a href="https://docs.datadoghq.com/tracing/services/tag_enrichment/" target="_blank" rel="noopener">Tag enrichment</a></p>
+  </section>
+
+  <!-- RETENTION -->
+  <section class="panel" id="ap-retention">
+    <div class="cs-head"><h2>Retention periods</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">Ingested spans live <b>15 minutes</b> (Live Search). After that only <b>indexed</b> spans exist (retention filters). Anything you need for months must be a <b>metric</b>.</p>
+    <div class="facts">
+      <div><span class="label">Live Search</span><b>15 min</b><span>All ingested spans, rolling window, unsampled</span></div>
+      <div><span class="label">Custom retention filters</span><b>15 days</b><span>Includes default filters such as <code>Error Default</code></span></div>
+      <div><span class="label">Intelligent retention filter</span><b>30 days</b><span>Always on, not billed</span></div>
+      <div><span class="label">Trace metrics</span><b>15 months</b><span>Like every Datadog metric. Use them for postmortems</span></div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Data</th><th>Retention</th><th>Where you use it</th></tr></thead>
+      <tbody>
+        <tr><td>Ingested spans / traces</td><td><b>15 minutes</b></td><td>Trace Explorer Live Search</td></tr>
+        <tr><td>Spans indexed by custom (and default) retention filters</td><td><b>15 days</b></td><td>Indexed search, dashboards, notebooks, trace analytics monitors</td></tr>
+        <tr><td>Spans indexed by the Intelligent retention filter</td><td><b>30 days</b></td><td>Trace Explorer, dashboards, notebooks, Trace Queries (not monitors)</td></tr>
+        <tr><td>Indexed spans (Data Retention Periods page)</td><td>"15 or 30 days, determined by customer plan"</td><td>15 days is the default</td></tr>
+        <tr><td>Trace metrics <code>trace.*</code> and span-based custom metrics</td><td><b>15 months</b></td><td>Dashboards, monitors, notebooks, Metric Explorer</td></tr>
+        <tr><td>Span summaries, service and resource statistics (Catalog)</td><td>up to <b>30 days</b></td><td>Older: trace metrics in Metric Explorer</td></tr>
+        <tr><td>APM "Errors" (retention table)</td><td>15 days</td><td></td></tr>
+        <tr><td>Viewed traces, service metadata, dashboards, notebooks, monitors</td><td>Life of the account</td><td></td></tr>
+        <tr><td>Profiles: flame graphs, call graphs, thread timelines</td><td><b>8 days</b></td><td>Profiles</td></tr>
+        <tr><td>Profile metrics</td><td><b>30 days</b> (one month)</td><td>Dashboards</td></tr>
+        <tr><td>Flame graph exported to a notebook / profile opened in the UI</td><td><b>1 year</b></td><td>Notebooks / Profiles</td></tr>
+        <tr><td>Error Tracking samples / issues</td><td><b>30 days</b> / <b>1 year</b> after last activity</td><td>Error Tracking</td></tr>
+        <tr><td>Synthetic test traces</td><td>15 days (<code>Synthetics Default</code> filter)</td><td></td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Billing allotments</h3>
+        <ul class="notes">
+          <li>Per APM host per month: <b>1 million indexed spans</b> (15-day retention) and <b>150 GB ingested spans</b>, pooled</li>
+          <li>Fargate task: 195,000 indexed / 30 GB ingested. Lambda: 150,000 indexed per 1M invocations</li>
+          <li>Overage: <b>$1.70 per million indexed</b>, <b>$0.10 per GB ingested</b></li>
+          <li>APM $31, Pro $35 (+ Data Streams), Enterprise $40 (+ Continuous Profiler, 4 profiled containers per host)</li>
+          <li>Intelligent retention filter spans do not count toward indexed usage</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Exam traps</h3>
+        <ul class="notes">
+          <li>Postmortem notebook after an incident = <b>trace metrics</b> (they outlive spans)</li>
+          <li>Retention filters never reduce ingested GB; ingestion controls never change <code>trace.*</code> metrics</li>
+          <li>Span-based custom metrics come from <b>ingested</b> spans (indexed or not), names can't start with <code>trace.</code></li>
+          <li>Data volume limits: spans up to 18 h in the past / 2 h in the future; 30 versions per env+service per 40 min</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/data_security/data_retention_periods/" target="_blank" rel="noopener">Data retention periods</a> <a href="https://docs.datadoghq.com/tracing/trace_explorer/" target="_blank" rel="noopener">Trace Explorer</a> <a href="https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/" target="_blank" rel="noopener">Trace retention</a> <a href="https://docs.datadoghq.com/tracing/metrics/" target="_blank" rel="noopener">APM metrics</a> <a href="https://docs.datadoghq.com/profiler/" target="_blank" rel="noopener">Profiler</a> <a href="https://docs.datadoghq.com/account_management/billing/apm_tracing_profiler/" target="_blank" rel="noopener">APM billing</a> <a href="https://docs.datadoghq.com/tracing/troubleshooting/#data-volume-guidelines" target="_blank" rel="noopener">Data volume guidelines</a></p>
+  </section>
+
+  <!-- LIBRARIES AND INSTRUMENTATION -->
+  <section class="panel" id="ap-instr">
+    <div class="cs-head"><h2>Tracing libraries and instrumentation types</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">Pipeline: <b>Datadog SDK</b> (tracer) in the app → <b>Datadog Agent</b> (trace-agent, port 8126) → Datadog. Every span has at least a <b>name, start time and duration</b> (plus trace ID, span ID, service, resource). The main reason for distributed tracing: services written in <b>many languages</b> and running on <b>many platforms</b>.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Type</th><th>What it is</th><th>Code change / redeploy</th></tr></thead>
+      <tbody>
+        <tr><td><b>Single Step Instrumentation</b> (recommended)</td><td>Agent installs and injects the SDK into processes at runtime (Linux <code>LD_PRELOAD</code>, Docker <code>dd-shim</code> runtime, Kubernetes Admission Controller). Java, Python, Ruby, Node.js, .NET, PHP. No Go</td><td>No / restart apps</td></tr>
+        <tr><td><b>Manually managed SDK</b> (automatic instrumentation)</td><td>You add the SDK; it auto-instruments supported frameworks (web, DB, cache, HTTP clients) as soon as it loads</td><td>Yes (build/launch) / yes</td></tr>
+        <tr><td><b>Custom instrumentation</b> (code-based)</td><td>Write your own spans and tags: OpenTelemetry API (recommended), Datadog API, OpenTracing (legacy, archived). <b>Writing custom spans = custom instrumentation</b></td><td>Yes / yes</td></tr>
+        <tr><td><b>Dynamic Instrumentation</b></td><td>Add spans, span tags and metrics from the Datadog UI at runtime. Agent 7.49.0+, Remote Configuration, UST</td><td>No / no</td></tr>
+        <tr><td><b>OpenTelemetry</b></td><td>OTel API + Datadog SDK (<code>DD_TRACE_OTEL_ENABLED=true</code>), or full OTel SDK sending OTLP to the Agent (4317/4318), DDOT Collector, upstream Collector</td><td>Depends</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl wrapmono"><table>
+      <thead><tr><th>Language</th><th>How the SDK loads</th></tr></thead>
+      <tbody>
+        <tr><td>Java</td><td>java -javaagent:dd-java-agent.jar -Ddd.service=app -jar app.jar   (-javaagent BEFORE -jar)</td></tr>
+        <tr><td>Python</td><td>pip install ddtrace; ddtrace-run python app.py   (or import ddtrace.auto first)</td></tr>
+        <tr><td>Node.js</td><td>node --require dd-trace/init app.js   (init before any other module)</td></tr>
+        <tr><td>Go</td><td>Compiled: Orchestrion (compile-time) or dd-trace-go v2 + contrib packages</td></tr>
+        <tr><td>Ruby</td><td>gem 'datadog', require: 'datadog/auto_instrument'; Datadog.configure { ... }</td></tr>
+        <tr><td>.NET</td><td>CLR Profiling API (one profiler per process): MSI / packages / NuGet Datadog.Trace.Bundle</td></tr>
+        <tr><td>PHP</td><td>php datadog-setup.php --php-bin=all   (extension, then restart PHP-FPM/Apache)</td></tr>
+        <tr><td>C++ / Rust</td><td>No auto-instrumentation: dd-trace-cpp (proxies) / Rust SDK on the OpenTelemetry API</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Official vs community tracers</h3>
+        <ul class="notes">
+          <li>Official (Author = Datadog): <code>dd-trace-java</code>, <code>-py</code>, <code>-rb</code>, <code>-go</code>, <code>-js</code>, <code>-php</code>, <code>-dotnet</code>, <code>dd-trace-cpp</code>, Rust SDK. <code>ddprof</code> is a profiler, not a tracer</li>
+          <li><b>Unsupported language → community tracers</b> (Elixir <code>spandex</code>, Java <code>apm-client</code>, Rust <code>datadog-apm</code>...) maintained by third parties, or OpenTelemetry</li>
+          <li>Any tracer can post to the Agent API: <code>PUT http://localhost:8126/v0.3/traces</code>; times in <b>nanoseconds</b>; <code>name</code>/<code>service</code> ≤ 100 chars, <code>resource</code> ≤ 5000</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>SDK vs Agent</h3>
+        <ul class="notes">
+          <li>SDK: creates spans, propagates context (<code>datadog,tracecontext,baggage</code>), applies sampling at the root, sends to the Agent</li>
+          <li>Agent: computes trace metrics on 100% of traffic, sets sampling rates (10 traces/s), error/rare samplers, obfuscation, filtering, ships over 443</li>
+          <li>SSI pitfalls: <code>DD_TRACE_ENABLED=false</code> does not stop SSI; Docker needs containers <b>recreated</b>; the Agent's own K8s namespace is not instrumented</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/tracing/trace_collection/" target="_blank" rel="noopener">Application instrumentation</a> <a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/" target="_blank" rel="noopener">Add the Datadog SDK</a> <a href="https://docs.datadoghq.com/tracing/trace_collection/single-step-apm/" target="_blank" rel="noopener">Single Step Instrumentation</a> <a href="https://docs.datadoghq.com/tracing/trace_collection/custom_instrumentation/" target="_blank" rel="noopener">Custom instrumentation</a> <a href="https://docs.datadoghq.com/tracing/trace_collection/dynamic_instrumentation/" target="_blank" rel="noopener">Dynamic Instrumentation</a> <a href="https://docs.datadoghq.com/extend/community/libraries/#apm--continuous-profiler-client-libraries" target="_blank" rel="noopener">Community libraries</a> <a href="https://docs.datadoghq.com/tracing/guide/send_traces_to_agent_by_api/" target="_blank" rel="noopener">Agent tracing API</a> <a href="https://docs.datadoghq.com/opentelemetry/instrument/" target="_blank" rel="noopener">OpenTelemetry</a> <a href="https://docs.datadoghq.com/tracing/glossary/" target="_blank" rel="noopener">APM terms</a></p>
+  </section>
+
+  <!-- SAMPLING -->
+  <section class="panel" id="ap-sampling">
+    <div class="cs-head"><h2>Sampling and ingestion vs retention filters</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">Two independent stages. <b>Ingestion</b> (SDK + Agent) decides what is sent to Datadog. <b>Retention filters</b> (UI) decide which ingested spans are indexed. The <b>Intelligent retention filter is always on</b>.</p>
+    <div class="tbl plain"><table>
+      <thead><tr><th></th><th>Ingestion controls</th><th>Retention filters</th></tr></thead>
+      <tbody>
+        <tr><td>Where</td><td>SDK and Agent (local or Remote Configuration), APM &gt; Ingestion Control</td><td>Datadog UI, APM &gt; Retention Filters</td></tr>
+        <tr><td>Controls</td><td>What reaches Live Search (15 min) and is billed in GB</td><td>What is searchable for 15 / 30 days and billed per indexed span</td></tr>
+        <tr><td>Affects trace metrics?</td><td>No (computed on 100% of traffic, except OTel SDK, app-side or X-Ray sampling)</td><td>No</td></tr>
+        <tr><td>Permission</td><td><code>apm_service_ingest_write</code></td><td><code>apm_retention_filter_write</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl"><table>
+      <thead><tr><th><code>ingestion_reason</code></th><th>Mechanism</th><th>Default</th><th>Setting</th></tr></thead>
+      <tbody>
+        <tr><td><code>auto</code></td><td>Agent head-based rates sent to SDKs, decided at the root span</td><td><b>10 traces/s per Agent</b></td><td><code>DD_APM_TARGET_TPS</code></td></tr>
+        <tr><td><code>rule</code></td><td>SDK sampling rules by service/resource/tags (first match wins)</td><td>Rate limit <b>100 traces/s per service instance</b></td><td><code>DD_TRACE_SAMPLING_RULES</code>, <code>DD_TRACE_RATE_LIMIT</code></td></tr>
+        <tr><td><code>error</code></td><td>Agent error sampler (local traces, may be incomplete)</td><td>10 traces/s per Agent</td><td><code>DD_APM_ERROR_TPS</code> (0 disables)</td></tr>
+        <tr><td><code>rare</code></td><td>Agent rare sampler (env, service, name, resource, error.type, http.status)</td><td>5 traces/s, <b>off</b> since Agent 7.41.0</td><td><code>DD_APM_ENABLE_RARE_SAMPLER=true</code></td></tr>
+        <tr><td><code>manual</code></td><td>Force keep / drop in code (set before context propagation)</td><td></td><td><code>MANUAL_KEEP</code> / <code>MANUAL_DROP</code></td></tr>
+        <tr><td><code>single_span</code></td><td>Keep individual spans whose trace was dropped (Agent 7.40.0+); never drops</td><td></td><td><code>DD_SPAN_SAMPLING_RULES</code></td></tr>
+        <tr><td><code>rum</code>, <code>synthetics</code>, <code>lambda</code>, <code>xray</code>, <code>appsec</code>, <code>otel</code></td><td>Other products; <code>analytics</code> = deprecated App Analytics</td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+    <pre class="code">DD_TRACE_SAMPLING_RULES='[{"service": "my-service", "resource": "GET /checkout", "sample_rate": 1},
+                          {"service": "my-service", "sample_rate": 0.2}]'
+# DD_TRACE_SAMPLE_RATE=0.1 is deprecated (Java, Python, Go): use [{"sample_rate":0.1}]
+DD_SPAN_SAMPLING_RULES='[{"service": "my-service", "name": "http.request", "sample_rate": 1.0, "max_per_second": 50}]'</pre>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Sampling precedence (high to low)</h3>
+        <ul class="notes">
+          <li>1. Remote sampling rules (resource-based, from the UI)</li>
+          <li>2. Adaptive sampling rules (monthly volume target, Agent 7.53.0+)</li>
+          <li>3. Local rules <code>DD_TRACE_SAMPLING_RULES</code></li>
+          <li>4. Remote global rate, 5. local global rate</li>
+          <li>6. Agent rates <code>DD_APM_TARGET_TPS</code></li>
+          <li>Tracer &gt; Agent, rules &gt; global rate, remote &gt; local. Error/rare samplers are ignored for services with SDK rules</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Retention filters</h3>
+        <ul class="notes">
+          <li><b>Order matters</b>: the first matching filter keeps or drops the span</li>
+          <li>Default filters: <code>Error Default</code> (<code>status:error</code>), App and API Protection, Synthetics, Dynamic Instrumentation Default</li>
+          <li>Span rate only = span-level (<code>retained_by:retention_filter</code>). Add a <b>trace rate</b> = whole trace indexed, usable in Trace Queries</li>
+          <li>Legacy App Analytics filters became retention filters (Oct 20, 2020). "Analyzed spans" = old name for indexed spans</li>
+        </ul>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Intelligent retention filter (30 days, free)</h3>
+        <ul class="notes">
+          <li><b>Diversity sampling</b> on service entry spans: at least one trace per env, service, operation, resource every 15 min; p75, p90, p95 latency spans; representative errors</li>
+          <li><b>1% flat sampling</b>: uniform 1% by <code>trace_id</code>, plus traces of 1% of RUM sessions</li>
+          <li><code>retained_by</code>: <code>diversity_sampling</code>, <code>flat_sampled</code>, <code>retention_filter</code>, <code>trace_retention_filter</code></li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Who sees which indexed spans</h3>
+        <ul class="notes">
+          <li>Trace Explorer, <b>dashboards and notebooks</b>: custom <b>and</b> Intelligent filter spans</li>
+          <li><b>Trace analytics monitors</b>: custom filters only (Intelligent and indirectly indexed spans excluded)</li>
+          <li>Trace Queries: Intelligent filter + trace-level filters</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="notes hint">
+      <li>Ingestion Control Traffic Breakdown: blue = ingested, gray = not retained by sampling, orange = SDK rate limiter, red = Agent CPU/RAM limit. Sort by Downstream Bytes/s to cut volume.</li>
+      <li>Billed usage metrics: <code>datadog.estimated_usage.apm.ingested_bytes</code> and <code>datadog.estimated_usage.apm.indexed_spans</code>.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/tracing/trace_pipeline/" target="_blank" rel="noopener">Trace pipeline</a> <a href="https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/" target="_blank" rel="noopener">Ingestion mechanisms</a> <a href="https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_controls/" target="_blank" rel="noopener">Ingestion controls</a> <a href="https://docs.datadoghq.com/tracing/trace_pipeline/adaptive_sampling/" target="_blank" rel="noopener">Adaptive sampling</a> <a href="https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/" target="_blank" rel="noopener">Retention filters</a> <a href="https://docs.datadoghq.com/tracing/guide/leveraging_diversity_sampling/" target="_blank" rel="noopener">Diversity sampling</a> <a href="https://docs.datadoghq.com/tracing/trace_pipeline/generate_metrics/" target="_blank" rel="noopener">Generate metrics</a> <a href="https://docs.datadoghq.com/tracing/trace_pipeline/metrics/" target="_blank" rel="noopener">Usage metrics</a></p>
+  </section>
+
+  <!-- PROFILER -->
+  <section class="panel" id="ap-profiler">
+    <div class="cs-head"><h2>Continuous Profiler</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">Ships inside the Datadog SDK; tracing does <b>not</b> turn it on. Finds CPU, memory and I/O hotspots by method, class and line. Profiles appear on <b>APM &gt; Profiles</b> after a couple of minutes.</p>
+    <div class="facts">
+      <div><span class="label">Enable</span><b>DD_PROFILING_ENABLED=true</b><span>Not <code>DD_APM_PROFILING_ENABLED</code>. SSI also accepts <code>auto</code></span></div>
+      <div><span class="label">Transport</span><b>Agent 8126/TCP</b><span>Agent v6+ (v7+ recommended), same endpoint as traces</span></div>
+      <div><span class="label">Upload</span><b>Once a minute</b><span>Each process profiled 15 to 60 s per profile</span></div>
+      <div><span class="label">Retention</span><b>8 days</b><span>Metrics 30 days, notebook export 1 year</span></div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Language</th><th>Env var</th><th>In code / launcher</th></tr></thead>
+      <tbody>
+        <tr><td>Java</td><td>Yes</td><td><code>-Ddd.profiling.enabled=true</code>; <b><code>-javaagent</code> before <code>-jar</code></b> so it loads as early as possible as a JVM option</td></tr>
+        <tr><td>Python</td><td>Yes, with <code>ddtrace-run</code></td><td><code>Profiler().start()</code> as early as possible</td></tr>
+        <tr><td>Go</td><td>Only with Orchestrion</td><td><b>Required</b>: <code>profiler.Start(...)</code> + <code>defer profiler.Stop()</code>. Default types: CPU and Heap only</td></tr>
+        <tr><td>Ruby</td><td>Yes</td><td><code>c.profiling.enabled = true</code> (wins over env); start with <code>bundle exec ddprofrb exec</code>. SSI cannot set it up</td></tr>
+        <tr><td>Node.js</td><td>Yes</td><td><code>require('dd-trace').init({ profiling: true })</code></td></tr>
+        <tr><td>.NET</td><td>Yes (<code>1</code>, <code>true</code>, <code>Auto</code> with SSI)</td><td>Not on by default; containers need more than 1 core; IIS: <code>net stop /y was</code> + <code>net start w3svc</code></td></tr>
+        <tr><td>PHP</td><td>Yes / INI</td><td><code>php datadog-setup.php --enable-profiling --php-bin=all</code></td></tr>
+        <tr><td>C / C++ / Rust</td><td>n/a</td><td><code>ddprof</code> wrapper (Preview): <code>./ddprof myapp</code></td></tr>
+      </tbody>
+    </table></div>
+    <pre class="code">java -javaagent:dd-java-agent.jar \
+     -Ddd.service=web -Ddd.env=prod -Ddd.version=1.0 \
+     -Ddd.profiling.enabled=true \
+     -jar web.jar
+DD_PROFILING_ENABLED=true DD_SERVICE=web DD_ENV=prod ddtrace-run python app.py</pre>
+    <div class="tbl"><table>
+      <thead><tr><th>Profile type</th><th>Measures</th><th>Use it for</th></tr></thead>
+      <tbody>
+        <tr><td>CPU</td><td>Time running on CPU (excludes I/O, sleep, locks)</td><td>CPU hotspots</td></tr>
+        <tr><td>Wall Time</td><td>Elapsed time incl. waiting</td><td>Slow requests with low CPU</td></tr>
+        <tr><td>Allocations / Allocated Memory</td><td>Heap allocations, including memory later freed</td><td>GC pressure</td></tr>
+        <tr><td>Heap Live Size / Live Heap</td><td>Memory not yet garbage collected</td><td><b>Memory leaks</b></td></tr>
+        <tr><td>Lock, File I/O, Socket I/O, Exceptions</td><td>Time waiting on locks / I/O, exceptions thrown</td><td>Contention, I/O waits, exception storms</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Visualizations</h3>
+        <ul class="notes">
+          <li><b>Flame graph</b> (default): frame <b>width = share of the resource</b>; not a timeline; self time = part with nothing below it; widest frames grouped on the left</li>
+          <li><b>Thread Timeline</b>: time-based view per thread (goroutine in Go), shows GC/JIT lanes</li>
+          <li><b>Call graph</b>: each method once; edge thickness = time calling others, node size/color = self time</li>
+          <li>Compare profiles: red = more time in B, green = less, purple = only in A, blue = only in B</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Search and correlation</h3>
+        <ul class="notes">
+          <li><b>Search profiles with facets</b>: Env, Service, Version, Host, Runtime (e.g. <code>env:prod service:movies-api-java</code>)</li>
+          <li>Trace + profiler in the same process are linked automatically: span <b>Profiles</b> tab (formerly code hotspots). Java manual spans must be activated in a scope</li>
+          <li>Endpoint profiling: <b>Per endpoint call</b> stays meaningful when traffic changes</li>
+          <li>Automated Analysis (Insights) flags issues such as GC overhead, lock contention</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="notes hint">
+      <li>Official practice answer: the profiler "can always be enabled with <b>in-code configuration</b>". Current docs nuance: the env var works for most languages, but Go needs <code>profiler.Start</code> in code (unless built with Orchestrion).</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/profiler/" target="_blank" rel="noopener">Profiler</a> <a href="https://docs.datadoghq.com/profiler/enabling/" target="_blank" rel="noopener">Enabling the profiler</a> <a href="https://docs.datadoghq.com/profiler/profile_types/" target="_blank" rel="noopener">Profile types</a> <a href="https://docs.datadoghq.com/profiler/profile_visualizations/" target="_blank" rel="noopener">Profile visualizations</a> <a href="https://docs.datadoghq.com/profiler/compare_profiles/" target="_blank" rel="noopener">Compare profiles</a> <a href="https://docs.datadoghq.com/profiler/connect_traces_and_profiles/" target="_blank" rel="noopener">Traces and profiles</a> <a href="https://docs.datadoghq.com/profiler/automated_analysis/" target="_blank" rel="noopener">Automated Analysis</a></p>
+  </section>
+
+  <!-- LIVE VS RETAINED -->
+  <section class="panel" id="ap-live">
+    <div class="cs-head"><h2>Live vs Retained search</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">Trace Explorer opens in <b>Live Search</b>. Pick any time range <b>greater than 15 minutes</b> in the time selector to switch to indexed (retained) spans.</p>
+    <div class="tbl plain"><table>
+      <thead><tr><th></th><th>Live Search</th><th>Indexed (retained) search</th></tr></thead>
+      <tbody>
+        <tr><td>Data</td><td><b>All ingested</b> spans, unsampled</td><td>Spans kept by custom and Intelligent retention filters</td></tr>
+        <tr><td>Window</td><td>Rolling <b>15 minutes</b></td><td>15 days (custom) / 30 days (Intelligent)</td></tr>
+        <tr><td>Indicator</td><td>"Live Search - All ingested data"</td><td>"Search - Only Indexed Data"</td></tr>
+        <tr><td>Search a tag only on non-indexed spans</td><td>Found</td><td><b>No results</b></td></tr>
+        <tr><td>Timeseries group by</td><td><b>One</b> dimension</td><td>Up to three</td></tr>
+        <tr><td>Export to dashboard / monitor / notebook</td><td><b>Not possible</b></td><td>Yes (also Generate metric)</td></tr>
+        <tr><td>Opening a span</td><td colspan="2">Full trace (flame graph) always shown, but only indexed spans are searchable</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes">
+      <li>Live list: spans/second at the top, <b>Pause/Play</b> button, selecting a span pauses the stream. Option box: service entry spans, root spans, all spans</li>
+      <li>Filter on attributes that are not facets: click them in the trace panel or type them (<code>cart.value</code>)</li>
+      <li>Remote ingestion changes (no redeploy) can be watched in Live Search</li>
+      <li>Visualizations: List (Trace Groups up to 4 dimensions, Group into Issues), Timeseries, Top List (one dimension), Table (up to 3), Request Flow Map</li>
+      <li><b>After 15 minutes, notebooks and dashboards see spans from the Intelligent retention filter and custom retention filters</b>; trace analytics monitors see custom filters only</li>
+      <li>Long-term trends: trace metrics or Generate Metrics (15 months)</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/tracing/trace_explorer/" target="_blank" rel="noopener">Trace Explorer</a> <a href="https://docs.datadoghq.com/tracing/trace_explorer/visualize/" target="_blank" rel="noopener">Visualizations</a> <a href="https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/#export" target="_blank" rel="noopener">Export</a> <a href="https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/" target="_blank" rel="noopener">Retention filters</a> <a href="https://docs.datadoghq.com/tracing/glossary/" target="_blank" rel="noopener">APM terms</a></p>
+  </section>
+
+  <!-- SERVICE PAGE AND DASHBOARDS -->
+  <section class="panel" id="ap-dash">
+    <div class="cs-head"><h2>Service page, trace metrics and dashboards</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">Service page = select a service in the <b>Catalog</b>. Its top graphs use <b>trace metrics</b> (100% of traffic), except <b>Avg Time per Request</b>, which uses sampled traces.</p>
+    <div class="tbl wrapmono"><table>
+      <thead><tr><th>Trace metric</th><th>Type / notes</th></tr></thead>
+      <tbody>
+        <tr><td>trace.&lt;SPAN_NAME&gt;.hits  (.hits.by_http_status)</td><td>COUNT, requests</td></tr>
+        <tr><td>trace.&lt;SPAN_NAME&gt;.errors  (.errors.by_http_status)</td><td>COUNT, errors</td></tr>
+        <tr><td>trace.&lt;SPAN_NAME&gt;</td><td>DISTRIBUTION (DDSketch) latency, recommended for all latency use: p99:trace.http.request{service:foo}</td></tr>
+        <tr><td>trace.&lt;SPAN_NAME&gt;.apdex</td><td>GAUGE, web services only</td></tr>
+        <tr><td>trace.&lt;SPAN_NAME&gt;.duration</td><td>Legacy GAUGE, no percentiles</td></tr>
+      </tbody>
+    </table></div>
+    <div class="facts">
+      <div><span class="label">Percentiles</span><b>p50 p75 p90 p95 p99</b><span>Distribution metrics; max for p100</span></div>
+      <div><span class="label">Apdex</span><b>(S + T/2) / Total</b><span>Satisfied &lt; T, tolerated ≤ 4T, frustrated &gt; 4T or error</span></div>
+      <div><span class="label">Apdex range</span><b>0 to 1</b><span>Admins set T per web service (pencil on the Latency graph)</span></div>
+      <div><span class="label">Primary operation</span><b>Highest throughput</b><span>Entry operation used for service stats; override in APM settings</span></div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Graph</th><th>Dropdown views</th></tr></thead>
+      <tbody>
+        <tr><td>Requests and Errors</td><td>Requests by Version, Requests per Second by Version, Requests and Errors Per Second</td></tr>
+        <tr><td>Errors</td><td>Errors by Version, Errors per Second (by Version), % Error Rate (by Version)</td></tr>
+        <tr><td>Latency</td><td>Latency by Version, Historical Latency (vs day/week), Latency Distribution, Latency by Error, <b>Apdex</b></td></tr>
+        <tr><td>Avg Time per Request</td><td>Time per downstream service (sampled data); not for leaf services like Postgres</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Getting graphs onto a dashboard</h3>
+        <ul class="notes">
+          <li>Hover the graph, <b>Ctrl/Cmd + C</b>, then paste on a dashboard or export from the Datadog Clipboard</li>
+          <li>Export arrow at the top right of each service/resource graph → Export to Dashboard</li>
+          <li><b>Service Summary</b> widget shows a service's graphs; or a Timeseries on <code>trace.*</code> metrics</li>
+          <li>Compare Time: Previous Day / Week (week-over-week p50)</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Investigating a graph</h3>
+        <ul class="notes">
+          <li>Click a graph → <b>Find correlated metrics</b>: other metrics (APM, integrations, dashboards, custom) behaving oddly at the same time; one series at a time</li>
+          <li>Watchdog Explains: pink box → Investigate Anomaly (tag groups behind the spike)</li>
+          <li>Watchdog overlays anomalies on Requests, Latency and Errors graphs</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="notes hint">
+      <li>Resources list columns: Requests, Total time, Avg/p75/p90/p95/p99/Max latency, Errors, Error Rate (enable p99 via the cog). Slowest trace: sort by p99 → resource → Traces by duration.</li>
+      <li>Service Map: no setup, scoped by <code>env</code> (+ second primary tag), nodes age out after 30 days without traces, borders follow Service Health. Inferred services are purple.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/tracing/services/service_page/" target="_blank" rel="noopener">Service page</a> <a href="https://docs.datadoghq.com/tracing/services/resource_page/" target="_blank" rel="noopener">Resource page</a> <a href="https://docs.datadoghq.com/tracing/metrics/metrics_namespace/" target="_blank" rel="noopener">Trace metrics</a> <a href="https://docs.datadoghq.com/tracing/guide/ddsketch_trace_metrics/" target="_blank" rel="noopener">DDSketch metrics</a> <a href="https://docs.datadoghq.com/tracing/guide/configure_an_apdex_for_your_traces_with_datadog_apm/" target="_blank" rel="noopener">Apdex</a> <a href="https://docs.datadoghq.com/tracing/guide/configuring-primary-operation/" target="_blank" rel="noopener">Primary operation</a> <a href="https://docs.datadoghq.com/dashboards/widgets/configuration/#copy-and-paste-widgets" target="_blank" rel="noopener">Copy widgets</a> <a href="https://docs.datadoghq.com/dashboards/graph_insights/correlations/" target="_blank" rel="noopener">Metric correlations</a> <a href="https://docs.datadoghq.com/tracing/services/services_map/" target="_blank" rel="noopener">Service Map</a></p>
+  </section>
+
+  <!-- PORTS AND ENV VARS -->
+  <section class="panel" id="ap-ports">
+    <h2>Ports and environment variables</h2>
+    <p class="hint">The SDK tries the socket <code>/var/run/datadog/apm.socket</code> first, then <code>http://localhost:8126</code>. The Agent always opens the outbound connection to Datadog.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Port</th><th>Protocol</th><th>Used for</th></tr></thead>
+      <tbody>
+        <tr><td><b>8126</b></td><td>TCP (local)</td><td>APM receiver: traces <b>and the profiler</b>. <code>apm_config.receiver_port</code> / <code>DD_APM_RECEIVER_PORT</code></td></tr>
+        <tr><td>8125</td><td>UDP (local)</td><td>DogStatsD: runtime metrics (<code>/var/run/datadog/dsd.socket</code> first)</td></tr>
+        <tr><td>4317 / 4318</td><td>gRPC / HTTP</td><td>OTLP ingest in the Agent (off by default)</td></tr>
+        <tr><td>5012</td><td>TCP (local)</td><td>trace-agent expvar debug endpoint</td></tr>
+        <tr><td>443</td><td>TCP outbound, TLS</td><td>Traces to <code>trace.agent.&lt;site&gt;</code>, profiles to <code>intake.profile.&lt;site&gt;</code>, Remote Config <code>config.&lt;site&gt;</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl wrapmono"><table>
+      <thead><tr><th>Variable</th><th>Side</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>DD_APM_ENABLED</td><td>Agent</td><td>Trace Agent on (default true)</td></tr>
+        <tr><td>DD_APM_NON_LOCAL_TRAFFIC</td><td>Agent</td><td>Accept traces from other containers (apm_non_local_traffic)</td></tr>
+        <tr><td>DD_APM_RECEIVER_SOCKET</td><td>Agent</td><td>Listen on a Unix domain socket</td></tr>
+        <tr><td>DD_APM_TARGET_TPS / DD_APM_ERROR_TPS</td><td>Agent</td><td>10 / 10 traces per second per Agent</td></tr>
+        <tr><td>DD_APM_IGNORE_RESOURCES / DD_APM_REPLACE_TAGS</td><td>Agent</td><td>Drop traces by root resource regex / scrub tags</td></tr>
+        <tr><td>DD_AGENT_HOST / DD_TRACE_AGENT_PORT</td><td>SDK</td><td>Agent host / port (default 8126)</td></tr>
+        <tr><td>DD_TRACE_AGENT_URL</td><td>SDK</td><td>http:// or unix:// URL; beats host and port</td></tr>
+        <tr><td>DD_SERVICE / DD_ENV / DD_VERSION / DD_TAGS</td><td>SDK</td><td>Unified service tags, extra span tags</td></tr>
+        <tr><td>DD_TRACE_SAMPLING_RULES / DD_TRACE_RATE_LIMIT</td><td>SDK</td><td>Sampling rules / 100 traces/s per instance</td></tr>
+        <tr><td>DD_LOGS_INJECTION</td><td>SDK</td><td>Trace and span IDs in logs (default true in Python 3.10+, Java, Node.js)</td></tr>
+        <tr><td>DD_PROFILING_ENABLED</td><td>SDK</td><td>Continuous Profiler (default false)</td></tr>
+        <tr><td>DD_RUNTIME_METRICS_ENABLED</td><td>SDK</td><td>Runtime metrics via DogStatsD (default true only Java, .NET 6+)</td></tr>
+        <tr><td>DD_TRACE_DEBUG / DD_TRACE_STARTUP_LOGS</td><td>SDK</td><td>Debug logs (off) / startup logs (off in Node.js 2.x+)</td></tr>
+        <tr><td>DD_TRACE_HEADER_TAGS</td><td>SDK</td><td>HTTP headers as span tags (opt-in)</td></tr>
+        <tr><td>DD_TRACE_OTEL_ENABLED</td><td>SDK</td><td>Use the OpenTelemetry API with the Datadog SDK</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>Containers: <code>localhost</code> is wrong except on ECS/EKS Fargate (sidecar, don't set <code>DD_AGENT_HOST</code>). Kubernetes: UDS (Helm default), <code>status.hostIP</code> + hostPort 8126, or the Admission Controller.</li>
+      <li>Changing the Agent receiver port means changing <code>DD_TRACE_AGENT_PORT</code> or <code>DD_TRACE_AGENT_URL</code> too. Env vars override <code>application_monitoring.yaml</code>; remote config beats local.</li>
+      <li>Agent 7.80.0+ on Linux starts the trace-agent only after the first trace (socket activation); <code>agent status</code> may show APM not running until then.</li>
+      <li>Lambda: no host Agent; the <b>Datadog Lambda Extension</b> (lightweight Agent in the execution environment) flushes traces asynchronously.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/agent/configuration/network/" target="_blank" rel="noopener">Network traffic</a> <a href="https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/" target="_blank" rel="noopener">Add the Datadog SDK</a> <a href="https://docs.datadoghq.com/tracing/trace_collection/library_config/" target="_blank" rel="noopener">SDK configuration</a> <a href="https://docs.datadoghq.com/containers/docker/apm/" target="_blank" rel="noopener">Docker APM</a> <a href="https://docs.datadoghq.com/containers/kubernetes/apm/" target="_blank" rel="noopener">Kubernetes APM</a> <a href="https://docs.datadoghq.com/opentelemetry/setup/otlp_ingest_in_the_agent/" target="_blank" rel="noopener">OTLP ingest</a> <a href="https://docs.datadoghq.com/tracing/troubleshooting/connection_errors/" target="_blank" rel="noopener">Connection errors</a> <a href="https://docs.datadoghq.com/serverless/libraries_integrations/extension/" target="_blank" rel="noopener">Lambda Extension</a></p>
+  </section>
+
+  <!-- DATA SECURITY -->
+  <section class="panel" id="ap-security">
+    <h2>APM data security</h2>
+    <p class="hint">Remove sensitive data <b>at collection</b> (SDK or Agent, it never leaves your hosts) or <b>at ingestion</b> (Sensitive Data Scanner, after it reaches Datadog but before indexing).</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Where</th><th>Default behaviour / setting</th></tr></thead>
+      <tbody>
+        <tr><td>Agent: resource names</td><td>SQL numeric literals and bind variables → <code>?</code> (only single-quoted strings are strings); Redis keeps command tokens (<code>MULTI SET SET</code>)</td></tr>
+        <tr><td>Agent: <code>apm_config.obfuscation</code></td><td>On: mongodb, elasticsearch, redis, memcached, <b>credit_cards</b> (exact card numbers). Off: <code>http</code> (<code>remove_query_string</code>, <code>remove_paths_with_digits</code>), <code>remove_stack_traces</code></td></tr>
+        <tr><td>Agent: <code>replace_tags</code></td><td>Regex scrub per tag (<code>*</code> = all, <code>resource.name</code>); <code>DD_APM_REPLACE_TAGS</code> on the trace-agent container</td></tr>
+        <tr><td>SDK</td><td>Query-string values matching a sensitive regex → <code>&lt;redacted&gt;</code> (<code>DD_TRACE_OBFUSCATION_QUERY_STRING_REGEXP</code>); header tags opt-in; client IP off by default in Python</td></tr>
+        <tr><td>Sensitive Data Scanner</td><td>Scans span attribute values; Redact, Partially redact, Hash (irreversible), Mask (<code>data_scanner_unmask</code>); new scanning groups disabled</td></tr>
+        <tr><td>Live Debugger / DI</td><td>Identifier redaction before upload (<code>password</code>, <code>accessToken</code>); Strict or Targeted mode; env vars go on the app</td></tr>
+      </tbody>
+    </table></div>
+    <pre class="code">apm_config:
+  replace_tags:
+    - name: "http.url"
+      pattern: "token/(.*)"
+      repl: "?"
+    - name: "error.stack"
+      pattern: "(?s).*"
+  ignore_resources: ["(GET|POST) /healthcheck"]</pre>
+    <div class="tbl plain"><table>
+      <thead><tr><th></th><th>Sampling rule <code>sample_rate: 0</code></th><th><code>ignore_resources</code> / <code>filter_tags</code></th></tr></thead>
+      <tbody>
+        <tr><td>Where</td><td>SDK</td><td>Agent (all services sending to it)</td></tr>
+        <tr><td>Matches</td><td>Root span (service, resource, tags)</td><td>Root span resource regex / exact root span tags (regex with <code>_REGEX_</code>, 7.49+)</td></tr>
+        <tr><td>Trace metrics</td><td><b>Kept</b> (recommended way to drop health checks)</td><td>Removed too</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>Datadog is a connected PCI environment, not a CDE: keeping card data out is the customer's job. Don't put PII in service, resource or tag names.</li>
+      <li>RBAC: <code>apm_read</code> (Read Only), <code>apm_retention_filter_write</code> and <code>apm_apdex_manage_write</code> (Admin), <code>apm_generate_metrics</code> (Standard).</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/tracing/configure_data_security/" target="_blank" rel="noopener">Data security</a> <a href="https://docs.datadoghq.com/tracing/guide/ignoring_apm_resources/" target="_blank" rel="noopener">Ignoring resources</a> <a href="https://docs.datadoghq.com/security/sensitive_data_scanner/" target="_blank" rel="noopener">Sensitive Data Scanner</a> <a href="https://docs.datadoghq.com/tracing/live_debugger/sensitive-data-scrubbing/" target="_blank" rel="noopener">Live Debugger scrubbing</a> <a href="https://docs.datadoghq.com/data_security/pci_compliance/" target="_blank" rel="noopener">PCI</a> <a href="https://docs.datadoghq.com/account_management/rbac/permissions/#apm" target="_blank" rel="noopener">APM permissions</a></p>
+  </section>
+
+  <!-- SOFTWARE CATALOG -->
+  <section class="panel" id="ap-catalog">
+    <h2>Software Catalog</h2>
+    <p class="hint">Now just <b>Catalog</b> (formerly Service Catalog, then Software Catalog), part of the Internal Developer Portal. Every APM service is listed; clicking one opens the service page.</p>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>How entities arrive</h3>
+        <ul class="notes">
+          <li>Automatically from <b>APM, USM and RUM</b> (services, datastores, queues, inferred services, frontends)</li>
+          <li>Declared in <code>service.datadog.yaml</code> / <code>entity.datadog.yaml</code> (UI, API, Terraform, GitHub/GitLab sync)</li>
+          <li>Imported from Backstage (<code>catalog-info.yaml</code>) or ServiceNow; from logs/metrics <code>DD_SERVICE</code> tags</li>
+          <li><code>name</code> must exactly match the <code>service</code> tag to attach metadata</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Views</h3>
+        <ul class="notes">
+          <li>Ownership, Reliability, <b>Performance</b> (latency, traffic, error rate, Apdex by env), Security, Costs, Software Delivery, Relationships, Infrastructure</li>
+          <li>Stats retained up to <b>30 days</b>; older: Metric Explorer</li>
+          <li>Service missing = no data in the <b>past hour</b> for the selected env</li>
+        </ul>
+      </div>
+    </div>
+    <pre class="code">apiVersion: v3          # v2 used schema-version and dd-service
+kind: service           # service, system, api, datastore, queue, frontend, custom
+metadata:
+  name: web-store
+  owner: shopist
+spec:
+  lifecycle: production
+  tier: "1"
+  dependsOn:
+    - service:cws-webapp</pre>
+    <ul class="notes hint">
+      <li>Scorecards (evaluated every 24 h): Production Readiness, Observability Best Practices, Ownership &amp; Documentation. Permissions: Catalog Read / Catalog Write.</li>
+      <li>Service health: Critical when a paging monitor alerted in the past 2 days, an incident is active, a faulty deployment or an APM Watchdog alert is ongoing.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/internal_developer_portal/catalog/" target="_blank" rel="noopener">Catalog</a> <a href="https://docs.datadoghq.com/internal_developer_portal/catalog/set_up/" target="_blank" rel="noopener">Set up Catalog</a> <a href="https://docs.datadoghq.com/internal_developer_portal/catalog/entity_model/" target="_blank" rel="noopener">Entity model</a> <a href="https://docs.datadoghq.com/internal_developer_portal/catalog/troubleshooting/" target="_blank" rel="noopener">Catalog troubleshooting</a> <a href="https://docs.datadoghq.com/internal_developer_portal/scorecards/" target="_blank" rel="noopener">Scorecards</a></p>
+  </section>
+
+  <!-- SEARCH SYNTAX -->
+  <section class="panel" id="ap-search">
+    <h2>Trace search syntax</h2>
+    <p class="hint">Span <b>attributes</b> (span content) need <code>@</code>. Span <b>tags</b> (host, container) and <b>reserved attributes</b> don't. Facets are not required to search.</p>
+    <div class="tbl wrapmono"><table>
+      <thead><tr><th>Query</th><th>Finds</th></tr></thead>
+      <tbody>
+        <tr><td>service:payment-api status:error</td><td>Error spans of a service (implicit AND)</td></tr>
+        <tr><td>@http.status_code:[400 TO 499]</td><td>Range on an attribute (all 4xx)</td></tr>
+        <tr><td>@http.response_time:&gt;100</td><td>Numeric comparison (&lt; &gt; &lt;= &gt;=)</td></tr>
+        <tr><td>resource_name:"GET /checkout" @duration:&gt;2s env:prod</td><td>Duration with units</td></tr>
+        <tr><td>service:web* -kube_deployment:canary</td><td>Wildcard, exclusion with -</td></tr>
+        <tr><td>(hostname:web-server OR env:prod)</td><td>Grouping with OR</td></tr>
+        <tr><td>@url:*user\=JaneDoe*</td><td>Escape ? &gt; &lt; : = " ~ / \ with a backslash</td></tr>
+        <tr><td>@user.first\ name:myvalue</td><td>Escaped space in an attribute name</td></tr>
+        <tr><td>tags:"auto-discovery.cluster-autoscaler.k8s.io/daffy"</td><td>Tag that doesn't follow key:value rules</td></tr>
+        <tr><td>@peer.db.name:users @peer.db.system:postgres</td><td>Inferred (uninstrumented) database</td></tr>
+        <tr><td>-retained_by:diversity_sampling</td><td>Proportional analytics without diversity spans</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Reserved attributes (no @)</h3>
+        <ul class="notes">
+          <li><code>env</code>, <code>service</code>, <code>operation_name</code>, <code>resource_name</code>, <code>status</code>, <code>trace_id</code>, <code>span_id</code>, <code>timestamp</code>, <code>type</code>, <code>ingestion_reason</code></li>
+          <li>Need <code>@</code>: <code>@http.status_code</code>, <code>@error.message</code>, <code>@duration</code> (nanoseconds), <code>@span.kind</code>, <code>@base_service</code></li>
+          <li>Side panel: attributes in the Info/Overview tab, tags in the Infrastructure tab</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Trace Queries (whole traces)</h3>
+        <ul class="notes">
+          <li><code>a &amp;&amp; b</code> both, <code>a || b</code> either, <code>a -&gt; b</code> a upstream of b, <code>a =&gt; b</code> a direct parent of b, <code>NOT(b)</code></li>
+          <li>Where: <code>span_count(a):&gt;10</code>, <code>total_span_count:&gt;1000</code>, <code>trace_duration:&gt;5s</code></li>
+          <li>Up to 50 sample traces; data from the Intelligent filter and trace-level filters</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="notes hint">
+      <li>Facets (strings) and measures (numbers, with units) are only for the facet panel and aggregation. Trace View span search does <b>not</b> support wildcards.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/" target="_blank" rel="noopener">Query syntax</a> <a href="https://docs.datadoghq.com/tracing/trace_explorer/span_tags_attributes/" target="_blank" rel="noopener">Span tags and attributes</a> <a href="https://docs.datadoghq.com/tracing/trace_explorer/trace_queries/" target="_blank" rel="noopener">Trace Queries</a> <a href="https://docs.datadoghq.com/tracing/trace_explorer/trace_view/" target="_blank" rel="noopener">Trace View</a></p>
+  </section>
+
+  <!-- DEPLOYMENT TRACKING -->
+  <section class="panel" id="ap-deploy">
+    <h2>Deployment tracking</h2>
+    <p class="hint">Driven by the <b><code>version</code></b> tag. No <code>version</code> = no version breakdowns, Deployments section, comparison or Faulty Deployment Detection.</p>
+    <ul class="notes">
+      <li>Service page graphs split by version: Requests/Errors per second by version, <b>% Error Rate by Version</b> (use rates to compare a small canary), Latency by Version</li>
+      <li>Deployments section appears only when <b>more than one version</b> reported in the time range. Columns: first/last seen, Error Types (new vs previous version, not proof of cause), requests/s, error rate; optional p50 to max latency</li>
+      <li>Click a version: comparison with the previous version or any two versions within <b>30 days</b> (graphs, errors, endpoints, profiles)</li>
+      <li>Strategies: rolling, blue/green, canary, shadow</li>
+      <li><b>Faulty Deployment Detection</b> (Watchdog, automatic): new error types or error-rate increases; pink banner; alert with an <b>Events monitor</b> on <code>tags:deployment_analysis</code>, 60-min recovery</li>
+      <li>Deployment Gates: pipeline asks Datadog (monitors + FDD rules) whether to continue; <code>datadog-ci deployment gate --service --env --version</code></li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/tracing/services/deployment_tracking/" target="_blank" rel="noopener">Deployment tracking</a> <a href="https://docs.datadoghq.com/watchdog/faulty_deployment_detection/" target="_blank" rel="noopener">Faulty deployment detection</a> <a href="https://docs.datadoghq.com/deployment_gates/" target="_blank" rel="noopener">Deployment Gates</a> <a href="https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/" target="_blank" rel="noopener">Unified service tagging</a></p>
+  </section>
+
+  <!-- ERROR TRACKING -->
+  <section class="panel" id="ap-errors">
+    <h2>Error Tracking</h2>
+    <p class="hint">An error span becomes an issue only if it has <b><code>error.type</code>, <code>error.message</code> and <code>error.stack</code></b> and belongs to a complete trace. No extra SDK or config for APM.</p>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Grouping and states</h3>
+        <ul class="notes">
+          <li>Fingerprint = <code>service</code> + <code>error.type</code> + <code>error.message</code> (numbers, quoted text ignored) + top meaningful stack frame</li>
+          <li>Custom grouping: span tag <code>error.fingerprint</code></li>
+          <li>States: FOR REVIEW → REVIEWED → RESOLVED, IGNORED, EXCLUDED (stops collection and billing)</li>
+          <li>Auto-resolve after 14 days; recurrence in a newer version = <b>Regression</b></li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Around it</h3>
+        <ul class="notes">
+          <li>Samples 30 days, issues 1 year after last activity. No samples shown = spans not kept by a custom retention filter</li>
+          <li>Monitors: New Issue (incl. regressions) or High Impact; multi alert by <code>issue.id</code></li>
+          <li>Suspect commits need Source Code Integration + GitHub</li>
+          <li>Exception Replay: local variables, Python/Java/.NET/PHP, <code>DD_EXCEPTION_REPLAY_ENABLED</code></li>
+        </ul>
+      </div>
+    </div>
+    <pre class="code">with tracer.trace("throws.an.error") as span:
+    raise Exception("Oops!")          # ddtrace sets error.type, error.message, error.stack
+span.set_tag("error.fingerprint", "my-custom-grouping")</pre>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/tracing/error_tracking/" target="_blank" rel="noopener">Error Tracking</a> <a href="https://docs.datadoghq.com/tracing/error_tracking/error_grouping/" target="_blank" rel="noopener">Error grouping</a> <a href="https://docs.datadoghq.com/tracing/error_tracking/issue_states/" target="_blank" rel="noopener">Issue states</a> <a href="https://docs.datadoghq.com/tracing/error_tracking/monitors/" target="_blank" rel="noopener">Error Tracking monitors</a> <a href="https://docs.datadoghq.com/tracing/error_tracking/exception_replay/" target="_blank" rel="noopener">Exception Replay</a></p>
+  </section>
+
+  <!-- SPAN SUMMARY -->
+  <section class="panel" id="ap-span">
+    <h2>Span summary and Trace View</h2>
+    <p class="hint"><b>Execution time</b> = time a span is active (not waiting for a child). Concurrent children split the overlapping time.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Span summary column (Resource page)</th><th>Meaning, for traces where the span appears</th></tr></thead>
+      <tbody>
+        <tr><td>Avg Spans/trace</td><td>Average occurrences per trace (high = N+1 queries)</td></tr>
+        <tr><td>% of Traces</td><td>Share of the resource's traces containing the span</td></tr>
+        <tr><td>Avg Duration</td><td>Average span duration</td></tr>
+        <tr><td>Avg % Exec Time</td><td>Average share of execution time the span was active</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes">
+      <li>Only for resources containing <b>service entry spans</b>. Root span = first span of a trace; service entry span = first span in each service</li>
+      <li>Trace View: <b>Flame Graph</b> (default), Span List, Waterfall, Map. Map: red border = entry span error, red edge = exit span error</li>
+      <li>Side panel tabs: Span Info, Infrastructure, Logs, Processes, Network, Security, Profiles, Span Links (links only shown when indexed)</li>
+      <li>Traces over 100 MB open in Trace Preview (Waterfall and Map only)</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/tracing/services/resource_page/#span-summary" target="_blank" rel="noopener">Span summary</a> <a href="https://docs.datadoghq.com/glossary/#execution-time" target="_blank" rel="noopener">Execution time</a> <a href="https://docs.datadoghq.com/tracing/trace_explorer/trace_view/" target="_blank" rel="noopener">Trace View</a> <a href="https://docs.datadoghq.com/tracing/trace_collection/span_links/" target="_blank" rel="noopener">Span links</a></p>
+  </section>
+
+  <!-- TROUBLESHOOTING -->
+  <section class="panel" id="ap-trouble">
+    <h2>Troubleshooting with trace search</h2>
+    <p class="hint">Spike on the service page → traces behind the graph → filter (<code>status:error</code>, <code>@http.status_code</code>, <code>version</code>) → open a trace → correlated logs, infra, profiles → postmortem notebook on <b>trace metrics</b>.</p>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Correlation</h3>
+        <ul class="notes">
+          <li>Logs: inject trace/span IDs (<code>DD_LOGS_INJECTION</code>), JSON or parsed logs, Trace remapper on <code>dd.trace_id</code>; logs and traces are sampled independently</li>
+          <li>RUM: <code>allowedTracingUrls</code> (formerly <code>allowedTracingOrigins</code>) = the <b>first-party origins the browser app calls</b>; server must allow the tracing headers (CORS)</li>
+          <li>Synthetics: <code>x-datadog-origin: synthetics</code>, traces kept 15 days</li>
+          <li>Watchdog insights in Trace Explorer: error and latency <b>outliers</b> (OUTLIERS facet section)</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Missing traces</h3>
+        <ul class="notes">
+          <li>Startup logs (<code>DATADOG TRACER CONFIGURATION</code>), <code>DD_TRACE_DEBUG=true</code></li>
+          <li><code>agent status</code> APM section: <code>Receiver: 0.0.0.0:8126</code></li>
+          <li>Test from the app container: <code>curl http://&lt;agent&gt;:8126/info</code></li>
+          <li>Agent flare doesn't help if traces never reach the Agent; tracer flare via Remote Config</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/tracing/other_telemetry/" target="_blank" rel="noopener">Correlate with other telemetry</a> <a href="https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/" target="_blank" rel="noopener">Logs and traces</a> <a href="https://docs.datadoghq.com/tracing/other_telemetry/rum/" target="_blank" rel="noopener">RUM and traces</a> <a href="https://docs.datadoghq.com/tracing/trace_explorer/#analyzing-anomalies-with-integrated-insights" target="_blank" rel="noopener">Watchdog insights</a> <a href="https://docs.datadoghq.com/notebooks/" target="_blank" rel="noopener">Notebooks</a> <a href="https://docs.datadoghq.com/tracing/troubleshooting/" target="_blank" rel="noopener">APM troubleshooting</a></p>
+  </section>
+
+  <!-- MONITORS -->
+  <section class="panel" id="ap-monitors">
+    <h2>Monitors, anomaly detection and SLOs</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Monitor</th><th>Evaluates</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>APM Metrics</td><td>Trace metrics (100% of traffic)</td><td>Scope env + service + resource; req/s, errors/s, error rate, Apdex, avg/p50/p75/p90/p99 latency; Threshold or <b>Anomaly</b>; 1 min to 48 h</td></tr>
+        <tr><td>Trace Analytics</td><td>Indexed spans (<b>custom filters only</b>)</td><td>Any span query; group by up to 4 facets; 5 min to 48 h; limit 1000</td></tr>
+        <tr><td>Anomaly</td><td>Any metric with <code>anomalies()</code></td><td><code>basic</code>, <code>agile</code>, <code>robust</code>; needs 3x the seasonality of history</td></tr>
+        <tr><td>Watchdog</td><td>Watchdog alerts</td><td>APM anomalies on error rate, latency, hits (≥ 0.5 req/s, 2 weeks history)</td></tr>
+        <tr><td>Error Tracking</td><td>Issues</td><td>New Issue or High Impact</td></tr>
+        <tr><td>Events <code>tags:deployment_analysis</code></td><td>Faulty deployments</td><td>60-min recovery</td></tr>
+      </tbody>
+    </table></div>
+    <pre class="code">avg(last_1h):anomalies(p99:trace.postgres.query{env:prod,service:db}, 'agile', 2,
+    direction='above', alert_window='last_15m', interval=60, count_default_zero='true',
+    seasonality='weekly') &gt;= 1</pre>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Anomaly alert conditions</h3>
+        <ul class="notes">
+          <li>Above or below (default), above, below the gray band; window 15 min to 2 weeks</li>
+          <li>Trigger window vs recovery window (keep them equal); "Alert when 100%" = every point anomalous</li>
+          <li><code>basic</code>: no seasonality. <code>agile</code>: seasonal, adapts to level shifts. <code>robust</code>: seasonal, stable</li>
+          <li>Seasonality hourly / daily / weekly</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>SLOs</h3>
+        <ul class="notes">
+          <li>Metric-based: good / (good + bad) events, e.g. <code>trace.*.hits</code> and <code>.errors</code> (preferred)</li>
+          <li>Monitor-based: uptime of up to 20 monitors (APM Metric monitors included)</li>
+          <li>Time slice: uptime from a metric condition (e.g. p95 &lt; 1 s) per 1 or 5 min</li>
+          <li>Windows 7, 30, 90 days; error budget = 100% − target; burn rate alerts (30-day: 14.4 over 1h/5m)</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="notes hint">
+      <li>Linking to services: <code>service:&lt;name&gt;</code> in the monitor's tags, query or group-by → shown on the service page and Service Map.</li>
+      <li>No-data for trace analytics groups: alert when count is below 1. Notification variables: <code>{{service.name}}</code>, <code>{{span.link}}</code>, <code>{{#is_alert}}</code>.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/monitors/types/apm/" target="_blank" rel="noopener">APM monitors</a> <a href="https://docs.datadoghq.com/monitors/types/anomaly/#set-alert-conditions" target="_blank" rel="noopener">Anomaly monitor</a> <a href="https://docs.datadoghq.com/tracing/guide/alert_anomalies_p99_database/" target="_blank" rel="noopener">p99 anomaly guide</a> <a href="https://docs.datadoghq.com/monitors/types/watchdog/" target="_blank" rel="noopener">Watchdog monitor</a> <a href="https://docs.datadoghq.com/service_level_objectives/" target="_blank" rel="noopener">SLOs</a> <a href="https://docs.datadoghq.com/service_level_objectives/burn_rate/" target="_blank" rel="noopener">Burn rate</a> <a href="https://docs.datadoghq.com/monitors/notify/variables/" target="_blank" rel="noopener">Notification variables</a></p>
+  </section>
+</div>

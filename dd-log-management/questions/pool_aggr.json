@@ -1,0 +1,527 @@
+[
+  {
+    "id": "lm-aggr-001",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "easy",
+    "q": "A user switches the Log Explorer aggregation from Fields to Patterns and changes nothing else. By default, how are the patterns built?",
+    "options": [
+      "Logs are clustered on similar `service` values and grouped by Host and Env.",
+      "Logs are clustered on similar `status` values and grouped by Message and Source.",
+      "Logs are clustered on similar `message` values and grouped by Status and Service."
+    ],
+    "answer": 2,
+    "explanation": "By default, Log Patterns cluster logs that have similar values in the `message` field and group the results by Status and Service. Other attributes can be chosen for clustering or grouping.",
+    "notes": [
+      "Wrong: the default clustering field is `message`, and the default grouping is Status and Service, not Host and Env.",
+      "Wrong: `status` is a default grouping, not the clustering field. Clustering is done on `message`.",
+      "Correct: the default clustering field is `message`, and results are grouped by Status and Service."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/patterns/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-002",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "A rare `TimeoutException` message appears a few times per hour among millions of `service:payments` logs, but it does not show up as a pattern when the Patterns view runs on the whole service. What should the engineer do?",
+    "options": [
+      "Narrow the search (for example add `status:error`), because pattern detection runs on a sample of 10,000 logs.",
+      "Widen the time range to the past 7 days, because the Patterns view only reads the last 15 minutes of logs.",
+      "Add Status to the pattern grouping, because error logs are hidden until Status is chosen as a group-by."
+    ],
+    "answer": 0,
+    "explanation": "Pattern detection is based on 10,000 log samples, so rare messages can be missed in a large result set. The docs say to refine the search to see patterns for a specific subset of logs.",
+    "notes": [
+      "Correct: patterns come from a 10,000-log sample. A narrower query makes rare messages more likely to be in that sample.",
+      "Wrong: the documented limit is the 10,000-log sample, not a 15-minute window. A wider range adds even more logs competing for the same sample.",
+      "Wrong: Status is already one of the default pattern groupings, so error logs are not hidden."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/patterns/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-003",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "easy",
+    "q": "A team finds a high-volume, unparsed log pattern in the Patterns view and wants to extract its variable parts into attributes. Where can they get a starting point for the parsing rule?",
+    "options": [
+      "From the Pattern Inspector tab, by saving the value distribution as a new facet",
+      "From the pattern side panel, which offers a kickstart for a grok parsing rule",
+      "From the Transactions view, which builds a grok rule from the shared transaction ID"
+    ],
+    "answer": 1,
+    "explanation": "Clicking a pattern opens its side panel. From there you can view sample logs, add the pattern as a search filter, and get a kickstart for a grok parsing rule for logs of that pattern.",
+    "notes": [
+      "Wrong: the Pattern Inspector shows how the variable values are distributed. It does not create facets or parsing rules.",
+      "Correct: the pattern side panel offers a grok parsing rule kickstart to extract structured information from that pattern.",
+      "Wrong: transactions group logs by a shared attribute. They do not generate parsing rules."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/patterns/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-004",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "During an incident, the Patterns view shows the pattern `Connection refused to host <*>`. The on-call engineer wants to know how many distinct hosts are involved, without leaving the pattern. What should they do?",
+    "options": [
+      "Switch to Group into Transactions and group by `host`.",
+      "Export the pattern list to CSV and count the hosts in a spreadsheet.",
+      "Click the variable part of the pattern and open the Pattern Inspector tab."
+    ],
+    "answer": 2,
+    "explanation": "In the Patterns list, the variable (aggregate) values of the message are highlighted in yellow. Clicking one opens the pattern side panel on the Pattern Inspector tab, which shows the distribution of the underlying values, such as how many hosts are involved.",
+    "notes": [
+      "Wrong: transactions follow a sequence of events that share an ID. They do not break down the values inside a pattern.",
+      "Wrong: exporting leaves the pattern and is not needed. The Pattern Inspector shows the value distribution directly.",
+      "Correct: the Pattern Inspector tab shows the distribution of the values behind the variable part of the pattern."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/patterns/#pattern-inspector",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-005",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "easy",
+    "q": "In Group into Transactions, how is the Duration measure that Datadog adds automatically calculated?",
+    "options": [
+      "The timestamp of the last log in the transaction minus the timestamp of the first log",
+      "The sum of the `@duration` attribute across all logs in the transaction",
+      "The time from the first log that matches the query until the moment the query is run"
+    ],
+    "answer": 0,
+    "explanation": "Duration is the difference between the timestamps of the last and first logs in the transaction. Datadog adds this measure automatically.",
+    "notes": [
+      "Correct: Duration = last log timestamp minus first log timestamp.",
+      "Wrong: Duration does not read any `@duration` attribute. It comes from the log timestamps.",
+      "Wrong: Duration ends at the last log of the transaction, not at the time the query runs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/transactions/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-006",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "A user queries `service:checkout status:error` and then groups into Transactions by `@requestId`. Which logs make up each resulting transaction?",
+    "options": [
+      "Only the `service:checkout` logs with `status:error` that also carry that same `@requestId`",
+      "All logs sharing that `@requestId`, including ones that do not match the query",
+      "Only logs that share that `@requestId` and were sent from the same host"
+    ],
+    "answer": 1,
+    "explanation": "Transaction aggregates include the logs that match the query and also every other log that belongs to the same transaction. This is how transactions differ from grouping by fields.",
+    "notes": [
+      "Wrong: that describes a normal group-by-field aggregate. Transactions also bring in logs that do not match the query.",
+      "Correct: a transaction includes every log in that transaction, not only the logs that match the query.",
+      "Wrong: transactions are built on the shared attribute (`@requestId`), across microservices, not per host."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/transactions/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-007",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "In a Transactions view grouped by `@session_id`, an analyst wants a column showing the last page each user visited, using the string facet `@http.url_details.path`. Which option and operation should they use?",
+    "options": [
+      "Get Statistics on the facet with `max`",
+      "Find Key Items on the facet with `latest`",
+      "Set Start and End Conditions with an end query of `*`"
+    ],
+    "answer": 1,
+    "explanation": "Find Key Items applies to string facets and offers `count unique`, `latest`, `earliest` and `most frequent`. `latest` returns the most recent value of the facet in each transaction.",
+    "notes": [
+      "Wrong: Get Statistics is for measures (numbers), not string facets.",
+      "Correct: Find Key Items with `latest` returns the most recent value of a string facet in each transaction.",
+      "Wrong: start and end conditions set where transactions begin and end. They do not add a column with a value."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/transactions/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-008",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "An analyst has a Timeseries showing `pc95` of `@duration`, grouped by `service`. They switch Group into to Patterns to read the messages, then switch back to Fields. What do they find?",
+    "options": [
+      "The `pc95` of `@duration` measure and the `service` group-by are still selected.",
+      "The query is reset to a count of all logs with no group-by, because Patterns has no measures.",
+      "The settings are kept only if the view was first saved as a Saved View."
+    ],
+    "answer": 0,
+    "explanation": "The fields you select to group, aggregate, and measure your logs are saved as you switch between different visualizations and aggregation types. Switching to Patterns and back does not reset them.",
+    "notes": [
+      "Correct: group-by and measure selections are kept when switching between aggregation types.",
+      "Wrong: switching aggregation types does not reset the Fields settings.",
+      "Wrong: no Saved View is needed. The selections are kept automatically while switching."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-009",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "hard",
+    "q": "Logs for one long-lived `@user_id` include many separate checkout attempts. Each attempt starts with a log matching `@evt.name:cart_created` and ends with a log matching `@evt.name:payment_completed`. How can each attempt show up as its own transaction?",
+    "options": [
+      "Group into Patterns, cluster on `@evt.name`, and add `@user_id` as a grouping attribute.",
+      "Group into Fields by `@user_id` and then `@evt.name`, with a top 2 limit on the second group-by.",
+      "Group into Transactions by `@user_id`, with those two queries as start and end conditions."
+    ],
+    "answer": 2,
+    "explanation": "Set Start And End Conditions lets you define transaction boundaries with separate queries for the start and the end. The transaction group side panel then lists the transactions in that group in order, with statistics for each one and summary statistics for the group.",
+    "notes": [
+      "Wrong: patterns cluster similar message text. They do not split a sequence of events into attempts.",
+      "Wrong: a field group-by counts logs per value. It does not build separate attempts with a start and an end.",
+      "Correct: start and end conditions split the logs for one `@user_id` into one transaction per checkout attempt."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/transactions/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-010",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "easy",
+    "q": "Which two measures does Datadog add automatically to every transaction in the Transactions aggregation?",
+    "options": [
+      "Log Count and Unique Count of IDs",
+      "Duration and Error Rate",
+      "Duration and Maximum Severity"
+    ],
+    "answer": 2,
+    "explanation": "Duration (time from the first log to the last log) and Maximum Severity (highest status among the transaction's logs) are added automatically. Other values come from Find Key Items or Get Statistics.",
+    "notes": [
+      "Wrong: these are general Fields aggregations, not the measures added to transactions.",
+      "Wrong: Duration is added automatically, but Error Rate is not. The second one is Maximum Severity.",
+      "Correct: Duration and Maximum Severity are added to every transaction automatically."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/transactions/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-011",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "With default settings, how are results ordered in the list view for Patterns and for Transactions?",
+    "options": [
+      "Both are ordered by the timestamp of their most recent log, with the newest group first.",
+      "Patterns by matching-log count, descending; transactions by transaction ID, A to Z.",
+      "Patterns by pattern text, A to Z; transactions by Duration, with the longest first."
+    ],
+    "answer": 1,
+    "explanation": "List aggregates are sorted by the number of matching events per pattern (descending by default) for patterns. For transactions, they are sorted by transaction ID in lexicographic order (ascending by default).",
+    "notes": [
+      "Wrong: newest first is the default sort for the list of individual logs, not for lists of aggregates.",
+      "Correct: patterns sort by count, descending. Transactions sort by transaction ID, ascending.",
+      "Wrong: patterns are not sorted by their text, and transactions are not sorted by duration by default."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#list-aggregates-of-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-012",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "A team drops 90% of `service:web` debug logs with an index exclusion filter. From now on, they want accurate counts over time of all those debug logs, including the excluded ones, without paying to index them. Which approach does Datadog suggest?",
+    "options": [
+      "Generate a log-based metric from those logs.",
+      "Group them into Patterns, which also samples non-indexed logs.",
+      "Add a facet on `@level`, which backfills counts for excluded logs."
+    ],
+    "answer": 0,
+    "explanation": "Aggregations in Log Analytics only work on indexed logs. For non-indexed logs, Datadog suggests temporarily disabling exclusion filters, generating log-based metrics, or rehydrating from archives.",
+    "notes": [
+      "Correct: log-based metrics are one of the documented ways to aggregate logs that are not indexed.",
+      "Wrong: Patterns is an aggregation in Log Analytics, and aggregations only use indexed logs.",
+      "Wrong: facets apply to indexed logs, and a new facet only fills in for logs ingested after it is created."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-013",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "A Top List groups error logs by the `team` tag. Some logs carry both `team:sre` and `team:payments`. The bars add up to more than the total number of error logs. Why?",
+    "options": [
+      "The Top List applies a default `sum` rollup that counts overlapping time buckets twice.",
+      "Logs without a `team` tag are spread evenly across the displayed groups.",
+      "A log with several values for the group-by field is counted once in each matching group."
+    ],
+    "answer": 2,
+    "explanation": "Individual logs with multiple values belong to that many aggregates. A log with both `team:sre` and `team:payments` is counted once in each group.",
+    "notes": [
+      "Wrong: rollup is about how time is bucketed. It does not explain one log being counted in several tag groups.",
+      "Wrong: logs without the tag are not shared out across groups. The extra count comes from logs that have several values.",
+      "Correct: a log with several `team` values is counted in each of those groups, so the group totals add up to more than the log total."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#group-logs-by-fields",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-014",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "easy",
+    "q": "A product manager wants a daily count of distinct users from login logs that have a `@user.email` attribute. What should be set up in the Log Explorer?",
+    "options": [
+      "A measure on `@user.email`, aggregated with `sum`",
+      "A facet on `@user.email`, aggregated with `count unique of`",
+      "A facet on `@user.email`, aggregated with `count` and grouped by `host`"
+    ],
+    "answer": 1,
+    "explanation": "Qualitative facets (dimensions) can count unique values. The docs use a facet on `user.email` to count how many users connect every day. In the UI, the aggregation is shown as `count unique of`.",
+    "notes": [
+      "Wrong: email is a string. Measures are numeric, and `sum` would not count distinct users.",
+      "Correct: a facet on `@user.email` with `count unique of` gives the number of distinct users.",
+      "Wrong: `count` counts log lines, not distinct users, and grouping by host does not give unique users."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#dimensions",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-015",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "In the Log Explorer, the numeric attribute `@http.response_time_ms` appears in the group-by dropdown, but the user cannot select it for `avg` or `pc95`. What is the most likely cause?",
+    "options": [
+      "It was created as a facet (dimension), not as a measure.",
+      "It is numeric, so it must be remapped to a string first.",
+      "Percentiles only work after a log-based metric is created."
+    ],
+    "answer": 0,
+    "explanation": "Statistical operations such as `avg` and percentiles run on measures, which are quantitative facets. A dimension is for grouping, filtering and unique counts. Creating a measure for the attribute enables these aggregations.",
+    "notes": [
+      "Correct: aggregating numeric values needs a measure. A dimension facet only gives grouping and unique counts.",
+      "Wrong: changing it to a string would make numeric aggregation impossible. Measures need integer or double values.",
+      "Wrong: Log Explorer analytics compute percentiles on measures directly. No log-based metric is needed."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#measures",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-016",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "easy",
+    "q": "In the log side panel, a user clicks a field to create a facet from it. Which statement is true?",
+    "options": [
+      "Every field offers both facet creation and measure creation, whatever its value type.",
+      "Measure creation is only offered for tags, never for attributes in the log.",
+      "A string field offers only a facet; a numerical field offers a facet or a measure."
+    ],
+    "answer": 2,
+    "explanation": "When you create a facet from the log side panel, a string-valued field only offers facet creation. A numerical field offers both facet and measure creation.",
+    "notes": [
+      "Wrong: string fields cannot become measures, because measures are numeric.",
+      "Wrong: facets and measures can be created from attributes as well as tags. The value type decides what is offered.",
+      "Correct: string fields offer only a facet. Numerical fields offer both a facet and a measure."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#log-side-panel",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-017",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "hard",
+    "q": "Yesterday's indexed logs contain numeric `@client_latency` and `@server_latency` attributes, with no facets on them. An engineer wants to chart the average gap between the two for those logs right now, without changing pipelines. What works?",
+    "options": [
+      "Create a measure on each attribute, because new facets backfill the previous 24 hours.",
+      "Create a calculated field such as `#gap = @client_latency - @server_latency`, then aggregate on it.",
+      "Add an Arithmetic processor to the pipeline, because it reprocesses logs that are already indexed."
+    ],
+    "answer": 1,
+    "explanation": "Calculated fields are computed at query time, so they work on logs that are already indexed. They can be used in aggregations with the `#` prefix. New facets and pipeline changes only apply to logs ingested after the change.",
+    "notes": [
+      "Wrong: a new facet only fills in for new logs. It does not backfill earlier logs.",
+      "Correct: a Formula calculated field works on already indexed logs, and you can group or aggregate on `#gap`.",
+      "Wrong: pipeline changes only affect logs ingested after the update."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/calculated_fields/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-018",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "Query A counts error logs grouped by `service`. Query B counts all logs grouped by `env`. The formula `A / B` does not give an error ratio per service. What must change?",
+    "options": [
+      "Group both queries by the same field, such as `service`.",
+      "Apply a Timeshift function to query B before dividing.",
+      "Switch to a Top List, which allows formulas across any grouping."
+    ],
+    "answer": 0,
+    "explanation": "To apply a formula across several queries, all the queries must be grouped by the same field.",
+    "notes": [
+      "Correct: formulas need every query to share the same group-by, for example both grouped by `service`.",
+      "Wrong: Timeshift moves a query in time. It does not fix mismatched groupings.",
+      "Wrong: multiple queries are supported in Timeseries and Table, and the same-grouping rule still applies."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#formulas",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-019",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "easy",
+    "q": "When grouping logs into Fields, which Log Explorer visualization supports only one group-by dimension?",
+    "options": [
+      "Timeseries",
+      "Top List",
+      "Pie Chart"
+    ],
+    "answer": 1,
+    "explanation": "The Fields aggregation supports one dimension for the Top List visualization. Timeseries, Table, Tree Map and Pie Chart accept several dimensions.",
+    "notes": [
+      "Wrong: Timeseries can split by several facets.",
+      "Correct: Top List is limited to one dimension.",
+      "Wrong: Pie Chart supports several dimensions in the Fields aggregation."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#visualize-log-groups",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-020",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "hard",
+    "q": "A table groups error logs by `@region` (top 5) and then by `version` (top 3), ranked by count. Which versions does it show?",
+    "options": [
+      "The 3 most common versions overall, repeated under each of the 5 regions",
+      "The 3 most common versions overall, then the 5 regions where each one appears most",
+      "For each of the top 5 regions, the 3 most common versions inside that region"
+    ],
+    "answer": 2,
+    "explanation": "With several dimensions, the top values are chosen for the first dimension first. The top values of the second dimension are then chosen within each of those top values.",
+    "notes": [
+      "Wrong: second-level top values are picked inside each region, not across all logs.",
+      "Wrong: this reverses the order. The first dimension (`@region`) is ranked first.",
+      "Correct: the top 3 versions are computed separately inside each of the top 5 regions."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#visualize-log-groups",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-021",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "hard",
+    "q": "In a nested table grouped by availability zone and then by `version`, the version rows listed under one zone do not add up to that zone's subtotal. What explains this?",
+    "options": [
+      "Only the top versions are shown, and logs with no version get no sub-group.",
+      "Nested tables are computed from a 10,000-log sample per zone, like pattern detection.",
+      "Subtotals include only logs from the default index, while rows include every index."
+    ],
+    "answer": 0,
+    "explanation": "The subtotal can differ from the sum of the rows shown, because only a subset of the group (top or bottom) is displayed. Events with a null or empty value for a dimension are not shown as a sub-group.",
+    "notes": [
+      "Correct: rows outside the top values, and logs with an empty version, still count in the subtotal but have no row of their own.",
+      "Wrong: the 10,000-log sample applies to pattern detection, not to nested tables.",
+      "Wrong: the docs give no index split between subtotals and rows. The gap comes from showing only the top subset and hiding empty values."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#nested-tables",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-022",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "An engineer has a formula that shows the share of error logs among all logs. They want to compare it, on the same graph, with the same period one week earlier. What should they do?",
+    "options": [
+      "Duplicate the query and set the copy's time picker to last week.",
+      "Click the Σ icon on the formula and apply Timeshift, week before.",
+      "Apply a Rollup function with an interval of 604800 seconds."
+    ],
+    "answer": 1,
+    "explanation": "Functions can be applied to a formula with the Σ icon. The docs show a Timeshift (week before) on the error-ratio formula to compare current data with the previous week.",
+    "notes": [
+      "Wrong: the documented way to compare a query or formula with an earlier period is the Timeshift function, added through the Σ icon.",
+      "Correct: Σ, then Timeshift, then week before, overlays last week's values on the formula.",
+      "Wrong: Rollup changes the size of the time buckets. A 604800 s bucket gives weekly points, not a comparison with last week."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#formulas",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-023",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "A log count timeseries has the function `.rollup(sum, 300)` applied. What does it do?",
+    "options": [
+      "It keeps the top 300 groups and adds the rest into one series.",
+      "It averages the counts over 300-minute buckets.",
+      "It sums the data points into 300-second (5-minute) buckets."
+    ],
+    "answer": 2,
+    "explanation": "`.rollup(<AGGREGATOR>, <INTERVAL>)` sets how points are aggregated in time. The aggregator here is `sum`, and the interval is in seconds, so 300 means 5-minute buckets.",
+    "notes": [
+      "Wrong: rollup controls time aggregation. It does not limit the number of groups.",
+      "Wrong: the aggregator is `sum`, not `avg`, and the interval is in seconds, not minutes.",
+      "Correct: `sum` over 300-second intervals means one point every 5 minutes."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/functions/rollup/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-024",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "hard",
+    "q": "A Table groups error logs by `service` (top 10) and shows two measures: first `count`, then `avg` of `@duration`. Which services appear as rows?",
+    "options": [
+      "The 10 services with the most error logs, with the average duration shown for each of them",
+      "The 10 services with the highest average duration, with the count of error logs shown for each",
+      "The top 10 services for each measure, so up to 20 rows when the two lists differ"
+    ],
+    "answer": 0,
+    "explanation": "When a table has several measures, the top or bottom list is determined by the first measure. The other measures are only displayed for the rows that appear.",
+    "notes": [
+      "Correct: the first measure (`count`) decides the top 10. The second measure is shown for those rows.",
+      "Wrong: this would rank by the second measure. Ranking uses the first measure in the list.",
+      "Wrong: there is one ranking, based on the first measure, not one per measure."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#nested-tables",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-aggr-025",
+    "topic": "Log Analysis",
+    "subtopic": "Aggregations",
+    "difficulty": "medium",
+    "q": "A Timeseries has two queries, A and B. The user wants clicks in the facet panel, such as `env:prod`, to change query B only. What should they set?",
+    "options": [
+      "The Timeline for dropdown, set to B",
+      "The Use facets with dropdown, set to B",
+      "Click the letter A to deselect query A"
+    ],
+    "answer": 1,
+    "explanation": "To scope one query, select it in the Use facets with dropdown and then click values in the facet panel. Only the selected query is updated.",
+    "notes": [
+      "Wrong: Timeline for only chooses which query's timeline is shown.",
+      "Correct: Use facets with sends facet panel clicks to the selected query only.",
+      "Wrong: clicking a query letter only shows or hides that query in the chart. It does not change where facet filters go."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#multiple-queries",
+    "verified": "2026-11"
+  }
+]

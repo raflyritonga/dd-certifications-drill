@@ -1,0 +1,527 @@
+[
+  {
+    "id": "ap-dash-001",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "easy",
+    "q": "An engineer wants the Latency graph from the `checkout` service page on the team's on-call dashboard. Which of these is a documented way to do it?",
+    "options": [
+      "Hover over the graph, press `Ctrl`/`Cmd` + `C`, then press `Ctrl`/`Cmd` + `V` on the dashboard.",
+      "Open the graph's three-dot menu and choose Clone, which sends the graph to the dashboard list.",
+      "Open the graph in full screen and choose Download as CSV, then import the file into the dashboard."
+    ],
+    "answer": 0,
+    "explanation": "Widgets on the APM Service and Resource pages can be copied with `Ctrl`/`Cmd` + `C` (or share icon > Copy) and pasted with `Ctrl`/`Cmd` + `V`. On a dashboard the pasted widget lands under the mouse cursor.",
+    "notes": [
+      "Correct: copy works on service and resource page graphs, and pasting on a dashboard adds a new widget under the cursor.",
+      "Wrong: Clone is a dashboard widget menu option that creates an adjacent copy on the same dashboard; it does not send a graph anywhere.",
+      "Wrong: CSV export downloads the data behind a widget; it is not a way to recreate the graph on a dashboard."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/widgets/configuration/#copy-and-paste-widgets",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-002",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "An engineer copies the Errors graph from a service page and pastes it with `Ctrl`/`Cmd` + `V` into an incident notebook. Where does the graph appear?",
+    "options": [
+      "It replaces the notebook cell that is currently selected.",
+      "It is inserted at the position of the mouse cursor.",
+      "It is added as a new cell at the end of the notebook."
+    ],
+    "answer": 2,
+    "explanation": "Pasting a copied widget into a notebook adds a new cell at the end of the notebook. The \"under the mouse cursor\" behavior applies to dashboards.",
+    "notes": [
+      "Wrong: pasting never overwrites an existing cell.",
+      "Wrong: placement under the mouse cursor is how pasting works on dashboards, not notebooks.",
+      "Correct: in notebooks, a pasted widget becomes a new cell at the end."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/widgets/configuration/#copy-and-paste-widgets",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-003",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "hard",
+    "q": "A team adds a Service Summary widget for `web-store` to a dashboard. In the configuration, the Resource option is not available, although Hits, Errors and Latency are. What is the likely reason?",
+    "options": [
+      "Resource lists are only available when the service is a web service.",
+      "The Resource option is only offered when the large widget size is selected.",
+      "Resource lists can only be enabled through the Dashboards API, not the UI."
+    ],
+    "answer": 1,
+    "explanation": "The Service Summary widget shows a chosen service's service page graphs. Its information options are Hits, Errors, Latency, Breakdown, Distribution and Resource, and Resource requires selecting the large widget size.",
+    "notes": [
+      "Wrong: the widget docs tie the Resource option to widget size, not to service type.",
+      "Correct: you must select the large widget size to see the Resource option.",
+      "Wrong: the widget is configured in the UI; the API is an alternative, not a requirement."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/widgets/service_summary/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-004",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "During a long incident, an engineer copies 25 graphs from service and resource pages into the Datadog Clipboard. What happens?",
+    "options": [
+      "After 20 graphs, new copies are blocked until the engineer clicks Remove All.",
+      "The Clipboard keeps the 20 most recent signals and drops the oldest automatically.",
+      "All 25 graphs are kept, because the Clipboard holds up to 50 signals per user."
+    ],
+    "answer": 1,
+    "explanation": "The Clipboard holds a maximum of 20 signals. When more are added, the oldest signals (furthest to the left) are removed automatically.",
+    "notes": [
+      "Wrong: copying is not blocked; older signals are dropped instead.",
+      "Correct: the limit is 20 signals and the oldest are removed automatically.",
+      "Wrong: the limit is 20, not 50."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/guide/datadog_clipboard/#managing-clips",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-005",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "easy",
+    "q": "An SRE sees a spike in the Latency graph of a service page and wants to know whether other metrics, such as integration or custom metrics, behaved unusually at the same moment. What should they do?",
+    "options": [
+      "Hover the spike and click Investigate With Bits AI.",
+      "Click the graph and choose View related traces.",
+      "Click the graph and choose Find correlated metrics."
+    ],
+    "answer": 2,
+    "explanation": "Metric Correlations searches other metrics (APM, integrations, dashboards, custom metrics) for irregular behavior at the same time. Start it by clicking a graph and selecting Find correlated metrics, or from the Correlations tab of a full-screen graph.",
+    "notes": [
+      "Wrong: Investigate With Bits AI analyzes tag divergence and bottlenecks across the affected traces, not other metrics.",
+      "Wrong: related traces show request samples, not other metrics that changed at the same time.",
+      "Correct: Find correlated metrics looks for other metrics with irregular behavior in the same time window."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/graph_insights/correlations/#find-correlated-metrics",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-006",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "hard",
+    "q": "An engineer customizes a Metric Correlations search from a full-screen graph. Which source category is NOT selected by default and needs at least one namespace or metric chosen?",
+    "options": [
+      "Custom metrics",
+      "Integrations",
+      "APM services"
+    ],
+    "answer": 0,
+    "explanation": "Correlations can search APM services, integrations, dashboards and custom metrics. Custom metrics is the only category not selected by default; you choose metric namespaces or single metrics for it.",
+    "notes": [
+      "Correct: custom metrics must be selected explicitly, with at least one namespace or metric.",
+      "Wrong: integrations are selected by default.",
+      "Wrong: APM services are selected by default."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/graph_insights/correlations/#customize-your-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-007",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "A service has a low trace ingestion sampling rate. Which out-of-the-box service page graph is built on sampled trace data rather than on unsampled data sources?",
+    "options": [
+      "Requests and Errors",
+      "Avg Time per Request",
+      "Latency"
+    ],
+    "answer": 1,
+    "explanation": "The Avg Time per Request graph, shown for services that call downstream services, breaks down the average execution time spent per request in each downstream service. It is built on sampled trace data, unlike the other top graphs, which use unsampled data sources.",
+    "notes": [
+      "Wrong: Requests and Errors uses unsampled data sources (trace metrics on 100% of traffic).",
+      "Correct: the downstream time breakdown is the one top graph built on sampled trace data.",
+      "Wrong: the Latency graph uses unsampled data sources, like Requests and Errors."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#avg-time-per-request",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-008",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "A web service has an Apdex threshold T of 0.5 seconds. A request returns an error after 0.3 seconds. How does Apdex classify this request?",
+    "options": [
+      "Satisfied, because its response time is below T",
+      "Tolerated, because errors count as half a satisfied request",
+      "Frustrated, because it returned an error"
+    ],
+    "answer": 2,
+    "explanation": "Apdex splits requests by the threshold T: Satisfied below T, Tolerated from T up to 4T, and Frustrated above 4T or when the request returns an error. An error makes the request Frustrated regardless of its response time.",
+    "notes": [
+      "Wrong: the response time is below T, but a request that returns an error is Frustrated.",
+      "Wrong: Tolerated means a response time from T up to 4T; it says nothing about errors.",
+      "Correct: any request that returns an error counts as Frustrated."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/configure_an_apdex_for_your_traces_with_datadog_apm/#definition",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-009",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "easy",
+    "q": "A team wants a dashboard widget that shows which services call `payments` and which services `payments` calls. Which widget fits?",
+    "options": [
+      "Topology Map widget with the Service Map data source",
+      "Service Summary widget for `payments` with the Breakdown option",
+      "Host Map widget filtered on `service:payments` and grouped by service"
+    ],
+    "answer": 0,
+    "explanation": "The Topology Map widget with the Service Map data source maps the selected service: callers point to it, and it points to each service it calls.",
+    "notes": [
+      "Correct: Topology Map (Service Map source) shows upstream and downstream relationships of the mapped service.",
+      "Wrong: Service Summary shows the service page graphs (hits, errors, latency...), not dependencies.",
+      "Wrong: Host Map shows infrastructure hosts, not service-to-service calls."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/widgets/topology_map/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-010",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "easy",
+    "q": "A Flask service's primary operation is `flask.request`. Which metric counts its requests?",
+    "options": [
+      "`trace.flask.request.count`",
+      "`trace.flask.request.hits`",
+      "`apm.flask.request.hits`"
+    ],
+    "answer": 1,
+    "explanation": "Trace metrics follow `trace.<SPAN_NAME>.<METRIC_SUFFIX>`, where the span name is the operation name. The request count suffix is `hits`.",
+    "notes": [
+      "Wrong: the request-count suffix is `hits`, not `count`.",
+      "Correct: `trace.<SPAN_NAME>.hits` counts spans with that name.",
+      "Wrong: trace metrics use the `trace.` prefix, not `apm.`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/metrics_namespace/#hits",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-011",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "Developers add a span tag `customer_tier` to every request span. They then try to group `trace.rack.request.hits` by `customer_tier` on a dashboard, but the tag is not offered. Why?",
+    "options": [
+      "Span tags only reach trace metrics after the Agent is restarted.",
+      "Span tags are only added to `.errors` metrics, not to `.hits`.",
+      "Other span tags are not available as tags on trace metrics."
+    ],
+    "answer": 2,
+    "explanation": "Trace metrics carry a fixed tag set: `env`, `service`, `version`, `resource`, HTTP and gRPC status tags, Agent host tags and additional primary tags. Other tags set on spans are not available on trace metrics.",
+    "notes": [
+      "Wrong: no restart makes custom span tags appear on trace metrics.",
+      "Wrong: `.hits` and `.errors` use the same kind of fixed tag set; neither carries custom span tags.",
+      "Correct: custom span tags are not trace metric tags."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/metrics_namespace/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-012",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "An engineer wants to graph the number of all requests to a web service, split by `http.status_class` (2xx, 4xx, 5xx). Which trace metric is built for this?",
+    "options": [
+      "`trace.<SPAN_NAME>.hits.by_http_status`",
+      "`trace.<SPAN_NAME>.errors.by_http_status`",
+      "`trace.<SPAN_NAME>.duration.by_http_status`"
+    ],
+    "answer": 0,
+    "explanation": "`trace.<SPAN_NAME>.hits.by_http_status` is a COUNT of hits broken down by HTTP status, tagged with `http.status_class` and `http.status_code`. It exists for HTTP/web services when HTTP metadata exists.",
+    "notes": [
+      "Correct: it counts all hits, broken down by HTTP status.",
+      "Wrong: `.errors.by_http_status` counts only errors, not all requests.",
+      "Wrong: `.duration.by_http_status` is a legacy GAUGE of time spent per HTTP status, not a request count."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/metrics_namespace/#hits",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-013",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "hard",
+    "q": "An old dashboard graphs `trace.web.request.duration`. A developer changes its aggregator to try to show p95 latency, but it does not work. What is the documented fix?",
+    "options": [
+      "Switch to `trace.web.request.duration.by_http_status`, which stores percentiles.",
+      "Query the `trace.web.request` distribution, e.g. `p95:trace.web.request{*}`.",
+      "Enable percentile aggregations on `trace.web.request.duration` in the Metrics Catalog."
+    ],
+    "answer": 1,
+    "explanation": "The legacy `.duration` metric is a GAUGE kept for backward compatibility and does not support percentile aggregations. Datadog recommends the `trace.<SPAN_NAME>` distribution metric for all latency use cases.",
+    "notes": [
+      "Wrong: `.duration.by_http_status` is also a legacy GAUGE without percentiles.",
+      "Correct: percentiles come from the `trace.<SPAN_NAME>` distribution metric.",
+      "Wrong: `.duration` is a gauge, so there is no distribution to enable percentiles on."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/metrics_namespace/#duration-legacy",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-014",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "easy",
+    "q": "How long are APM trace metrics such as `trace.<SPAN_NAME>.hits` retained?",
+    "options": [
+      "15 days, the same as indexed spans",
+      "15 minutes, the same as Live Search",
+      "15 months, like any Datadog metric"
+    ],
+    "answer": 2,
+    "explanation": "Trace metrics are collected automatically for services and resources and are retained for 15 months.",
+    "notes": [
+      "Wrong: 15 days is the retention of indexed spans, not metrics.",
+      "Wrong: 15 minutes is the Live Search window for ingested spans.",
+      "Correct: trace metrics keep the standard 15-month metric retention."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/ddsketch_trace_metrics/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-015",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "hard",
+    "q": "A Terraform monitor uses `avg:trace.http.request.duration.by.resource_service.100p{service:foo}`. What is the equivalent query on the DDSketch-based distribution metric?",
+    "options": [
+      "`max:trace.http.request{service:foo}`",
+      "`p100:trace.http.request{service:foo}`",
+      "`avg:trace.http.request.max{service:foo}`"
+    ],
+    "answer": 0,
+    "explanation": "With the `trace.<SPAN_NAME>` distribution metric, percentiles use `pXX:` aggregators, and the old p100 queries map to the `max:` aggregator.",
+    "notes": [
+      "Correct: Datadog's migration example maps the 100p query to `max:trace.http.request{...}`.",
+      "Wrong: the docs map p100 to `max:`, not to a `p100:` aggregator.",
+      "Wrong: there is no `.max` suffix metric; the maximum comes from the aggregator on the distribution."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/ddsketch_trace_metrics/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-016",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "hard",
+    "q": "A service is instrumented with OpenTelemetry and traces go through an OpenTelemetry Collector that uses `tail_sampling`. The request counts in APM look too low. What does Datadog recommend?",
+    "options": [
+      "Set `DD_TRACE_SAMPLE_RATE=1` on the Collector so trace metrics ignore sampling.",
+      "Place the `span_metrics` connector before any sampling processor such as `tail_sampling`.",
+      "Place the `span_metrics` connector after `tail_sampling` so that only kept traces are counted."
+    ],
+    "answer": 1,
+    "explanation": "When sampling happens before metrics are computed, APM metrics reflect only sampled data. To calculate them from all traffic when sampling in the Collector, place the `span_metrics` connector before any sampling processor such as `tail_sampling` (the Datadog Connector achieves the same).",
+    "notes": [
+      "Wrong: `DD_TRACE_SAMPLE_RATE` is a Datadog SDK setting, not a Collector setting for metrics.",
+      "Correct: compute metrics before the sampler so they see 100% of spans.",
+      "Wrong: after the sampler, metrics only see the kept spans, which is the problem."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/metrics_namespace/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-017",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "easy",
+    "q": "After a release, an engineer wants to compare the current latency distribution of a service with the previous day and the previous week, from the service page. Which Latency graph dropdown option should they pick?",
+    "options": [
+      "Latency by Version",
+      "Latency Distribution",
+      "Historical Latency"
+    ],
+    "answer": 2,
+    "explanation": "In the Latency graph dropdown, Historical Latency compares the current latency distribution with the previous day and week.",
+    "notes": [
+      "Wrong: Latency by Version splits latency per service version, not per past period.",
+      "Wrong: Latency Distribution shows the distribution over the selected time frame only.",
+      "Correct: Historical Latency compares with the previous day and week."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#latency",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-018",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "easy",
+    "q": "On the resource page of the `GET /cart` endpoint, the Frontend Impact panel lists the RUM views that call it. What data are the panel's metrics built on?",
+    "options": [
+      "Indexed trace data from the past 1 hour",
+      "Unsampled trace metrics for the selected time frame",
+      "RUM view events for the selected time frame"
+    ],
+    "answer": 0,
+    "explanation": "The Frontend Impact panel (available with RUM, for resources of web services) is built on indexed trace data from the past 1 hour, while the Requests, Errors and Latency graphs use unsampled data sources.",
+    "notes": [
+      "Correct: the docs state the frontend impact metrics come from indexed trace data from the past 1 hour.",
+      "Wrong: unsampled data sources feed the Requests, Errors and Latency graphs, not the Frontend Impact panel.",
+      "Wrong: the panel needs RUM to identify views, but its metrics are computed from indexed traces over a fixed 1-hour window."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/resource_page/#frontend-impact",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-019",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "The Resources list on a service page shows Avg latency but no p99 latency column. How does an engineer add it?",
+    "options": [
+      "Enable percentile aggregations for the service's trace metric in the Metrics Catalog.",
+      "Use the cog icon (Change Columns) on the list and switch on `p99`.",
+      "Switch the Latency graph dropdown to Latency Distribution."
+    ],
+    "answer": 1,
+    "explanation": "The Resources list columns are configurable: Requests, Requests per second, Total time, Avg/p75/p90/p95/p99/Max latency, Errors and Error Rate. If p99 is hidden, open Change Columns from the cog icon and switch it on.",
+    "notes": [
+      "Wrong: trace latency percentiles already come from the distribution metric; the column is just hidden.",
+      "Correct: the column picker controls which metric columns the list shows.",
+      "Wrong: the Latency graph dropdown changes that graph, not the Resources list columns."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/slowest_request_daily/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-020",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "A `GET /orders` resource seems to make many database calls per request. In the resource page's span summary, which column shows how many times the `postgres.query` span appears, on average, in traces that include this resource?",
+    "options": [
+      "`% of Traces`",
+      "`Avg % Exec Time`",
+      "`Avg Spans/trace`"
+    ],
+    "answer": 2,
+    "explanation": "`Avg Spans/trace` is the average number of occurrences of a span in traces that include the resource, counting traces where the span appears at least once.",
+    "notes": [
+      "Wrong: `% of Traces` is the share of traces containing the span at least once, not how many times it appears.",
+      "Wrong: `Avg % Exec Time` is the share of execution time during which the span was active.",
+      "Correct: `Avg Spans/trace` gives the average count of that span per trace."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/resource_page/#span-summary",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-021",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "On a resource page, the Dependency Map is not shown for a resource created by an internal (non-entry) span. Why?",
+    "options": [
+      "The dependency map is only available for service-entry span resources.",
+      "The dependency map is only available when RUM is connected to APM for that service.",
+      "The dependency map needs 100% trace ingestion for the service."
+    ],
+    "answer": 0,
+    "explanation": "The resource Dependency Map is only available for service-entry span resources. It is built from a sample of ingested spans, and request rates are upscaled using the applied sampling rates.",
+    "notes": [
+      "Correct: only service-entry span resources get a dependency map.",
+      "Wrong: RUM is required for the Frontend Impact panel, not for the dependency map.",
+      "Wrong: the map works on sampled spans and upscales rates, so 100% ingestion is not needed."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/resource_page/#dependency-map",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-022",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "A legacy service was shut down and no longer sends traces. How long until its node and connections age out of the Service Map?",
+    "options": [
+      "15 days",
+      "30 days",
+      "15 months"
+    ],
+    "answer": 1,
+    "explanation": "Service Map nodes and connections automatically age out if no corresponding traces are seen for 30 days.",
+    "notes": [
+      "Wrong: 15 days is the indexed span retention, not the Service Map age-out.",
+      "Correct: nodes age out after 30 days without traces.",
+      "Wrong: 15 months is the trace metric retention."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/services_map/#nodes-and-edges",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-023",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "The `web-store` service emits both `rack.request` and `sinatra.request` entry spans. Its service page shows statistics for `rack.request`, but the team wants `sinatra.request`. What should an admin do?",
+    "options": [
+      "Set `DD_SERVICE_PRIMARY_OPERATION=sinatra.request` in the application environment.",
+      "Select `sinatra.request` from the operation dropdown on the Resources list, which saves it for everyone.",
+      "In APM settings, open the Primary Operation Name tab, edit the service, and use Set Manually."
+    ],
+    "answer": 2,
+    "explanation": "Datadog automatically picks the operation with the highest request throughput as the primary operation. An admin can override it in APM settings > Primary Operation Name > Set Manually.",
+    "notes": [
+      "Wrong: there is no such environment variable; the primary operation is set in the APM settings UI.",
+      "Wrong: the dropdown shows secondary operations, which are not used for service-level statistics.",
+      "Correct: admins set the primary operation manually from the Primary Operation Name tab."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/configuring-primary-operation/#configuration",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-024",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "A team writes custom spans named after each request URL (`/user/41`, `/user/42`...). Their resources do not group under one primary operation. What does Datadog recommend?",
+    "options": [
+      "Use a static span name such as `web.request` and put the dynamic value in the resource.",
+      "Keep the dynamic span names but set the same `service` tag on every span so they group together.",
+      "Put the dynamic value in the span name and set the resource to `web.request`."
+    ],
+    "answer": 0,
+    "explanation": "For manual instrumentation, set the span name statically so resources share the same primary operation (for example `web.request`). If the name would be dynamic, set it as the resource (for example `/user/profile`).",
+    "notes": [
+      "Correct: static span name, dynamic resource name.",
+      "Wrong: sharing the `service` tag does not group spans whose names keep changing.",
+      "Wrong: this reverses the roles; the span name should be static and the resource dynamic."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/configuring-primary-operation/#manual-instrumentation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dash-025",
+    "topic": "Insight Discovery",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "medium",
+    "q": "A Datadog admin opens the service page of `invoice-worker`, a queue consumer, and finds no Apdex option in the Latency graph dropdown. What explains this?",
+    "options": [
+      "Only users with the Datadog Admin role can see the Apdex option.",
+      "The Apdex option is only available for web services.",
+      "Apdex must first be enabled in the Catalog configuration menu."
+    ],
+    "answer": 1,
+    "explanation": "Apdex is based on web response times, and the Apdex option in the Latency graph dropdown is only available for web services. Admin rights are needed for the pencil icon that sets the threshold, not for the option itself.",
+    "notes": [
+      "Wrong: the user is already an admin, and admin rights are needed for the pencil icon, not the Apdex view.",
+      "Correct: the Apdex option exists only for web services.",
+      "Wrong: the Catalog configuration menu only adds an Apdex column to the Catalog."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/configure_an_apdex_for_your_traces_with_datadog_apm/#set-your-apdex-for-your-traces",
+    "verified": "2026-11"
+  }
+]

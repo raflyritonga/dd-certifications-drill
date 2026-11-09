@@ -1,4 +1,4 @@
-<title>Fundamentals Drill</title>
+<title>Datadog Certifications Drill</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -10,7 +10,7 @@
   --surface: #FFFFFF;
   --subtle: #EFF1F4;
   --ink: #1A222C;
-  --muted: #637081;
+  --muted: #5B6676;
   --line: #E1E5EA;
   --accent: #0F6B8A;
   --accent-soft: #E3F0F5;
@@ -60,6 +60,12 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 .wrap { max-width: 980px; margin: 0 auto; padding-inline: 20px; padding-block: 24px 80px; }
 body[data-shell="focus"] .browse-only { display: none; }
 body[data-shell="focus"] .wrap { padding-top: 0; }
+
+/* track switcher: one app, one space per certification */
+.tracks { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 18px; padding: 3px; background: var(--subtle); border-radius: 9px; width: fit-content; max-width: 100%; }
+.tracks button { border: 0; background: transparent; padding: 5px 12px; border-radius: 7px; font-size: 0.85rem; color: var(--muted); font-weight: 500; }
+.tracks button:hover { color: var(--ink); }
+.tracks button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
 
 /* browse header */
 .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-bottom: 18px; }
@@ -134,11 +140,11 @@ body[data-shell="focus"] .wrap { padding-top: 0; }
 .setup { display: grid; gap: 22px; }
 .modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 600px) { .modes { grid-template-columns: minmax(0, 1fr); } }
-.mode { text-align: left; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 18px; display: grid; gap: 10px; align-content: start; }
+.mode { cursor: pointer; text-align: left; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 18px; display: grid; gap: 10px; align-content: start; }
 .mode:hover { border-color: var(--accent); }
 .mode.last { border-color: var(--accent); }
 .mode ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; font-size: 0.88rem; color: var(--muted); }
-.mode .go { justify-self: start; margin-top: 6px; }
+.mode .go { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .tagline { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); }
 .tagline.exam { color: var(--warn); }
 
@@ -242,10 +248,11 @@ button.opt:hover:not(:disabled) { border-color: var(--accent); }
 </style>
 
 <div class="wrap">
+  <div class="tracks browse-only" id="tracks" role="group" aria-label="Certification"></div>
   <header class="top browse-only">
     <div>
-      <h1>Fundamentals Drill</h1>
-      <p class="sub">Practice for the Datadog Fundamentals certification</p>
+      <h1 id="track-title"></h1>
+      <p class="sub" id="track-sub"></p>
     </div>
     <div class="top-right">
       <div class="stats" id="stats"></div>
@@ -262,28 +269,43 @@ button.opt:hover:not(:disabled) { border-color: var(--accent); }
 <div class="modal-back" id="resetmodal" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reset-title" aria-describedby="reset-desc">
     <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></span>
-    <h2 id="reset-title">Reset all progress?</h2>
+    <h2 id="reset-title">Reset progress?</h2>
     <div id="reset-desc" class="stack" style="gap:8px"></div>
     <div class="row"><button class="btn" id="reset-no">Cancel</button><button class="btn danger-fill" id="reset-yes">Erase everything</button></div>
   </div>
 </div>
 
-<template id="sheet-tpl"><!--__SHEET__--></template>
+<!--__SHEETS__-->
 
+<!--__EXTRA__-->
 <script>
-const DATA = /*__DATA__*/null;
+const ALL = /*__DATA__*/null;
+const TRACK_KEY = "dd-drill-track";  // which certification space was open last
 
-const Q = Object.fromEntries([...DATA.questions, ...DATA.official].map(q => [q.id, q]));
-const MAIN = new Set(DATA.questions.map(q => q.id));
-const TOPICS = [...new Set(DATA.questions.map(q => q.topic))];
-const HOT = ["Networking & Datadog Ports", "Allotments, Billing & Custom Metrics"];
-const LS_KEY = "ddf-drill-v1";
+/* One app, one space per certification track. Each track has its own questions, mock tests,
+   cheat sheet and saved progress (its own localStorage key); useTrack() swaps them in. */
+let DATA, EXTRA, Q, MAIN, TOPICS, LS_KEY, store;
+function useTrack(key) {
+  DATA = ALL.tracks.find(t => t.key === key) || ALL.tracks[0];
+  // private sets from <track>/materials/extra-sets.js, when that file exists locally
+  const extra = window.DD_EXTRA || {};
+  EXTRA = Array.isArray(extra) ? (DATA.key === "fundamentals" ? extra : []) : (extra[DATA.key] || []);
+  Q = Object.fromEntries([...DATA.questions, ...DATA.official, ...EXTRA.flatMap(x => x.questions)].map(q => [q.id, q]));
+  MAIN = new Set(DATA.questions.map(q => q.id));
+  TOPICS = [...new Set(DATA.questions.map(q => q.topic))];
+  LS_KEY = DATA.storage;
+  store = Object.assign({ best: {}, attempts: {}, runs: {}, q: {}, last: {}, mode: "study" }, load());
+  try { localStorage.setItem(TRACK_KEY, DATA.key); } catch (e) {}
+  document.getElementById("track-title").textContent = DATA.short + " Drill";
+  document.getElementById("track-sub").textContent = "Practice for the " + DATA.title + " certification";
+  document.getElementById("tracks").innerHTML = ALL.tracks.map(t => `<button data-track="${t.key}" aria-pressed="${t.key === DATA.key}">${esc(t.short)}</button>`).join("");
+  document.getElementById("tracks").hidden = ALL.tracks.length < 2;
+}
 const SECS_PER_Q = 80;  // real exam: 90 questions in 120 minutes
 const FULL_N = 90;
 
 function load() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch (e) { return {}; } }
 function save() { try { localStorage.setItem(LS_KEY, JSON.stringify(store)); } catch (e) {} }
-const store = Object.assign({ best: {}, attempts: {}, q: {}, mode: "study" }, load());
 
 const app = document.getElementById("app");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -341,7 +363,7 @@ function syncResetButton() {
 function openReset() {
   const seen = topicStats([...MAIN]).seen, tests = Object.keys(store.best).length;
   const attempts = Object.values(store.attempts).reduce((a, b) => a + b, 0), misses = missedIds().length;
-  document.getElementById("reset-desc").innerHTML = `<p class="muted">This erases everything saved in this browser and can't be undone:</p>
+  document.getElementById("reset-desc").innerHTML = `<p class="muted">This erases your ${esc(DATA.short)} progress saved in this browser and can't be undone. Other certifications keep theirs.</p>
     <ul><li>${seen} answered question${seen === 1 ? "" : "s"} and your accuracy</li><li>${tests} best score${tests === 1 ? "" : "s"} across ${attempts} attempt${attempts === 1 ? "" : "s"}</li><li>${misses} question${misses === 1 ? "" : "s"} in Retry my mistakes</li></ul>`;
   resetModal.hidden = false;
   document.getElementById("reset-no").focus();
@@ -353,18 +375,25 @@ function toast(msg) {
 }
 bind("reset", openReset);
 bind("reset-no", closeReset);
-bind("reset-yes", () => { store.best = {}; store.attempts = {}; store.q = {}; save(); resetModal.hidden = true; setView("home"); toast("Progress reset"); });
+bind("reset-yes", () => { store.best = {}; store.attempts = {}; store.runs = {}; store.q = {}; store.last = {}; save(); resetModal.hidden = true; setView("home"); toast("Progress reset"); });
 resetModal.addEventListener("click", e => { if (e.target === resetModal) closeReset(); });
 document.addEventListener("keydown", e => { if (!resetModal.hidden && e.key === "Escape") { e.stopImmediatePropagation(); closeReset(); } }, true);
 
 function setView(v) {
-  stopTimer(); S = null; shell("browse");
+  stopTimer(); S = null; persistSession(); shell("browse");
   document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-current", String(t.dataset.view === v)));
   renderStats();
   if (v === "sheet") renderSheet(); else renderHome();
   window.scrollTo(0, 0);
 }
 document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => setView(t.dataset.view)));
+document.getElementById("tracks").addEventListener("click", e => {
+  const b = e.target.closest("[data-track]");
+  if (!b || b.dataset.track === DATA.key) return;
+  const view = document.querySelector('.tab[aria-current="true"]')?.dataset.view || "home";
+  useTrack(b.dataset.track);
+  if (!resumeSession()) setView(view);
+});
 
 /* ---------------- home ---------------- */
 function renderHome() {
@@ -379,12 +408,13 @@ function renderHome() {
 
   const count = t => DATA.questions.filter(q => q.topic === t).length;
   const misses = missedIds().length;
+  const countSub = t => DATA.questions.filter(q => q.subtopic === t).length;
   const drills = [
-    ["topic:" + HOT[0], "Ports & networking", `${count(HOT[0])} questions`, true],
-    ["topic:" + HOT[1], "Allotments & custom metrics", `${count(HOT[1])} questions`, true],
-    ["official", "Official practice set", "Datadog's 25 practice questions", false],
+    ...DATA.focus.map(f => f.topic ? ["topic:" + f.topic, f.label, `${count(f.topic)} questions`, !!f.hot] : ["sub:" + f.subtopic, f.label, `${countSub(f.subtopic)} questions`, !!f.hot]),
+    ...(DATA.official.length ? [["official", "Official practice set", `Datadog's ${DATA.official.length} practice questions`, false]] : []),
     ["random", "Random 25", `From all ${MAIN.size} questions`, false],
     ["misses", "Retry my mistakes", misses ? `${misses} to review` : "Nothing yet", false],
+    ...EXTRA.map((x, i) => ["extra:" + i, x.title, `${x.questions.length} questions · private`, false]),
   ].map(([k, t, d, hot]) => `<button class="item" data-drill="${esc(k)}" ${k === "misses" && !misses ? "disabled" : ""}>
       <span class="t">${esc(t)}${hot ? `<span class="badge">Exam-heavy</span>` : ""}</span><span class="d">${esc(d)}</span><span class="r" aria-hidden="true">›</span></button>`).join("");
 
@@ -413,18 +443,27 @@ function renderHome() {
   </div>`;
 
   bind("fullsim", fullExam);
-  app.querySelectorAll(".pkg").forEach(b => b.addEventListener("click", () => {
-    const i = +b.dataset.pkg;
-    setup({ key: "pkg-" + (i + 1), title: "Mock test " + String(i + 1).padStart(2, "0"), ids: DATA.packages[i], kind: "25 questions mixing all nine exam topics, weighted like the real exam." });
-  }));
+  app.querySelectorAll(".pkg").forEach(b => b.addEventListener("click", () => mockTest(+b.dataset.pkg)));
   app.querySelectorAll("[data-drill]").forEach(b => b.addEventListener("click", () => {
     const d = b.dataset.drill;
     if (d === "official") setup({ key: "official", title: "Official practice set", ids: DATA.official.map(q => q.id), keepOrder: true, kind: "Datadog's own practice questions. Answers follow the official key; where the docs have changed since, the explanation says so." });
     else if (d === "random") setup({ key: "random", title: "Random 25", ids: shuffle([...MAIN]).slice(0, 25), kind: "25 questions picked at random from the whole bank." });
+    else if (d.startsWith("extra:")) { const x = EXTRA[+d.slice(6)]; setup({ key: "extra-" + x.key, title: x.title, ids: x.questions.map(q => q.id), keepOrder: true, kind: x.desc }); }
     else if (d === "misses") setup({ key: "misses", title: "Retry my mistakes", ids: shuffle(missedIds()).slice(0, 50), kind: "Questions you got wrong last time. Answer one correctly and it leaves this list." });
+    else if (d.startsWith("sub:")) subtopicDrill(d.slice(4));
     else topicDrill(d.slice(6));
   }));
   app.querySelectorAll("[data-topic]").forEach(b => b.addEventListener("click", () => topicDrill(b.dataset.topic)));
+}
+function mockTest(i) {
+  setup({ key: "pkg-" + (i + 1), title: "Mock test " + String(i + 1).padStart(2, "0"), ids: DATA.packages[i], kind: "25 questions covering every exam topic, weighted like the real exam." });
+}
+/* back to a test's setup page: mock tests and the full simulation are rebuilt from the current bank */
+function reopen(cfg) {
+  if (cfg.key === "full") return fullExam();
+  const m = /^pkg-(\d+)$/.exec(cfg.key);
+  if (m && DATA.packages[+m[1] - 1]) return mockTest(+m[1] - 1);
+  setup(cfg);
 }
 function fullExam() {
   const byTopic = TOPICS.map(t => shuffle(DATA.questions.filter(q => q.topic === t).map(q => q.id)));
@@ -433,47 +472,87 @@ function fullExam() {
   setup({ key: "full", title: "Full exam simulation", ids: byTopic.flatMap((ids, i) => ids.slice(0, quota[i])), defaultMode: "exam",
     kind: "Same length and time limit as the real exam: 90 questions in 2 hours, drawn from every topic. The real exam scores 75 of them (15 are unscored trial questions you can't tell apart); here all 90 count." });
 }
+function subtopicDrill(t) {
+  const ids = DATA.questions.filter(q => q.subtopic === t).map(q => q.id);
+  const rank = id => { const s = store.q[id]; return !s ? 1 : s.last === false ? 0 : 2; };
+  const picked = shuffle(ids).sort((a, b) => rank(a) - rank(b)).slice(0, 25);
+  setup({ key: "sub-" + t, title: t, ids: picked, kind: ids.length > 25 ? `25 of the ${ids.length} questions on this part of the exam, starting with ones you missed or haven't seen.` : `All ${ids.length} questions on this part of the exam, starting with ones you missed or haven't seen.` });
+}
 function topicDrill(t) {
   const ids = DATA.questions.filter(q => q.topic === t).map(q => q.id);
   const rank = id => { const s = store.q[id]; return !s ? 1 : s.last === false ? 0 : 2; };
   const picked = shuffle(ids).sort((a, b) => rank(a) - rank(b)).slice(0, 25);
-  setup({ key: "topic-" + t, title: t, ids: picked, kind: `25 of the ${ids.length} questions on this topic, starting with ones you missed or haven't seen.` });
+  setup({ key: "topic-" + t, title: t, ids: picked, kind: ids.length > 25 ? `25 of the ${ids.length} questions on this topic, starting with ones you missed or haven't seen.` : `All ${ids.length} questions on this topic, starting with ones you missed or haven't seen.` });
 }
 
 /* ---------------- setup: choose a mode ---------------- */
 function setup(cfg) {
-  stopTimer(); S = null; shell("browse");
-  const n = cfg.ids.length, b = store.best[cfg.key], att = store.attempts[cfg.key] || 0;
+  stopTimer(); S = null; persistSession(); shell("browse");
+  const n = cfg.ids.length, hist = attemptsText(cfg.key);
+  const LE = lastResult(cfg.key, "exam"), LS = lastResult(cfg.key, "study");
+  const lastBtn = (L, mode) => L ? `<button class="btn" data-last="${mode}" title="Your latest ${mode}-mode result, taken ${esc(when(L.at))}">Last result · ${L.result.p}%</button>` : "";
   app.innerHTML = `
   <div class="setup">
     <div><button class="btn ghost small" id="back" style="padding-left:4px">${ICON_BACK.replace("<svg", '<svg style="width:16px;height:16px;vertical-align:-3px"')} Back</button></div>
     <div class="stack" style="gap:6px">
       <h2 style="font-size:1.4rem">${esc(cfg.title)}</h2>
       <p class="muted">${esc(cfg.kind)}</p>
-      <p class="hint">${n} questions${att ? ` · ${att} attempt${att === 1 ? "" : "s"}` : ""}${b != null ? ` · best ${b}%` : ""}</p>
+      ${hist ? `<p class="hint">${hist}</p>` : ""}
     </div>
     <div class="modes">
-      <button class="mode ${(cfg.defaultMode || store.mode) === "study" ? "last" : ""}" data-start="study">
+      <div class="mode ${(cfg.defaultMode || store.mode) === "study" ? "last" : ""}" data-start="study">
         <span class="tagline">Study</span>
         <ul><li>Graded as soon as you answer</li><li>Every option explained</li><li>No timer</li></ul>
-        <span class="btn primary go">Start studying</span>
-      </button>
-      <button class="mode ${(cfg.defaultMode || store.mode) === "exam" ? "last" : ""}" data-start="exam">
+        <div class="go"><button class="btn primary">Start studying</button>${lastBtn(LS, "study")}</div>
+      </div>
+      <div class="mode ${(cfg.defaultMode || store.mode) === "exam" ? "last" : ""}" data-start="exam">
         <span class="tagline exam">Exam</span>
         <ul><li>${n >= 60 ? Math.round(n * SECS_PER_Q / 60) + " min" : fmt(n * SECS_PER_Q)} timer, the real exam's pace</li><li>No topic labels or feedback until you submit</li><li>Flag questions and change answers freely</li></ul>
-        <span class="btn go">Start exam</span>
-      </button>
+        <div class="go"><button class="btn">Start exam</button>${lastBtn(LE, "exam")}</div>
+      </div>
     </div>
-    <p class="hint">The real exam: 90 multiple-choice questions in 2 hours, one correct answer among three options, unanswered counts as wrong. Exam mode works the same way.<br>Tip: press 1–3 or A–C to answer and Enter to continue.</p>
   </div>`;
   bind("back", () => setView("home"));
-  app.querySelectorAll("[data-start]").forEach(el => el.addEventListener("click", () => { store.mode = el.dataset.start; save(); start(cfg, el.dataset.start); }));
+  app.querySelectorAll("[data-start]").forEach(el => el.addEventListener("click", e => {
+    if (e.target.closest("[data-last]")) return;
+    store.mode = el.dataset.start; save(); start(cfg, el.dataset.start);
+  }));
+  app.querySelectorAll("[data-last]").forEach(el => el.addEventListener("click", () => showLast(cfg.key, el.dataset.last)));
   window.scrollTo(0, 0);
 }
 
 /* ---------------- quiz (focus shell) ---------------- */
 let S = null, timerId = null;
 function stopTimer() { if (timerId) clearInterval(timerId); timerId = null; }
+
+/* the session in progress (questions, answers, flags, timer, or the results screen) is saved on
+   every change, so a reload or a closed tab picks up exactly where you left off */
+function persistSession() {
+  if (!S) { if (store.active) { delete store.active; save(); } return; }
+  store.active = {
+    cfg: S.cfg, mode: S.mode, idx: S.idx, flags: [...S.flags],
+    items: S.items.map(it => ({ id: it.q.id, order: it.order })),
+    picks: S.picks, started: S.started, limit: S.limit, result: S.result || null, filter: S.filter || null, past: S.past || null
+  };
+  save();
+}
+function resumeSession() {
+  const a = store.active;
+  if (!a || !Array.isArray(a.items) || !a.items.length || !a.items.every(x => Q[x.id])) { delete store.active; return false; }
+  S = {
+    cfg: a.cfg, key: a.cfg.key, title: a.cfg.title, mode: a.mode, idx: Math.min(a.idx || 0, a.items.length - 1),
+    flags: new Set(a.flags || []), panel: null,
+    items: a.items.map(x => ({ q: Q[x.id], order: x.order })),
+    picks: a.picks, started: a.started, limit: a.limit, result: a.result, filter: a.filter, past: a.past || null
+  };
+  shell("focus");
+  if (S.result) renderResults(S.filter || "all");
+  else {
+    if (S.mode === "exam") { if (timeLeft() <= 0) { finish(); return true; } timerId = setInterval(tick, 1000); }
+    renderQuestion();
+  }
+  return true;
+}
 
 function start(cfg, mode) {
   stopTimer(); shell("focus");
@@ -580,6 +659,7 @@ function renderQuestion() {
   bind("exit-no", () => { S.panel = null; renderQuestion(); });
   bind("exit-yes", () => setView("home"));
   app.querySelectorAll("[data-jump]").forEach(b => b.addEventListener("click", () => { S.panel = null; go(+b.dataset.jump); }));
+  persistSession();
 }
 function choose(oi) {
   if (S.mode === "study") {
@@ -617,13 +697,47 @@ function finish() {
   if (S.mode === "exam") S.items.forEach((it, i) => record(it.q, S.picks[i] ?? -1));
   const n = S.items.length, right = S.items.filter((it, i) => S.picks[i] === it.q.answer).length, p = pct(right, n);
   store.attempts[S.key] = (store.attempts[S.key] || 0) + 1;
-  if (S.key.startsWith("pkg-") || S.key === "official" || S.key === "full") store.best[S.key] = Math.max(store.best[S.key] ?? 0, p);
+  const runs = store.runs[S.key] = store.runs[S.key] || { exam: 0, study: 0 };
+  runs[S.mode]++;
+  runs.best = runs.best || {};
+  runs.best[S.mode] = Math.max(runs.best[S.mode] ?? 0, p);
+  if (S.key.startsWith("pkg-") || S.key.startsWith("extra-") || S.key === "official" || S.key === "full") store.best[S.key] = Math.max(store.best[S.key] ?? 0, p);
   save();
   S.result = { right, n, p, secs: Math.round((Date.now() - S.started) / 1000) };
+  if (S.key in store.best) {
+    store.last[lastKey(S.key, S.mode)] = { cfg: S.cfg, at: Date.now(), flags: [...S.flags], items: S.items.map(it => ({ id: it.q.id, order: it.order })), picks: S.picks, result: S.result };
+    save();
+  }
   renderResults(right < n ? "wrong" : "all");
+}
+const when = t => new Date(t).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+/* exam results are stored under the test's key, study results under "study:<key>" */
+const lastKey = (key, mode) => mode === "study" ? "study:" + key : key;
+function lastResult(key, mode) {
+  const L = store.last[lastKey(key, mode)];
+  return L && L.result && Array.isArray(L.items) && L.items.length && L.items.every(x => Q[x.id]) ? L : null;
+}
+/* reopen the latest result of one mode for a test, read-only, from its setup page */
+function showLast(key, mode) {
+  const L = lastResult(key, mode);
+  if (!L) return;
+  stopTimer();
+  S = {
+    cfg: L.cfg, key, title: L.cfg.title, mode, idx: 0, flags: new Set(L.flags || []), panel: null,
+    items: L.items.map(x => ({ q: Q[x.id], order: x.order })), picks: L.picks, started: L.at, limit: 0, result: L.result, past: L.at
+  };
+  renderResults(L.result.right < L.result.n ? "wrong" : "all");
+}
+/* "1 exam attempt (best 92%) · 2 study attempts (best 80%)" */
+function attemptsText(key) {
+  const r = store.runs[key] || { exam: 0, study: 0 }, rb = r.best || {};
+  const part = (k, label, best) => k > 0 ? `${k} ${label} attempt${k === 1 ? "" : "s"}${best != null ? ` (best ${best}%)` : ""}` : "";
+  return [part(r.exam, "exam", rb.exam), part(r.study, "study", rb.study)].filter(Boolean).join(" · ");
 }
 function renderResults(filter) {
   shell("focus");
+  S.filter = filter;
+  persistSession();
   const { right, n, p, secs } = S.result;
   const byTopic = {};
   S.items.forEach((it, i) => { const t = it.q.topic; byTopic[t] = byTopic[t] || [0, 0]; byTopic[t][1]++; if (S.picks[i] === it.q.answer) byTopic[t][0]++; });
@@ -643,9 +757,9 @@ function renderResults(filter) {
   const wrongIds = S.items.filter((it, i) => S.picks[i] !== it.q.answer).map(it => it.q.id);
   const verdict = p >= 80 ? "In the ready range. Keep it there across a few tests." : p >= 65 ? "Close. Go through what you missed, then retake." : "Keep practicing. Study mode on your weakest topics helps most.";
   app.innerHTML = `
-    ${focusBar({ title: S.title, sub: "Results", exitLabel: "Done" })}
+    ${focusBar({ title: S.title, sub: S.past ? `Last ${S.mode} result` : "Results", exitLabel: S.past ? "Back" : "Done" })}
     <div class="quiz">
-      <div class="score"><span class="big" style="color:${scoreColor(p)}">${p}%</span><span class="muted">${right} of ${n} correct · ${fmt(secs)}${store.best[S.key] != null ? ` · best ${store.best[S.key]}%` : ""}</span></div>
+      <div class="score"><span class="big" style="color:${scoreColor(p)}">${p}%</span><span class="muted">${right} of ${n} correct · ${fmt(secs)}${store.best[S.key] != null ? ` · best ${store.best[S.key]}%` : ""}${S.past ? ` · taken ${esc(when(S.past))}` : ""}</span></div>
       <p>${verdict} <span class="muted">Datadog doesn't publish the passing score; 80%+ here is a safe target.</span></p>
       <div class="row">
         ${wrongIds.length ? `<button class="btn primary" id="retrywrong">Study the ${wrongIds.length} I missed</button>` : ""}
@@ -657,8 +771,8 @@ function renderResults(filter) {
       <div class="review">${review || `<p class="muted">Nothing here.</p>`}</div>
     </div>`;
   const cfg = S.cfg;
-  bind("exit", () => setView("home"));
-  bind("again", () => setup(cfg));
+  bind("exit", () => S.past ? reopen(cfg) : setView("home"));
+  bind("again", () => reopen(cfg));
   bind("retrywrong", () => start({ key: "retry", title: cfg.title + " · missed", ids: wrongIds, kind: "" }, "study"));
   app.querySelectorAll("[data-f]").forEach(b => b.addEventListener("click", () => renderResults(b.dataset.f)));
   window.scrollTo(0, 0);
@@ -667,11 +781,22 @@ function renderResults(filter) {
 /* ---------------- cheat sheet ---------------- */
 function renderSheet() {
   app.innerHTML = "";
-  app.appendChild(document.getElementById("sheet-tpl").content.cloneNode(true));
+  app.appendChild(document.getElementById("sheet-" + DATA.key).content.cloneNode(true));
   document.getElementById("checked").textContent = DATA.checked;
   app.querySelectorAll("[data-jumpto]").forEach(b => b.addEventListener("click", () =>
     document.getElementById(b.dataset.jumpto).scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" })));
 }
 
-setView("home");
+/* progress carried over once from the old dd-fundamental/index.html; keys already saved here are kept */
+if (location.hash.startsWith("#import=")) {
+  try {
+    const carried = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(8)))));
+    for (const [k, v] of Object.entries(carried)) if (typeof v === "string" && localStorage.getItem(k) === null) localStorage.setItem(k, v);
+  } catch (e) {}
+  history.replaceState(null, "", location.pathname + location.search);
+}
+let startTrack = null;
+try { startTrack = localStorage.getItem(TRACK_KEY); } catch (e) {}
+useTrack(startTrack);
+if (!resumeSession()) setView("home");
 </script>

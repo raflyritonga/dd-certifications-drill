@@ -1,0 +1,20 @@
+{
+  "key": "apm",
+  "order": 3,
+  "title": "Datadog APM & Distributed Tracing Fundamentals",
+  "short": "APM",
+  "storage": "ddapm-drill-v1",
+  "checked": "November 2026",
+  "pools": ["pool_rat", "pool_appr", "pool_arch", "pool_lang", "pool_comm", "pool_tag", "pool_ret", "pool_lib", "pool_inst", "pool_agent", "pool_samp", "pool_sec", "pool_pcol", "pool_cat", "pool_srch", "pool_live", "pool_prof", "pool_dep", "pool_err", "pool_span", "pool_dash", "pool_inc", "pool_mon"],
+  "packages": 20,
+  "focus": [
+    {"subtopic": "Sampling vs Retention", "label": "Sampling vs retention"},
+    {"subtopic": "Retention Periods for APM Data", "label": "Retention periods"}
+  ],
+  "official": {
+    "file": "questions/official.json",
+    "source": "materials/official_example_questions.md",
+    "prefix": "ap-",
+    "ref": "https://learn.datadoghq.com/courses/apm-distributed-tracing-fundamentals-practice-exam"
+  }
+}

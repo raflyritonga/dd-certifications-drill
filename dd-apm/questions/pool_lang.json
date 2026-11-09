@@ -1,0 +1,527 @@
+[
+  {
+    "id": "ap-lang-001",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "easy",
+    "q": "A service starts with the command below, but no traces reach Datadog:\n\njava -jar app.jar -javaagent:/opt/dd-java-agent.jar\n\nWhat should the team change?",
+    "options": [
+      "Move `-javaagent:/opt/dd-java-agent.jar` so it comes before `-jar app.jar`.",
+      "Add `/opt/dd-java-agent.jar` to the classpath with `-cp` instead of using `-javaagent`.",
+      "Keep the order and add `-Ddd.trace.enabled=true` after `-javaagent`."
+    ],
+    "answer": 0,
+    "explanation": "`-javaagent` is a JVM option and must be placed before `-jar`; anything after `-jar app.jar` is passed to the application as an argument, so the agent never loads.",
+    "notes": [
+      "Correct: the agent must be a JVM option placed before `-jar`.",
+      "Wrong: the docs say never to add `dd-java-agent` to the classpath; it can cause unexpected behavior.",
+      "Wrong: tracing is already on by default; the problem is that the agent is passed to the app, not the JVM."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/java/#add-the-java-sdk-to-the-jvm",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-002",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "A Java web app runs in Tomcat on Linux. Where does Datadog recommend adding the Java SDK?",
+    "options": [
+      "Copy `dd-java-agent.jar` into Tomcat's `lib/` directory so it loads with the other JARs.",
+      "Add `-javaagent:/path/to/dd-java-agent.jar` to `CATALINA_OPTS` in `setenv.sh`.",
+      "Declare `dd-java-agent` as a Maven dependency of the web application."
+    ],
+    "answer": 1,
+    "explanation": "For Tomcat on Linux, the docs add `CATALINA_OPTS=\"$CATALINA_OPTS -javaagent:/path/to/dd-java-agent.jar\"` to `setenv.sh`. The agent must be loaded as a JVM agent, never placed on the classpath.",
+    "notes": [
+      "Wrong: putting the JAR in `lib/` puts it on the classpath, which the docs say never to do.",
+      "Correct: `CATALINA_OPTS` in `setenv.sh` passes `-javaagent` to Tomcat's JVM.",
+      "Wrong: a Maven dependency also only puts it on the classpath; it is not loaded as a java-agent."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/java/#add-the-java-sdk-to-the-jvm",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-003",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "hard",
+    "q": "A Java team wants spans from the `jdbc-datasource` integration, which the Java SDK disables by default. Which setting turns it on?",
+    "options": [
+      "`-Ddd.trace.jdbc-datasource.enabled=true`",
+      "`DD_INTEGRATIONS_ENABLED=jdbc-datasource`",
+      "`-Ddd.integration.jdbc-datasource.enabled=true`"
+    ],
+    "answer": 2,
+    "explanation": "Integrations that are disabled by default are enabled one by one with `-Ddd.integration.<INTEGRATION_NAME>.enabled=true` or `DD_INTEGRATION_<INTEGRATION_NAME>_ENABLED=true`.",
+    "notes": [
+      "Wrong: the Java property prefix is `dd.integration.`, not `dd.trace.`.",
+      "Wrong: `DD_INTEGRATIONS_ENABLED` is a boolean that changes the default for all integrations; it does not take integration names.",
+      "Correct: `dd.integration.<name>.enabled=true` enables a single integration."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/compatibility/java/#integrations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-004",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "easy",
+    "q": "A Python service is started with `python app.py`, and `ddtrace` is installed with pip. How do you turn on automatic instrumentation without changing the code?",
+    "options": [
+      "Run `python app.py ddtrace-run`.",
+      "Run `ddtrace-run python app.py`.",
+      "Run `python -m ddtrace.init app.py`."
+    ],
+    "answer": 1,
+    "explanation": "The Python SDK ships the `ddtrace-run` command, which you put in front of your normal Python entry-point command.",
+    "notes": [
+      "Wrong: `ddtrace-run` must come before the command; after it, it is just an argument passed to `app.py`.",
+      "Correct: prefix the entry-point command with `ddtrace-run`.",
+      "Wrong: `ddtrace.init` is not a documented launcher; the documented ways are `ddtrace-run` or `import ddtrace.auto`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/python/#instrument-your-application",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-005",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "A platform team cannot change the launch command of a Python service, so `ddtrace-run` is not an option. What gives the same automatic instrumentation?",
+    "options": [
+      "Add `import ddtrace.auto` as the first import when the application starts.",
+      "Add `import ddtrace.auto` after all framework and library imports.",
+      "Add `ddtrace` to `requirements.txt`; installing the package patches libraries by itself."
+    ],
+    "answer": 0,
+    "explanation": "When `ddtrace-run` cannot be used, importing `ddtrace.auto` gives the same start-up behavior. It should normally be the first thing imported, so libraries are patched before they load.",
+    "notes": [
+      "Correct: `import ddtrace.auto` first gives the same behavior as `ddtrace-run`.",
+      "Wrong: the docs say `ddtrace.auto` should normally be the first import; \"after the libraries\" is the Ruby `datadog/auto_instrument` rule, not Python.",
+      "Wrong: installing the package does nothing until it is loaded with `ddtrace-run` or `ddtrace.auto`."
+    ],
+    "ref": "https://ddtrace.readthedocs.io/en/stable/installation_quickstart.html#tracing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-006",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "hard",
+    "q": "A Python app runs with `ddtrace-run`. The team also wants the beta `snowflake` integration, which is not patched automatically, and wants to stop the `requests` integration. Which single environment variable does both?",
+    "options": [
+      "`DD_TRACE_INTEGRATIONS=\"snowflake,-requests\"`",
+      "`DD_INTEGRATIONS_ENABLED=\"snowflake:true,requests:false\"`",
+      "`DD_PATCH_MODULES=\"snowflake:true,requests:false\"`"
+    ],
+    "answer": 2,
+    "explanation": "`DD_PATCH_MODULES` takes comma-separated `<integration>:<bool>` entries that override which integrations `ddtrace-run` or `ddtrace.auto` patches, enabling off-by-default ones and disabling default ones.",
+    "notes": [
+      "Wrong: `DD_TRACE_INTEGRATIONS` is not a Python SDK setting.",
+      "Wrong: `DD_INTEGRATIONS_ENABLED` is the Java SDK's global on/off switch, not a Python setting.",
+      "Correct: `DD_PATCH_MODULES` overrides auto-patching per integration."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/library_config/python/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-007",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "A Node.js Express service calls `require('dd-trace').init()` near the bottom of `server.js`, after `express` and `pg` are loaded. Traces show disconnected spans and no route names. What is the most likely fix?",
+    "options": [
+      "Raise `DD_TRACE_SAMPLE_RATE` to `1.0` so that every span is kept.",
+      "Import and initialize `dd-trace` before any other module is loaded.",
+      "Set `DD_TRACE_ENABLED=true`, because tracing is off until it is set."
+    ],
+    "answer": 1,
+    "explanation": "The Node.js SDK must be imported and initialized before any other module so it can patch the libraries it instruments. Missing routes and disconnected spans are the documented symptoms of late initialization.",
+    "notes": [
+      "Wrong: sampling decides which traces are kept; it cannot add instrumentation to modules that loaded before the SDK.",
+      "Correct: initializing `dd-trace` first lets it patch `express`, `pg` and other modules.",
+      "Wrong: `DD_TRACE_ENABLED` is already `true` by default."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/nodejs/#import-and-initialize-the-tracer",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-008",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "A Next.js app is started with `npm start`, which runs `next start`. There is no local entry file where the team can load the SDK first. How should they load `dd-trace`?",
+    "options": [
+      "Start it with `NODE_OPTIONS='--require dd-trace/init' npm start`.",
+      "Start it with `npm start --require dd-trace/init`.",
+      "Add `require('dd-trace').init()` at the top of a page component."
+    ],
+    "answer": 0,
+    "explanation": "Frameworks like Next.js and Nest.js have their own entry point, so the SDK is loaded before the framework with `NODE_OPTIONS='--require dd-trace/init'` (or by editing the `package.json` start script). `NODE_OPTIONS` also applies to child Node.js processes.",
+    "notes": [
+      "Correct: `NODE_OPTIONS` makes Node.js load `dd-trace/init` before the framework.",
+      "Wrong: this passes the flag to the npm script, not to the Node.js process as a `--require` option.",
+      "Wrong: by the time app code runs, the framework has already loaded modules that should be instrumented."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/compatibility/nodejs/#complex-framework-usage",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-009",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "After a Node.js service is bundled into one file with esbuild, traces still show `fs` and outbound `http` calls but lose Express route names and `mysql` queries. Why?",
+    "options": [
+      "esbuild strips span tags such as `http.route` and `db.statement` from bundled code, so the Agent cannot read route or query data.",
+      "Bundled apps must send traces over a Unix Domain Socket, and the Agent drops third-party library spans that arrive over TCP port 8126.",
+      "The bundler rewrites `require()` calls, so `dd-trace` only sees built-in modules; use `dd-trace/esbuild` or mark modules as external."
+    ],
+    "answer": 2,
+    "explanation": "`dd-trace` works by intercepting `require()`. Bundlers replace those calls for third-party libraries, so only built-ins like `fs` and `http` stay visible. The fix is the `dd-trace/esbuild` plugin or marking the instrumented modules as external.",
+    "notes": [
+      "Wrong: the bundler does not edit span tags; the spans for those libraries are never created.",
+      "Wrong: the transport has nothing to do with it; the Agent does not drop spans based on the library.",
+      "Correct: bundling hides third-party `require()` calls; the esbuild plugin or externals bring them back."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/nodejs/#bundling",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-010",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "easy",
+    "q": "How does Datadog add automatic instrumentation to a Go service without changing its source code?",
+    "options": [
+      "A Go agent is attached to the running process at startup, like `-javaagent` for Java.",
+      "Orchestrion adds the instrumentation when the application is compiled.",
+      "The Agent detects the Go process and patches the standard library at runtime through the Go tracer."
+    ],
+    "answer": 1,
+    "explanation": "The Go docs offer two paths: compile-time instrumentation with Orchestrion, which instruments your code, its dependencies and the standard library during compilation with no code changes, or manual instrumentation with dd-trace-go and its integration packages, which requires code changes.",
+    "notes": [
+      "Wrong: there is no `-javaagent`-style runtime agent for Go; the docs list only compile-time and manual instrumentation.",
+      "Correct: Orchestrion works at compile time, with no source code changes.",
+      "Wrong: Go is instrumented at build time (Orchestrion) or in code (dd-trace-go); nothing patches a running Go binary."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/go/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-011",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "hard",
+    "q": "A CI pipeline builds a Go service with a fixed `go build ./...` step that the team cannot edit, but they can set environment variables for the job. Orchestrion is already pinned in `go.mod`. How can they enable it?",
+    "options": [
+      "Set `GOFLAGS=\"${GOFLAGS} '-toolexec=orchestrion toolexec'\"` for the build job.",
+      "Set `DD_TRACE_ORCHESTRION_ENABLED=true` in the runtime environment of the built binary.",
+      "Set `GOEXPERIMENT=orchestrion` so the Go toolchain loads Datadog integrations."
+    ],
+    "answer": 0,
+    "explanation": "Orchestrion can be enabled by prefixing `go` commands with `orchestrion`, by passing `-toolexec=\"orchestrion toolexec\"`, or by adding that `-toolexec` flag to `GOFLAGS` so plain `go build` uses it.",
+    "notes": [
+      "Correct: adding `-toolexec=orchestrion toolexec` to `GOFLAGS` injects Orchestrion into normal `go` commands.",
+      "Wrong: instrumentation is added at compile time; a runtime variable cannot add it to an already built binary.",
+      "Wrong: `GOEXPERIMENT` is not a documented way to enable Orchestrion; the documented methods are the `orchestrion` prefix, `-toolexec` and `GOFLAGS`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/go/#usage",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-012",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "easy",
+    "q": "A team is adding Datadog tracing to a Rails app. Which setup matches the Datadog docs?",
+    "options": [
+      "Install the `ddtrace-run` gem and start the server with `ddtrace-run rails server`, which patches Rails, ActiveRecord and Redis at boot.",
+      "Add `gem 'dd-trace-rb'` to the Gemfile, run `bundle install`, and add a `Datadog.configure` block in `config/initializers/datadog.rb`.",
+      "Add `gem 'datadog', require: 'datadog/auto_instrument'`, then add a `Datadog.configure` block in `config/initializers/datadog.rb`."
+    ],
+    "answer": 2,
+    "explanation": "For Rails or Hanami, add the `datadog` gem with `require: 'datadog/auto_instrument'`, run `bundle install`, and configure it in `config/initializers/datadog.rb` with `Datadog.configure`.",
+    "notes": [
+      "Wrong: `ddtrace-run` is the Python launcher, not a Ruby gem.",
+      "Wrong: `dd-trace-rb` is the name of the GitHub repository; the gem is `datadog` (v2) and Rails loads it with `require: 'datadog/auto_instrument'`.",
+      "Correct: the Gemfile entry plus an initializer with `Datadog.configure` is the Rails setup."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby/#rails-or-hanami-applications",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-013",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "A Sinatra app (not Rails) uses the `datadog` gem. Its entry file looks like this:\n\nrequire 'datadog/auto_instrument'\nrequire 'sinatra'\nrequire 'redis'\n\nRedis calls are not traced. What is wrong?",
+    "options": [
+      "Sinatra apps must use the legacy `ddtrace` gem instead of `datadog`.",
+      "`datadog/auto_instrument` must be required after the supported libraries and frameworks.",
+      "`datadog/auto_instrument` only works when the `DD_TRACE_REDIS_ENABLED` variable is set."
+    ],
+    "answer": 1,
+    "explanation": "For non-Rails Ruby apps, you first `require` the supported libraries, then `require 'datadog/auto_instrument'`, which must come after them, then add a `Datadog.configure` block.",
+    "notes": [
+      "Wrong: the `datadog` gem (v2) supports non-Rails apps; `ddtrace` is the legacy v1 gem.",
+      "Correct: the docs say to require `datadog/auto_instrument` after the libraries it should instrument.",
+      "Wrong: `DD_TRACE_REDIS_ENABLED` already defaults to `true`; the problem is the require order."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/ruby/#other-ruby-applications",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-014",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "The .NET Tracer MSI is installed on a Windows server. A Windows service built on .NET Framework 4.8 (not IIS) must be instrumented. Which environment variable goes in the service's `Environment` registry value?",
+    "options": [
+      "`COR_ENABLE_PROFILING=1`",
+      "`CORECLR_ENABLE_PROFILING=1`",
+      "`DD_DOTNET_PROFILER_ENABLED=1`"
+    ],
+    "answer": 0,
+    "explanation": ".NET Framework services outside IIS need `COR_ENABLE_PROFILING=1`, set in the `Environment` multi-string value under `HKLM\\System\\CurrentControlSet\\Services\\<SERVICE NAME>`. The `CORECLR_` variables are for .NET Core and .NET 5+.",
+    "notes": [
+      "Correct: .NET Framework uses `COR_ENABLE_PROFILING=1`.",
+      "Wrong: `CORECLR_ENABLE_PROFILING` is the .NET Core / .NET 5+ variable.",
+      "Wrong: not a documented variable; .NET Framework automatic instrumentation attaches through `COR_ENABLE_PROFILING=1`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/dotnet-framework/#enable-the-sdk-for-your-service",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-015",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "Developers added the `Datadog.Trace.Bundle` NuGet package to an ASP.NET Core app hosted in IIS. No traces appear. What should they do?",
+    "options": [
+      "Add the `Datadog.Trace` package too, because `Datadog.Trace.Bundle` only contains the custom instrumentation API.",
+      "Restart IIS with `iisreset.exe` so the worker processes reload the application and its new NuGet package.",
+      "Install the .NET Tracer machine-wide with the Windows MSI; the NuGet install does not instrument IIS apps."
+    ],
+    "answer": 2,
+    "explanation": "The per-application NuGet installation does not instrument applications running in IIS. For IIS, use the machine-wide MSI and fully restart IIS with `net stop /y was` and `net start w3svc`.",
+    "notes": [
+      "Wrong: `Datadog.Trace` is for custom instrumentation and still needs automatic instrumentation; it does not fix IIS.",
+      "Wrong: the docs say to avoid `iisreset.exe`, and a restart does not make the NuGet bundle work in IIS anyway.",
+      "Correct: IIS apps need the machine-wide MSI installation."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/dotnet-core/#install-the-sdk",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-016",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "easy",
+    "q": "How is automatic instrumentation installed for a PHP application?",
+    "options": [
+      "Add `extension=ddtrace.so` to `php.ini` by hand, because Datadog does not ship an installer for the PHP tracer.",
+      "Run the `datadog-setup.php` installer with `--php-bin=all`, then restart PHP-FPM or Apache.",
+      "Run `composer require datadog/dd-trace`, then call the tracer from the first line of `index.php` in every application."
+    ],
+    "answer": 1,
+    "explanation": "PHP tracing is a PHP extension installed with the official `datadog-setup.php` installer. Once it is installed and PHP is restarted, tracing is enabled by default.",
+    "notes": [
+      "Wrong: Datadog provides the official `datadog-setup.php` installer, which installs the extension into the PHP binaries.",
+      "Correct: the installer adds the `ddtrace` extension to the PHP binaries; then restart PHP.",
+      "Wrong: auto-instrumentation comes from the extension, not from a Composer package called in code."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/php/#install-the-extension",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-017",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "easy",
+    "q": "What does the Datadog C++ SDK (`dd-trace-cpp`) offer compared with SDKs such as Java or Python?",
+    "options": [
+      "It has no automatic instrumentation integrations; it is used through its API and by proxy tracing (Envoy, NGINX).",
+      "It instruments C++ binaries automatically once Single Step Instrumentation is enabled on the host and the process restarts.",
+      "It auto-instruments common C++ HTTP and database frameworks as soon as the program is linked against `dd_trace::static`."
+    ],
+    "answer": 0,
+    "explanation": "The docs state that C++ does not provide integrations for automatic instrumentation, but the library is used by proxy tracing such as Envoy and NGINX.",
+    "notes": [
+      "Correct: no automatic instrumentation integrations; API-based spans and proxy tracing.",
+      "Wrong: SSI does not inject C++.",
+      "Wrong: linking only makes the API available; it adds no automatic integrations."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/cpp/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-018",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "easy",
+    "q": "SSI is enabled on a Linux host that runs services in several languages. Which service will NOT be instrumented by SSI?",
+    "options": [
+      "A Ruby on Rails app",
+      "A PHP-FPM app",
+      "A Go HTTP server"
+    ],
+    "answer": 2,
+    "explanation": "SSI loads Datadog SDKs at runtime for Java, Python, Node.js, .NET, Ruby and PHP. Go is compiled and is instrumented at build time with Orchestrion or manually.",
+    "notes": [
+      "Wrong: SSI supports Ruby (Ruby SDK 2.6.0+).",
+      "Wrong: SSI supports PHP (PHP SDK 1.6.0+).",
+      "Correct: Go is not among the runtimes SSI injects."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/compatibility/#supported-language-runtimes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-019",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "A Windows Server runs an ASP.NET app in IIS, a Java service and a .NET console app. The Agent is installed with `DD_APM_INSTRUMENTATION_ENABLED=iis` and `DD_APM_INSTRUMENTATION_LIBRARIES=dotnet:3`. After the restarts, which applications does SSI instrument?",
+    "options": [
+      "The ASP.NET app in IIS and the .NET console app, because the .NET SDK is installed for the whole host.",
+      "Only the ASP.NET app running in IIS.",
+      "The ASP.NET app and the Java service, because SSI on Windows supports Java and .NET."
+    ],
+    "answer": 1,
+    "explanation": "The `iis` option of Windows SSI instruments only .NET applications running in IIS. Host-wide Windows SSI (Preview) is the mode that covers all Java applications, and .NET apps outside IIS need an allow rule even there.",
+    "notes": [
+      "Wrong: with the `iis` option only IIS-hosted .NET apps are instrumented; .NET outside IIS is not.",
+      "Correct: `DD_APM_INSTRUMENTATION_ENABLED=iis` instruments only .NET applications on IIS.",
+      "Wrong: Java is covered only by host-wide Windows SSI (Preview), not by the `iis` option."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/windows/#new-agent-installation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-020",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "SSI was just installed on a Docker host, and `docker system info` reports the `dd-shim` runtime. The team ran `docker stop` and `docker start` on an existing app container, but it is still not traced. Why?",
+    "options": [
+      "The Agent container must also run with `DD_APM_INSTRUMENTATION_ENABLED=docker` set inside it.",
+      "SSI in Docker only instruments containers started with Docker Compose, not with `docker start`.",
+      "Instrumentation is applied when a container is created, so the container must be removed and run again."
+    ],
+    "answer": 2,
+    "explanation": "With Docker SSI, the `dd-shim` runtime instruments containers at creation time. Stopping and starting an existing container does not instrument it; recreate the application containers.",
+    "notes": [
+      "Wrong: `DD_APM_INSTRUMENTATION_ENABLED=docker` is passed to the install script on the host, not set in the Agent container.",
+      "Wrong: any container created with the Datadog runtime is instrumented; Compose is not required, and `docker start` alone never re-instruments.",
+      "Correct: recreate the container so it is created with the injector."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/docker/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-021",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "hard",
+    "q": "On a Docker host with SSI, one batch container should not be instrumented. The team set `DD_TRACE_ENABLED=false` on it, but the Datadog SDK is still loaded. What should they set on that container instead?",
+    "options": [
+      "`DD_INSTRUMENT_SERVICE_WITH_APM=false`",
+      "`DD_APM_INSTRUMENTATION_ENABLED=false`",
+      "`DD_INJECT_FORCE=false`"
+    ],
+    "answer": 0,
+    "explanation": "The injector runs before the SDK reads its environment variables, so `DD_TRACE_ENABLED=false` does not stop SSI from loading the SDK. To remove instrumentation from one Docker service, set `DD_INSTRUMENT_SERVICE_WITH_APM=false` and restart it.",
+    "notes": [
+      "Correct: `DD_INSTRUMENT_SERVICE_WITH_APM=false` tells the injector to skip that service.",
+      "Wrong: `DD_APM_INSTRUMENTATION_ENABLED` is read by the Agent install script, not by an app container.",
+      "Wrong: `DD_INJECT_FORCE=true` forces injection despite conflicts such as Xdebug; setting it to false does not opt a service out."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/docker/#remove-instrumentation-for-specific-services",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-022",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "hard",
+    "q": "With SSI, the injector loads the right SDK by changing each process's environment or arguments. Which pairing of runtime and mechanism matches the Datadog docs?",
+    "options": [
+      "Python: sets `PYTHONSTARTUP` to a script that imports `ddtrace.auto`",
+      "Java: sets `JAVA_TOOL_OPTIONS` with `-javaagent:<path-to-dd-java-agent.jar>`",
+      "PHP: appends `extension=ddtrace.so` to the main `php.ini` of each PHP binary"
+    ],
+    "answer": 1,
+    "explanation": "The injector adds `-javaagent` through `JAVA_TOOL_OPTIONS` for Java. For Python it sets `PYTHONPATH` to the tracer directory, and for PHP it sets `PHP_INI_SCAN_DIR` to a Datadog loader directory.",
+    "notes": [
+      "Wrong: for Python the injector sets `PYTHONPATH` to the tracer installation directory.",
+      "Correct: Java gets the agent through `JAVA_TOOL_OPTIONS`.",
+      "Wrong: for PHP the injector sets `PHP_INI_SCAN_DIR` to a Datadog-provided loader directory; it does not edit `php.ini`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/injectors/#per-runtime-instrumentation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-023",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "SSI is enabled on a Linux host. A .NET app on it already loads another APM vendor's .NET profiler through `CORECLR_*` variables. SSI installs successfully, but no Datadog traces arrive. What explains this?",
+    "options": [
+      "SSI injects only .NET Framework apps; .NET Core and .NET 5+ apps must use the NuGet package.",
+      "The Agent drops traces from any process that also sends data to another APM vendor's backend.",
+      "The CLR Profiling API loads only one profiler per process, and the existing one takes precedence."
+    ],
+    "answer": 2,
+    "explanation": "The CLR Profiling API allows only one profiler per process, so a pre-existing profiler wins and no Datadog traces reach the Agent. Remove the conflicting `CORECLR_*` variables (and any `LD_PRELOAD` entries for that profiler), then restart the app.",
+    "notes": [
+      "Wrong: SSI supports both .NET Core and .NET Framework runtimes.",
+      "Wrong: the Agent does not do this; the conflict is inside the process.",
+      "Correct: one CLR profiler per process, so the other vendor's profiler takes precedence."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/compatibility/#supported-language-runtimes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-024",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "SSI is enabled with Helm (`datadog.apm.instrumentation.enabled: true`). The Agent is installed in the `datadog` namespace. A test app deployed into `datadog` is not instrumented, while apps in other namespaces are. Why?",
+    "options": [
+      "SSI does not instrument applications in the namespace where the Datadog Agent is installed.",
+      "Helm-based installs only instrument the namespaces that are explicitly listed under `enabledNamespaces`.",
+      "SSI only instruments namespaces that carry a `tags.datadoghq.com/env` label."
+    ],
+    "answer": 0,
+    "explanation": "SSI skips the namespace where the Agent runs, so the docs recommend installing the Agent in its own namespace. By default SSI instruments all other namespaces.",
+    "notes": [
+      "Correct: the Agent's namespace is excluded; run apps elsewhere.",
+      "Wrong: with no targeting, SSI instruments all namespaces; `enabledNamespaces` is optional.",
+      "Wrong: by default SSI instruments all services in all namespaces; `tags.datadoghq.com` labels only set Unified Service Tags."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/automatic_instrumentation/single-step-apm/kubernetes/#requirements",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-lang-025",
+    "topic": "APM Fundamentals",
+    "subtopic": "Language Level Differences — Automatic Instrumentation",
+    "difficulty": "medium",
+    "q": "Instead of cluster-wide SSI, a team wants to inject the Java SDK into a single Deployment with local SDK injection. The Admission Controller uses default settings. What must they add to the pod template?",
+    "options": [
+      "Only the annotation `admission.datadoghq.com/java-lib.version: \"<TAG>\"`; pods are mutated by default.",
+      "The label `admission.datadoghq.com/enabled: \"true\"` and the annotation `admission.datadoghq.com/java-lib.version: \"<TAG>\"`.",
+      "The environment variable `JAVA_TOOL_OPTIONS=-javaagent:dd-java-agent.jar` and the label `tags.datadoghq.com/service`."
+    ],
+    "answer": 1,
+    "explanation": "By default the Admission Controller only mutates pods labeled `admission.datadoghq.com/enabled: \"true\"` (unless `mutateUnlabelled` is on). The `<language>-lib.version` annotation picks the SDK and version, which is injected through an init container.",
+    "notes": [
+      "Wrong: without the label or `mutateUnlabelled: true`, the pod is not mutated.",
+      "Correct: the opt-in label plus the language annotation triggers injection.",
+      "Wrong: local SDK injection is driven by the opt-in label and the language annotation; `tags.datadoghq.com` labels only set Unified Service Tags."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/local_sdk_injection/",
+    "verified": "2026-11"
+  }
+]

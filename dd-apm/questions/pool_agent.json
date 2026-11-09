@@ -1,0 +1,527 @@
+[
+  {
+    "id": "ap-agent-001",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "easy",
+    "q": "A locked-down host only allows outbound traffic that is explicitly allowlisted. Which destination must be allowed so the Agent can deliver APM traces to the US1 site?",
+    "options": [
+      "`api.datadoghq.com` on port 8126/TCP",
+      "`trace.agent.datadoghq.com` on port 443/TCP",
+      "`intake.profile.datadoghq.com` on port 4318/TCP"
+    ],
+    "answer": 1,
+    "explanation": "The Agent sends APM data to `trace.agent.<SITE>`, and most Agent data, APM included, goes out over TCP port 443 using SSL. Port 8126 is the local inbound receiver, not an outbound port.",
+    "notes": [
+      "Wrong: `api.<SITE>` is for non-critical API queries, and 8126 is the Agent's local inbound trace receiver, not an outbound port.",
+      "Correct: APM payloads go to `trace.agent.<SITE>` over 443/TCP.",
+      "Wrong: `intake.profile.<SITE>` receives profiling data, and 4318 is the local OTLP/HTTP receiver port."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/configuration/network/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-002",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "The Agent's network reference lists port 8126/TCP as the APM receiver. Besides traces, what does this port receive?",
+    "options": [
+      "Profiles from the Continuous Profiler",
+      "Custom metrics sent with DogStatsD",
+      "Logs tailed from application files"
+    ],
+    "answer": 0,
+    "explanation": "The inbound ports table describes the APM receiver on 8126/TCP as including tracing and the profiler. DogStatsD uses 8125/UDP.",
+    "notes": [
+      "Correct: the 8126/TCP APM receiver handles both tracing and the profiler.",
+      "Wrong: DogStatsD listens on 8125/UDP by default.",
+      "Wrong: log tailing is done by the Agent reading files; it does not use the 8126 receiver."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/configuration/network/#open-ports",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-003",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "easy",
+    "q": "On a Linux host, which section of `/etc/datadog-agent/datadog.yaml` holds the trace collection settings, such as `enabled: true`?",
+    "options": [
+      "`otlp_config`",
+      "`process_config`",
+      "`apm_config`"
+    ],
+    "answer": 2,
+    "explanation": "By default the Agent is configured to receive traces under `apm_config` with `enabled: true` in `datadog.yaml`, and listens at `http://localhost:8126`.",
+    "notes": [
+      "Wrong: `otlp_config` configures OTLP ingestion (ports 4317/4318), not the Datadog trace receiver.",
+      "Wrong: `process_config` configures the Process Agent for live processes.",
+      "Correct: trace collection lives under `apm_config` (env vars use the `DD_APM_` prefix)."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/#install-and-configure-the-agent",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-004",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "hard",
+    "q": "On a Linux host with Agent 7.80, an engineer runs `agent status` before any instrumented app has started. The APM Agent section shows `Not running or unreachable on localhost:8126`. What is the most likely explanation?",
+    "options": [
+      "APM is now off by default on Linux, so `DD_APM_ENABLED=true` must be added",
+      "The trace-agent starts only after it receives trace data, so this is expected for now",
+      "The trace-agent crashed at startup, which the `datadog.trace_agent.panic` metric will confirm"
+    ],
+    "answer": 1,
+    "explanation": "Starting with Agent 7.80.0 on Linux, the trace-agent starts only after receiving trace data, so the status can show APM as not running before any traces are sent. To turn this off, set `apm_config.socket_activation.enabled: false` or `DD_APM_SOCKET_ACTIVATION_ENABLED=false`.",
+    "notes": [
+      "Wrong: `DD_APM_ENABLED` still defaults to `true`; APM was not switched off by default.",
+      "Correct: with socket activation (Agent 7.80.0+ on Linux) the trace-agent waits for trace data before starting.",
+      "Wrong: no traces have been sent yet, so the expected socket-activation behavior explains the status without assuming a crash."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/connection_errors/#datadog-agent-errors",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-005",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "The Agent container is started with `-p 127.0.0.1:8126:8126/tcp`. Which senders can reach its trace receiver through this port mapping?",
+    "options": [
+      "Only processes running on the Docker host itself",
+      "Any machine that can route to the host's network interfaces",
+      "Only containers attached to the same user-defined bridge network"
+    ],
+    "answer": 0,
+    "explanation": "Binding the published port to `127.0.0.1` makes tracing available from your host only. To accept traces from any host, publish it with `-p 8126:8126/tcp` instead.",
+    "notes": [
+      "Correct: `-p 127.0.0.1:8126:8126/tcp` exposes the receiver to the host only.",
+      "Wrong: reaching it from any host requires `-p 8126:8126/tcp` without the loopback address.",
+      "Wrong: container-to-container traffic on a user-defined network does not depend on this host port mapping."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/docker/apm/#tracing-from-the-host",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-006",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "easy",
+    "q": "The Agent runs in a container named `datadog-agent`, and an app runs in another container on the same user-defined bridge network. The app's SDK logs `connection refused` for `localhost:8126`. What should `DD_AGENT_HOST` be in the app container?",
+    "options": [
+      "`127.0.0.1`",
+      "`0.0.0.0`",
+      "`datadog-agent`"
+    ],
+    "answer": 2,
+    "explanation": "On a shared Docker network, the Agent container's name is resolvable from the app container, so `DD_AGENT_HOST` is set to the Agent container name. Port 8126 is the default, so `DD_TRACE_AGENT_PORT` can stay unset.",
+    "notes": [
+      "Wrong: `127.0.0.1` is the app container's own loopback, where no Agent is listening.",
+      "Wrong: `0.0.0.0` is a listen address for servers, not a destination for the SDK.",
+      "Correct: the Agent container name (`datadog-agent`) is the hostname on the shared network."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/docker/apm/#docker-network",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-007",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "An Agent is installed directly on a host. Apps in Docker containers on that host send traces to the host's bridge gateway IP on port 8126, and the connections are refused. Which `datadog.yaml` change fixes this?",
+    "options": [
+      "Set `dogstatsd_non_local_traffic: true` at the top level",
+      "Set `apm_non_local_traffic: true` in the `apm_config` section",
+      "Set `receiver_port: 0` in the `apm_config` section"
+    ],
+    "answer": 1,
+    "explanation": "For containerized senders, set `apm_non_local_traffic: true` in the `apm_config` section so the trace receiver accepts traffic that is not local. The env var equivalent is `DD_APM_NON_LOCAL_TRAFFIC`.",
+    "notes": [
+      "Wrong: `dogstatsd_non_local_traffic` opens DogStatsD (8125/UDP) to non-local traffic, not the trace receiver.",
+      "Correct: `apm_config.apm_non_local_traffic: true` lets the trace-agent accept traces from containers.",
+      "Wrong: `receiver_port: 0` disables the HTTP trace receiver entirely."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/#containers",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-008",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "easy",
+    "q": "In Kubernetes, SDKs can reach the node's Agent over a Unix Domain Socket, over TCP to the node IP, or through a Kubernetes service. Which option does Datadog recommend?",
+    "options": [
+      "TCP to the node IP on hostPort 8126",
+      "A Kubernetes service with `internalTrafficPolicy: Local`",
+      "A Unix Domain Socket (UDS)"
+    ],
+    "answer": 2,
+    "explanation": "The Kubernetes APM docs list UDS, TCP and Kubernetes service as transports and recommend UDS, although all three can be used at the same time.",
+    "notes": [
+      "Wrong: TCP with hostPort is supported but not the recommended option, and it opens a port on the node.",
+      "Wrong: the Kubernetes service is the fallback when `hostPath` volumes and `hostPort` ports are not available.",
+      "Correct: Datadog recommends UDS for sending traces to the Agent in Kubernetes."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/kubernetes/apm/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-009",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "easy",
+    "q": "A Kubernetes Deployment sends traces over TCP to the Agent on its node and sets `DD_AGENT_HOST` manually with the downward API. Which field should it use?",
+    "options": [
+      "`status.hostIP`",
+      "`status.podIP`",
+      "`spec.nodeName`"
+    ],
+    "answer": 0,
+    "explanation": "For TCP, the application container gets `DD_AGENT_HOST` from `valueFrom.fieldRef.fieldPath: status.hostIP`, the IP of the node where the Agent listens on its hostPort.",
+    "notes": [
+      "Correct: `status.hostIP` gives the node IP, where the Agent's hostPort 8126 is exposed.",
+      "Wrong: `status.podIP` is the application pod's own IP, where no Agent listens.",
+      "Wrong: `spec.nodeName` is the node name, not the IP address the docs use for the Agent host."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/kubernetes/apm/#configure-your-application-pods-to-submit-traces-to-datadog-agent",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-010",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "hard",
+    "q": "A team sets `datadog.apm.portEnabled: true` in Helm, but their network plugin does not support `hostPorts`, so pods still cannot reach port 8126 on the node. Per the Kubernetes APM docs, what change lets the TCP setup work?",
+    "options": [
+      "Change `datadog.apm.port` to `4318`",
+      "Add `hostNetwork: true` to the Agent pod specification",
+      "Set `DD_APM_RECEIVER_PORT=0` on the trace-agent container"
+    ],
+    "answer": 1,
+    "explanation": "If the network plugin does not support `hostPorts`, the docs say to add `hostNetwork: true` to the Agent pod spec, which shares the host's network namespace. Ports used on both the host and the container then conflict, and some installations do not allow it.",
+    "notes": [
+      "Wrong: 4318 is the OTLP/HTTP port; changing the port number does not fix missing hostPort support.",
+      "Correct: `hostNetwork: true` puts the Agent in the host network namespace when hostPorts are unsupported.",
+      "Wrong: a receiver port of `0` disables the HTTP trace receiver."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/kubernetes/apm/#configure-the-datadog-agent-to-accept-traces-over-tcp",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-011",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "The Cluster Agent's Admission Controller runs with `mutateUnlabelled: false`. New pods with no Datadog labels start without `DD_AGENT_HOST`. What makes the Admission Controller inject the configuration into a pod?",
+    "options": [
+      "Add the pod annotation `ad.datadoghq.com/apm.enabled: \"true\"`",
+      "Set `DD_APM_NON_LOCAL_TRAFFIC=true` in the application container",
+      "Add the pod label `admission.datadoghq.com/enabled: \"true\"`"
+    ],
+    "answer": 2,
+    "explanation": "With `mutateUnlabelled: false`, only pods labeled `admission.datadoghq.com/enabled: \"true\"` are injected. A pod labeled `\"false\"` is never injected, even with `mutateUnlabelled: true`.",
+    "notes": [
+      "Wrong: this is not the Admission Controller opt-in; it uses a pod label, not an `ad.datadoghq.com` annotation.",
+      "Wrong: `DD_APM_NON_LOCAL_TRAFFIC` is an Agent-side setting and does not trigger injection into app pods.",
+      "Correct: the `admission.datadoghq.com/enabled: \"true\"` label opts the pod in when `mutateUnlabelled` is false."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/cluster_agent/admission_controller/#apm-and-dogstatsd-environment-variable-injection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-012",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "The Admission Controller's APM communication mode is set to `socket`. What does it inject into application pods?",
+    "options": [
+      "The node's host IP in `DD_AGENT_HOST`, for TCP on port 8126",
+      "The UDS path in `DD_TRACE_AGENT_URL`, plus a volume for that path",
+      "The Agent's local-service DNS name in the `DD_AGENT_HOST` variable"
+    ],
+    "answer": 1,
+    "explanation": "In `socket` mode the Admission Controller injects the Unix Domain Socket path in `DD_TRACE_AGENT_URL` and the volume definition to access it, plus `DD_DOGSTATSD_URL` for metrics. `hostip` (the default) and `service` modes set `DD_AGENT_HOST` instead.",
+    "notes": [
+      "Wrong: injecting the host IP in `DD_AGENT_HOST` is the `hostip` mode (the default).",
+      "Correct: `socket` mode injects the UDS path in `DD_TRACE_AGENT_URL` and mounts the socket volume.",
+      "Wrong: the local-service DNS name in `DD_AGENT_HOST` is the `service` mode (Kubernetes 1.22+)."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/cluster_agent/admission_controller/#configure-apm-and-dogstatsd-communication-mode",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-013",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "Another service already uses port 8126, so an admin changes `receiver_port` in `datadog.yaml` to 8136. Traces stop arriving. What else must change?",
+    "options": [
+      "Nothing; SDKs read the new port from the Agent's `/info` endpoint",
+      "Set `DD_DOGSTATSD_PORT=8136` in each application",
+      "Set `DD_TRACE_AGENT_PORT=8136` in each application"
+    ],
+    "answer": 2,
+    "explanation": "If you change the APM receiver port on the Agent, you must also change the SDK configuration for that port. In the SDK that means `DD_TRACE_AGENT_PORT` or `DD_TRACE_AGENT_URL`.",
+    "notes": [
+      "Wrong: SDKs default to 8126 and do not discover a changed receiver port on their own.",
+      "Wrong: `DD_DOGSTATSD_PORT` controls the DogStatsD metrics port, not the trace receiver port.",
+      "Correct: the SDK's trace port (`DD_TRACE_AGENT_PORT` or `DD_TRACE_AGENT_URL`) must match the Agent's `receiver_port`."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/configuration/network/#configure-ports",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-014",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "easy",
+    "q": "Several services on one host use the default sampling mechanism, with no SDK sampling rules. Which overall target does the Agent use when it computes sampling rates for them?",
+    "options": [
+      "About 10 traces per second, shared across the services",
+      "About 100 traces per second for each service instance",
+      "About 200 traces per second, shared across the services"
+    ],
+    "answer": 0,
+    "explanation": "The Agent sends sampling rates to the SDKs to reach a target of ten traces per second overall, distributed by traffic. It is set with `apm_config.target_traces_per_second` or `DD_APM_TARGET_TPS` (default 10).",
+    "notes": [
+      "Correct: the Agent's default target is 10 traces per second (`DD_APM_TARGET_TPS`).",
+      "Wrong: 100 traces per second per service instance is the SDK rate limit (`DD_TRACE_RATE_LIMIT`), used with SDK sampling rules.",
+      "Wrong: 200 is the default of `DD_APM_MAX_EPS`, the maximum APM events per second to sample, not the traces-per-second target."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#in-the-agent",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-015",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "hard",
+    "q": "A team on a current Agent wants to keep traces for low-traffic resources that head-based sampling misses, but finds no spans with `ingestion_reason:rare`. Which Agent setting turns that sampler on?",
+    "options": [
+      "`DD_APM_DISABLE_RARE_SAMPLER=false`",
+      "`DD_APM_ERROR_TPS=5`",
+      "`DD_APM_ENABLE_RARE_SAMPLER=true`"
+    ],
+    "answer": 2,
+    "explanation": "Since Agent 6/7.41.0 the rare sampler is not enabled by default; turn it on with `apm_config.enable_rare_sampler` or `DD_APM_ENABLE_RARE_SAMPLER=true`. It then catches rare combinations of `env`, `service`, `name`, `resource`, `error.type` and `http.status` at up to 5 traces per second per Agent.",
+    "notes": [
+      "Wrong: `DD_APM_DISABLE_RARE_SAMPLER` was the setting for Agent 7.33 to 7.40, when the rare sampler was on by default.",
+      "Wrong: `DD_APM_ERROR_TPS` sets the error sampler's rate (default 10), not the rare sampler.",
+      "Correct: on Agent 7.41.0+ the rare sampler is off by default and is enabled with `DD_APM_ENABLE_RARE_SAMPLER=true`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#rare-traces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-016",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "The Agent log repeatedly shows `http: Accept error: request has been rate-limited; retrying in 80ms`. Which setting should be raised?",
+    "options": [
+      "`apm_config.connection_limit` (`DD_APM_CONNECTION_LIMIT`)",
+      "`apm_config.max_memory` (`DD_APM_MAX_MEMORY`)",
+      "`DD_TRACE_RATE_LIMIT` in each SDK"
+    ],
+    "answer": 0,
+    "explanation": "This error means the APM connection limit (default 2000 connections per 30-second window) was exceeded. Raise `connection_limit` under `apm_config`, or `DD_APM_CONNECTION_LIMIT` in containers.",
+    "notes": [
+      "Correct: the rate-limited Accept error points to the APM connection limit, default 2000.",
+      "Wrong: `max_memory` relates to the memory watchdog, whose error is `Memory threshold exceeded`.",
+      "Wrong: `DD_TRACE_RATE_LIMIT` caps traces kept by SDK sampling rules; it does not change how many connections the Agent accepts."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/agent_rate_limits/#maximum-connection-limit",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-017",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "hard",
+    "q": "In Kubernetes, the trace-agent logs `Killing process. Memory threshold exceeded` and restarts. The team wants pod resource limits, not the trace-agent's own threshold, to control memory. What should they set on the trace-agent?",
+    "options": [
+      "`DD_APM_MAX_CPU_PERCENT=0`",
+      "`DD_APM_CONNECTION_LIMIT=0`",
+      "`DD_APM_MAX_MEMORY=0`"
+    ],
+    "answer": 2,
+    "explanation": "The trace-agent kills itself when memory reaches 150% of `max_memory`. Since Agent 7.23.0, setting `max_memory` (`DD_APM_MAX_MEMORY`) to `0` disables this limit so an orchestrator such as Kubernetes can manage memory.",
+    "notes": [
+      "Wrong: `DD_APM_MAX_CPU_PERCENT=0` hands CPU limits to the orchestrator, not memory.",
+      "Wrong: the connection limit controls incoming connections and is unrelated to the memory watchdog.",
+      "Correct: `DD_APM_MAX_MEMORY=0` (7.23.0+) disables the trace-agent memory limit in favor of the orchestrator."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/agent_rate_limits/#maximum-memory-limit",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-018",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "A dashboard shows the metric `datadog.trace_agent.cpu_percent` at 150. What does this value mean?",
+    "options": [
+      "The trace-agent is using 150% of its `max_cpu_percent` limit",
+      "The trace-agent is using 1.5 CPU cores",
+      "The host's total CPU capacity is 150% oversubscribed"
+    ],
+    "answer": 1,
+    "explanation": "`datadog.trace_agent.cpu_percent` is CPU usage as a percentage of one core: 50 is half a core and 200 is two cores. So 150 means one and a half cores.",
+    "notes": [
+      "Wrong: the metric is not relative to `max_cpu_percent`; you compare the two values yourself.",
+      "Correct: the value is a percentage of one core, so 150 = 1.5 cores.",
+      "Wrong: the metric reports the trace-agent's own usage, not host-wide CPU."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/agent_apm_metrics/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-019",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "easy",
+    "q": "A span's query was `SELECT data FROM table WHERE key=123 LIMIT 10`, but its resource name in Datadog reads `SELECT data FROM table WHERE key = ? LIMIT ?`. Which component replaced the numbers?",
+    "options": [
+      "Sensitive Data Scanner, after ingestion",
+      "The Datadog Agent, before sending the span",
+      "The retention filter that indexed the span"
+    ],
+    "answer": 1,
+    "explanation": "The Datadog Agent obfuscates resource names for known cases, including SQL numeric literals and bind variables, before the span is sent to Datadog.",
+    "notes": [
+      "Wrong: Sensitive Data Scanner is an optional remediation at ingestion; this replacement is the Agent's built-in obfuscation.",
+      "Correct: the Agent replaces SQL numeric literals and bind variables with `?` in the resource name.",
+      "Wrong: retention filters decide which spans are indexed; they do not rewrite resource names."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/configure_data_security/#resource-names",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-020",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "An OpenTelemetry SDK exports OTLP over gRPC to `localhost:4317` on a host whose Datadog Agent still has its default configuration. The exporter gets `connection refused`. Why?",
+    "options": [
+      "OTLP ingestion is off by default in the Agent",
+      "The Agent's OTLP gRPC receiver listens on 8126, not 4317",
+      "The Agent accepts OTLP only over HTTP (4318), not gRPC"
+    ],
+    "answer": 0,
+    "explanation": "OTLP ingestion in the Agent is off by default. Turn it on in `datadog.yaml` with `otlp_config.receiver.protocols.grpc.endpoint` (default port 4317) or the HTTP endpoint (default port 4318), or with the matching `DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_*_ENDPOINT` env vars.",
+    "notes": [
+      "Correct: OTLP ingestion must be turned on; once enabled, the gRPC receiver's default port is 4317.",
+      "Wrong: 8126 is the Datadog trace receiver; OTLP uses 4317 (gRPC) and 4318 (HTTP).",
+      "Wrong: the Agent ingests OTLP over both gRPC (4317) and HTTP (4318)."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/setup/otlp_ingest_in_the_agent/#enabling-otlp-ingestion-on-the-datadog-agent",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-021",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "hard",
+    "q": "In a manual DaemonSet install, an admin sets `DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_GRPC_ENDPOINT=0.0.0.0:4317` on the core `agent` container and maps hostPort 4317. OTLP traces still do not appear in APM. What is missing?",
+    "options": [
+      "The same variable must also be set on the `trace-agent` container",
+      "The hostPort 4317 must be mapped on the `trace-agent` container instead",
+      "`DD_OTLP_CONFIG_LOGS_ENABLED` must be `true` before traces are accepted"
+    ],
+    "answer": 0,
+    "explanation": "The OTLP endpoint variables must be passed to both the core Agent and the trace Agent processes. In a DaemonSet that means both the `agent` and `trace-agent` containers.",
+    "notes": [
+      "Correct: the trace Agent process also needs the OTLP endpoint variable, so set it on the `trace-agent` container too.",
+      "Wrong: the docs map hostPort 4317/4318 on the core `agent` container; what is missing is the env var on the `trace-agent` container.",
+      "Wrong: OTLP logs are optional and off by default; traces work without them."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/setup/otlp_ingest_in_the_agent/#enabling-otlp-ingestion-on-the-datadog-agent",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-022",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "easy",
+    "q": "A team moves a service to AWS Lambda, where they cannot install a host Agent. What takes the Agent's place for sending the function's traces, metrics and logs to Datadog?",
+    "options": [
+      "The Datadog Cluster Agent",
+      "The Datadog Lambda Extension",
+      "A trace-agent sidecar listening on port 8126"
+    ],
+    "answer": 1,
+    "explanation": "The Datadog Lambda Extension is a lightweight version of the Datadog Agent that runs inside the Lambda execution environment. It submits custom metrics, enhanced metrics, traces and logs directly to Datadog.",
+    "notes": [
+      "Wrong: the Cluster Agent is a Kubernetes component; it does not run inside Lambda functions.",
+      "Correct: the Lambda Extension runs alongside the function code and plays the Agent's role.",
+      "Wrong: the Agent's role in Lambda is filled by the Extension, which is added as a Lambda layer, not a container sidecar."
+    ],
+    "ref": "https://docs.datadoghq.com/serverless/guide/extension_motivation/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-023",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "After adding the Datadog Lambda Extension, `aws.lambda.enhanced.duration` went up slightly. Which metric shows the function's own run time, without the time the extension spends flushing data?",
+    "options": [
+      "`aws.lambda.enhanced.runtime_duration`",
+      "`aws.lambda.enhanced.post_runtime_duration`",
+      "`aws.lambda.duration`"
+    ],
+    "answer": 0,
+    "explanation": "The extension's flush time counts in the reported duration but runs after the response is returned. To monitor the function's real performance without that overhead, use `aws.lambda.enhanced.runtime_duration`.",
+    "notes": [
+      "Correct: `aws.lambda.enhanced.runtime_duration` excludes the duration added by the extension.",
+      "Wrong: `aws.lambda.enhanced.post_runtime_duration` measures the extension's flush overhead itself.",
+      "Wrong: `aws.lambda.duration` includes the extension's flush time."
+    ],
+    "ref": "https://docs.datadoghq.com/serverless/libraries_integrations/extension/#overhead",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-024",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "An app container cannot send traces to the Agent container. Which check, run from inside the app container, shows whether it can reach the Agent's trace receiver?",
+    "options": [
+      "`agent status`, then read its APM Agent section",
+      "`curl -X GET http://<agent_ip>:8126/info`",
+      "`agent flare <CASE_ID> --local`"
+    ],
+    "answer": 1,
+    "explanation": "The connection errors guide says to run `curl -X GET http://{agent_ip}:{agent_port}/info` from the application container. If it fails, the container cannot access the Agent.",
+    "notes": [
+      "Wrong: `agent status` runs where the Agent is (the Agent or trace-agent container), not in the app container.",
+      "Correct: curling the Agent's `/info` endpoint from the app container tests the network path to the receiver.",
+      "Wrong: a flare collects Agent diagnostics for Support and is run from the Agent, not the app container."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/connection_errors/#check-network-configuration",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-agent-025",
+    "topic": "Application Instrumentation",
+    "subtopic": "Datadog Agent Architecture",
+    "difficulty": "medium",
+    "q": "On Amazon ECS on Fargate, the Agent runs as a container in the same task as the app. How should `DD_AGENT_HOST` be set for the app?",
+    "options": [
+      "To the host IP from the EC2 metadata endpoint",
+      "To the Docker gateway IP, usually `172.17.0.1`",
+      "Leave it unset; localhost reaches the Agent"
+    ],
+    "answer": 2,
+    "explanation": "In most containerized setups sending to `localhost` is wrong, but ECS on Fargate and EKS on Fargate are exceptions. For them the docs say not to set `DD_AGENT_HOST`.",
+    "notes": [
+      "Wrong: the EC2 metadata endpoint is used for Amazon ECS on EC2, not Fargate.",
+      "Wrong: the gateway IP is used for AWS Elastic Beanstalk single-container setups.",
+      "Correct: on ECS Fargate (and EKS Fargate) leave `DD_AGENT_HOST` unset, because localhost reaches the Agent."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/connection_errors/#review-where-your-sdk-is-trying-to-send-traces",
+    "verified": "2026-11"
+  }
+]

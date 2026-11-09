@@ -1,0 +1,794 @@
+<div class="sheet">
+  <div class="stack" style="gap:8px">
+    <h2 style="font-size:1.5rem">Cheat sheet</h2>
+    <p class="hint">Everything the exam guide lists, on one page. Checked against the live Datadog docs, <span id="checked"></span>. Each section ends with links to its sources. Sections marked <span class="badge">Exam-heavy</span> come up most.</p>
+    <div class="toc" aria-label="Jump to section">
+      <button data-jumpto="lm-agent">Agent files &amp; commands</button>
+      <button data-jumpto="lm-rules">Agent filtering &amp; scrubbing</button>
+      <button data-jumpto="lm-pipes">Pipelines</button>
+      <button data-jumpto="lm-search">Search syntax</button>
+      <button data-jumpto="lm-explorer">Explorer</button>
+      <button data-jumpto="lm-metrics">Log-based metrics</button>
+      <button data-jumpto="lm-export">Export &amp; archives</button>
+      <button data-jumpto="lm-glance">Exam at a glance</button>
+      <button data-jumpto="lm-lwl">Why logs &amp; LwL</button>
+      <button data-jumpto="lm-formats">Formats &amp; limits</button>
+      <button data-jumpto="lm-emit">Emission</button>
+      <button data-jumpto="lm-sources">Log sources &amp; tags</button>
+      <button data-jumpto="lm-procs">Processors</button>
+      <button data-jumpto="lm-grok">Grok</button>
+      <button data-jumpto="lm-attrs">Standard attributes</button>
+      <button data-jumpto="lm-live">Live Tail vs Explorer</button>
+      <button data-jumpto="lm-indexes">Indexes &amp; exclusion</button>
+      <button data-jumpto="lm-analytics">Aggregations &amp; visuals</button>
+      <button data-jumpto="lm-monitors">Monitors</button>
+      <button data-jumpto="lm-trouble">Troubleshooting</button>
+    </div>
+  </div>
+
+  <!-- AGENT -->
+  <section class="panel" id="lm-agent">
+    <div class="cs-head"><h2>Agent: turning logs on, files, commands</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">Log collection is <b>off by default</b> (Agent 6+). <code>logs_enabled: true</code> only starts the Logs Agent: you also need at least one <code>logs:</code> section. Restart after every change.</p>
+    <pre class="code"># /etc/datadog-agent/datadog.yaml
+api_key: &lt;DATADOG_API_KEY&gt;
+site: datadoghq.com            # must match your org
+logs_enabled: true             # container: DD_LOGS_ENABLED=true
+
+# /etc/datadog-agent/conf.d/myapp.d/conf.yaml
+logs:
+  - type: file
+    path: /var/log/myapp/*.log
+    service: myapp
+    source: python</pre>
+    <div class="tbl"><table>
+      <thead><tr><th>Platform</th><th>Main config</th><th>Checks / log sources</th><th>Agent's own logs</th></tr></thead>
+      <tbody>
+        <tr><td>Linux / AIX</td><td><code>/etc/datadog-agent/datadog.yaml</code></td><td><code>/etc/datadog-agent/conf.d/</code></td><td><code>/var/log/datadog/</code> (owned by <code>dd-agent</code>)</td></tr>
+        <tr><td>macOS</td><td><code>/opt/datadog-agent/etc/datadog.yaml</code></td><td><code>/opt/datadog-agent/etc/conf.d/</code></td><td><code>/opt/datadog-agent/logs</code> (7.28+)</td></tr>
+        <tr><td>Windows</td><td><code>%ProgramData%\Datadog\datadog.yaml</code></td><td><code>%ProgramData%\Datadog\conf.d</code></td><td><code>C:\ProgramData\Datadog\logs</code></td></tr>
+      </tbody>
+    </table></div>
+    <h3>Commands</h3>
+    <div class="tbl wrapmono"><table>
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td>sudo datadog-agent status</td><td>Health, <b>Logs Agent</b> section: transport, LogsProcessed/LogsSent, each source with its status and files tailed</td></tr>
+        <tr><td>datadog-agent configcheck</td><td>Prints every configuration <b>loaded and resolved</b> by the running Agent (including Autodiscovery log configs)</td></tr>
+        <tr><td>datadog-agent stream-logs</td><td>Streams the logs the running Agent is processing; filter with <code>--name</code>, <code>--service</code>, <code>--source</code></td></tr>
+        <tr><td>datadog-agent flare &lt;CASE_ID&gt;</td><td>Sends config files and logs (secrets removed) to Support</td></tr>
+        <tr><td>datadog-agent diagnose</td><td>Connectivity diagnosis</td></tr>
+        <tr><td>datadog-agent config set log_level debug</td><td>Runtime change (6.19+/7.19+), lost at restart. <code>config list-runtime</code> lists editable settings</td></tr>
+        <tr><td>datadog-agent hostname · health · check &lt;name&gt;</td><td>Hostname used, current health, run one check once</td></tr>
+        <tr><td>sudo systemctl restart datadog-agent</td><td>Restart on Linux. Kubernetes: delete the Agent pod. Windows: <code>agent.exe restart-service</code></td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li><code>Logs Agent is not running</code> = <code>logs_enabled</code> missing. No integrations and <code>LogsProcessed: 0</code> = enabled but no source configured.</li>
+      <li>Several YAML files pointing at the same log source: the Agent uses the first in <b>alphabetical order</b>. Every valid YAML file in a <code>&lt;check&gt;.d/</code> folder is loaded.</li>
+      <li>Agent logs roll over at 10 MB with 1 backup. Debug: <code>log_level: DEBUG</code> (container <code>DD_LOG_LEVEL=debug</code>), restart, then set it back.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/agent/logs/?tab=tailfiles" target="_blank" rel="noopener">Host Agent log collection</a> <a href="https://docs.datadoghq.com/agent/configuration/agent-configuration-files/" target="_blank" rel="noopener">Agent config files</a> <a href="https://docs.datadoghq.com/agent/configuration/agent-commands/" target="_blank" rel="noopener">Agent commands</a> <a href="https://docs.datadoghq.com/agent/configuration/agent-log-files/" target="_blank" rel="noopener">Agent log files</a> <a href="https://docs.datadoghq.com/agent/troubleshooting/debug_mode/" target="_blank" rel="noopener">Debug mode</a> <a href="https://docs.datadoghq.com/agent/troubleshooting/send_a_flare/" target="_blank" rel="noopener">Flare</a></p>
+  </section>
+
+  <!-- AGENT RULES -->
+  <section class="panel" id="lm-rules">
+    <div class="cs-head"><h2>Agent filtering and scrubbing</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">Rules run on the host before logs leave it, in list order, each on the output of the previous one. Patterns are Golang regexp. Per source: <code>log_processing_rules</code>. Global: <code>logs_config.processing_rules</code> in <code>datadog.yaml</code> (or <code>DD_LOGS_CONFIG_PROCESSING_RULES</code>). A source's own rules <b>replace</b> the global rules for that source.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Rule type</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>exclude_at_match</code></td><td>Drop the log if the pattern is found in the message. <b>The way to filter specific logs out by value</b></td></tr>
+        <tr><td><code>include_at_match</code></td><td>Send only logs that match. Several include rules = all must match (AND); for OR use one rule <code>abc|123</code></td></tr>
+        <tr><td><code>mask_sequences</code></td><td>Replace matches with <code>replace_placeholder</code> (capture groups <code>$1</code>, <code>${2}</code> from 7.17). <b>The way to keep a log but hide sensitive data</b> before it leaves the host</td></tr>
+        <tr><td><code>exclude_truncated</code></td><td>Drop logs the Agent truncated (7.69+, no pattern)</td></tr>
+        <tr><td><code>multi_line</code></td><td>Per source only: join lines until the pattern (start of a new log) appears again</td></tr>
+      </tbody>
+    </table></div>
+    <pre class="code">logs:
+  - type: file
+    path: /var/log/app/app.log
+    service: cardpayment
+    source: java
+    log_processing_rules:
+      - type: exclude_at_match
+        name: exclude_healthchecks
+        pattern: healthcheck
+      - type: mask_sequences
+        name: mask_credit_cards
+        replace_placeholder: "[masked_credit_card]"
+        pattern: (?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14})
+      - type: multi_line
+        name: new_log_start_with_date
+        pattern: \d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])</pre>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Multi-line</h3>
+        <ul class="notes">
+          <li>Manual <code>multi_line</code> pattern must match the <b>start</b> of a log; a pattern that never matches can lose lines</li>
+          <li>Automatic detection: Agent 7.65.0+, <b>on by default from 7.82.0</b>. A datetime in the first 60 bytes starts a new log; JSON is never aggregated</li>
+          <li>Disable with <code>logs_config.auto_multi_line_detection: false</code>; tune with <code>auto_multi_line_detection_custom_samples</code></li>
+          <li>7.67+ compacts pretty-printed JSON before processing rules, so <code>"key": "value"</code> patterns stop matching</li>
+          <li>In labels and annotations escape <code>\d</code> as <code>\\d</code> and keep valid JSON</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Sensitive Data Scanner (in Datadog)</h3>
+        <ul class="notes">
+          <li>Scans after logs reach Datadog, <b>before indexing</b>. Use Agent <code>mask_sequences</code> when data must not leave your environment</li>
+          <li>Scanning group (filter + products) holds scanning rules (library or regex). New groups are <b>disabled</b> by default</li>
+          <li>Actions: Redact, Partially redact, Hash (irreversible), Mask (unmask with <code>data_scanner_unmask</code>). Sampling blocks obfuscating actions</li>
+          <li>Only new data is scanned. Already-indexed sensitive logs: restriction query on the Data Access page, or Logs Data Deletion (cancellable 10 days; derived metrics are not deleted)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tbl plain"><table>
+      <thead><tr><th></th><th>Agent <code>exclude_at_match</code></th><th>Index exclusion filter</th></tr></thead>
+      <tbody>
+        <tr><td>Where</td><td>On the host, before sending</td><td>In Datadog, after ingestion and pipelines</td></tr>
+        <tr><td>Ingested and billed for ingestion?</td><td>No</td><td>Yes</td></tr>
+        <tr><td>Live Tail, archives, log-based metrics</td><td>Not available</td><td>Still available</td></tr>
+        <tr><td>How to change</td><td>Edit Agent config, restart</td><td>Toggle in the UI or API</td></tr>
+      </tbody>
+    </table></div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/agent/logs/advanced_log_collection/#filter-logs" target="_blank" rel="noopener">Filter logs</a> <a href="https://docs.datadoghq.com/agent/logs/advanced_log_collection/#scrub-sensitive-data-from-your-logs" target="_blank" rel="noopener">Scrub sensitive data</a> <a href="https://docs.datadoghq.com/logs/guide/commonly-used-log-processing-rules/" target="_blank" rel="noopener">Common rules</a> <a href="https://docs.datadoghq.com/agent/logs/auto_multiline_detection/" target="_blank" rel="noopener">Auto multi-line</a> <a href="https://docs.datadoghq.com/security/sensitive_data_scanner/" target="_blank" rel="noopener">Sensitive Data Scanner</a> <a href="https://docs.datadoghq.com/logs/guide/manage-sensitive-logs-data-access/" target="_blank" rel="noopener">Sensitive logs</a> <a href="https://docs.datadoghq.com/logs/guide/delete_logs_with_sensitive_data/" target="_blank" rel="noopener">Delete sensitive logs</a></p>
+  </section>
+
+  <!-- PIPELINES -->
+  <section class="panel" id="lm-pipes">
+    <div class="cs-head"><h2>Pipelines</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">Order: JSON preprocessing → every pipeline whose filter matches, in list order, all its processors in sequence → indexes. Processing happens at ingestion, so <b>changes only affect new logs</b>.</p>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Rules</h3>
+        <ul class="notes">
+          <li>A log is tested against <b>every</b> pipeline filter and can be changed by several pipelines</li>
+          <li>The filter is evaluated before the pipeline's processors: you cannot filter on an attribute the same pipeline extracts</li>
+          <li>Nested pipelines: one level only; a nested pipeline holds processors only</li>
+          <li>Best practice: ≤ <b>20 processors per pipeline</b>, ≤ <b>10 parsing rules per Grok parser</b></li>
+          <li><b>No integration for your source?</b> Create a <b>custom pipeline</b> filtered on that source (<code>source:my-app</code>) and add processors</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Integration pipelines</h3>
+        <ul class="notes">
+          <li>Installed automatically when the first log with that <code>source</code> arrives</li>
+          <li><b>Read-only</b>: clone to edit (the clone of a pipeline starts disabled). Cannot be deleted, only disabled</li>
+          <li>They parse the technology's <b>default</b> format; a custom format needs a cloned or custom pipeline</li>
+          <li>Pipeline Library lists every integration pipeline</li>
+        </ul>
+      </div>
+    </div>
+    <div class="tbl plain"><table>
+      <thead><tr><th>When processors write the same attribute</th><th>Processors</th></tr></thead>
+      <tbody>
+        <tr><td>Last write wins</td><td>Grok, Category, Arithmetic, String builder, Lookup, URL, User-Agent, GeoIP, Decoder</td></tr>
+        <tr><td>First write wins</td><td>Status, Service, Message, Trace and Span remappers</td></tr>
+        <tr><td>Last one wins (exception)</td><td>Log Date Remapper</td></tr>
+        <tr><td><code>override_on_conflict</code> (default false)</td><td>Attribute Remapper, Array Map</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li><b>Preview pipeline changes</b>: a live tail processed with your edits; compare Your changes / Entire pipeline; filter All / Impacted / Not impacted logs.</li>
+      <li><b>Pipeline Scanner</b>: tags matching logs with the pipelines and processors that changed them for <b>15 minutes</b>; 3 concurrent sessions, 12 per 12 hours; needs <code>logs_read_config</code> + <code>logs_write_pipelines</code>.</li>
+      <li><b>Unparsed logs</b>: query <code>datadog.pipelines:false</code>; Patterns view kick-starts parsing rules. <b>Auto-Processing</b> parses logs that match no pipeline (on by default for orgs created from Nov 4, 2026; a <code>*</code> pipeline filter turns it off).</li>
+      <li>Permissions: <code>logs_write_pipelines</code> (pipelines), <code>logs_write_processors</code> (processors), <code>logs_read_config</code>.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/log_configuration/pipelines/" target="_blank" rel="noopener">Pipelines</a> <a href="https://docs.datadoghq.com/logs/log_configuration/pipelines/#attribute-precedence" target="_blank" rel="noopener">Attribute precedence</a> <a href="https://docs.datadoghq.com/logs/log_configuration/pipeline_scanner/" target="_blank" rel="noopener">Pipeline Scanner</a> <a href="https://docs.datadoghq.com/logs/guide/detect-unparsed-logs/" target="_blank" rel="noopener">Unparsed logs</a> <a href="https://docs.datadoghq.com/logs/guide/logs-rbac-permissions/" target="_blank" rel="noopener">Logs RBAC</a></p>
+  </section>
+
+  <!-- SEARCH SYNTAX -->
+  <section class="panel" id="lm-search">
+    <div class="cs-head"><h2>Search syntax</h2><span class="badge">Exam-heavy</span></div>
+    <p class="hint">A search = time range (top right) + query. Operators are case-sensitive: <code>AND</code> (default when omitted), <code>OR</code>, <code>-</code> (exclude).</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Query</th><th>Finds</th></tr></thead>
+      <tbody>
+        <tr><td><code>status:error info</code></td><td>Error logs whose message contains the word <code>info</code> (the practice answer writes it <code>status:error and info</code>)</td></tr>
+        <tr><td><code>hello</code> · <code>"hello world"</code></td><td>Free text in <code>message</code>, <code>@title</code>, <code>@error.message</code>, <code>@error.stack</code> · exact phrase (straight quotes)</td></tr>
+        <tr><td><code>*:hello</code></td><td>Full text across <b>all</b> attributes. Not allowed in Live Tail, index, archive, pipeline, rehydration or log-based metric filters</td></tr>
+        <tr><td><code>service:web-app</code> · <code>env:prod</code></td><td>Reserved attribute or tag: no <code>@</code></td></tr>
+        <tr><td><code>@http.status_code:500</code></td><td>Any other attribute: <code>@</code> prefix. Attribute values are case-sensitive</td></tr>
+        <tr><td><code>service:(web-store OR auth)</code></td><td>Either value. A log has one service, so <code>(a AND b)</code> on it matches nothing (the practice answer key still gives <code>source:nginx AND source:redis</code>)</td></tr>
+        <tr><td><code>service:payments -host:canary-01</code></td><td>Exclusion</td></tr>
+        <tr><td><code>@http.status_code:[400 TO 499]</code> · <code>@duration:&gt;20ms</code></td><td>Range and comparison: add the attribute as a facet or measure first</td></tr>
+        <tr><td><code>web*</code> · <code>service:*mongo</code> · <code>waiting**time</code></td><td>Wildcard inside a word · on a value · across words</td></tr>
+        <tr><td><code>@my_attr:hello\:world</code> or <code>@my_attr:"hello:world"</code></td><td>Escape special characters with <code>\</code> or quote the value</td></tr>
+        <tr><td><code>-@http.status_code:*</code></td><td>Logs without that attribute</td></tr>
+        <tr><td><code>CIDR(@network.client.ip, 13.0.0.0/8)</code></td><td>IP in a range; negate with <code>NOT(...)</code>. Works in Live Tail and monitors</td></tr>
+        <tr><td><code>@user_perms:(4 6)</code> · <code>@user_perms:[2 TO 6]</code></td><td>Array contains both · contains one value in range</td></tr>
+        <tr><td><code>tags:my_tag</code> · <code>#latency_gap:&gt;100</code></td><td>Tag without a key · calculated field</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>Free text matches whole words: <code>hello-world</code> splits into two words, <code>my.friend</code> is one word (use <code>*friend</code>), <code>192.168.1.1</code> is one word.</li>
+      <li>Special characters to escape: <code>- ! &amp;&amp; || &gt; &gt;= &lt; &lt;= ( ) { } [ ] " * ? : \ #</code> and spaces. <code>/</code> needs no escape.</li>
+      <li>No facet is needed for <code>key:value</code> search; facets add autocomplete and analytics.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/explorer/search_syntax/" target="_blank" rel="noopener">Search syntax</a> <a href="https://docs.datadoghq.com/logs/explorer/search/" target="_blank" rel="noopener">Search logs</a> <a href="https://docs.datadoghq.com/logs/explorer/advanced_search/" target="_blank" rel="noopener">Advanced search</a></p>
+  </section>
+
+  <!-- EXPLORER -->
+  <section class="panel" id="lm-explorer">
+    <div class="cs-head"><h2>Log Explorer functionality</h2><span class="badge">Exam-heavy</span></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>List view and columns</h3>
+        <ul class="notes">
+          <li><b>Move</b> a column: drag and drop it by its handle (6-dot icon) in the header row</li>
+          <li><b>Add</b> a sortable column: from both the List <b>Options</b> menu and the facet panel (practice answer); the docs also allow the log side panel</li>
+          <li>Sort, rearrange, remove from the header row. Sorting is reliable only on <b>facets</b></li>
+          <li>Default sort: timestamp, newest first (fastest)</li>
+          <li>Options also sets Content Height and Content Display</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Facets and measures</h3>
+        <ul class="notes">
+          <li>Facet (dimension): string or integer, top values, unique counts, filtering</li>
+          <li>Measure: number with optional unit (TIME, BYTES); aggregate, range filter, sort</li>
+          <li>From the side panel: string → facet only; number → facet or measure</li>
+          <li>New facets fill in for <b>new logs only</b>. Keep under about 1000 facets</li>
+          <li>Hiding a facet is personal and does not affect monitors, Live Tail or dashboards</li>
+        </ul>
+      </div>
+    </div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Side panel</h3>
+        <ul class="notes">
+          <li>Top: context (host, container, tags). Bottom: message and attributes</li>
+          <li><b>View in context</b>: lines just before and after, even if they don't match the filter</li>
+          <li>Metrics tab: 30 minutes around the log. Trace tab needs trace ID injection</li>
+          <li>Share: copy the log JSON or Share Event. Save to notebook keeps the log past retention</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Saved views and calculated fields</h3>
+        <ul class="notes">
+          <li>Saved view = query + live time range + visualization + facet subset + columns</li>
+          <li>Default view: private to you. Integration views read-only; custom views shared, editable by all but Read Only users</li>
+          <li>Calculated fields: query-time, <code>#name</code>, private, temporary, up to 5. Good for already indexed logs</li>
+          <li>Watchdog Insights banner: Log Anomaly Detection and Error Outliers for the current query</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/explorer/visualize/#lists" target="_blank" rel="noopener">Lists</a> <a href="https://docs.datadoghq.com/logs/explorer/facets/" target="_blank" rel="noopener">Facets</a> <a href="https://docs.datadoghq.com/logs/explorer/side_panel/" target="_blank" rel="noopener">Side panel</a> <a href="https://docs.datadoghq.com/logs/explorer/saved_views/" target="_blank" rel="noopener">Saved views</a> <a href="https://docs.datadoghq.com/logs/explorer/calculated_fields/" target="_blank" rel="noopener">Calculated fields</a> <a href="https://docs.datadoghq.com/logs/explorer/watchdog_insights/" target="_blank" rel="noopener">Watchdog Insights</a></p>
+  </section>
+
+  <!-- METRICS -->
+  <section class="panel" id="lm-metrics">
+    <div class="cs-head"><h2>Log-based metrics</h2><span class="badge">Exam-heavy</span></div>
+    <div class="facts">
+      <div><span class="label">Retention</span><b>15 months</b><span>10-second granularity</span></div>
+      <div><span class="label">Computed on</span><b>All ingested logs</b><span>Including logs excluded from indexes</span></div>
+      <div><span class="label">Billing</span><b>Custom metrics</b><span>Each tag combination; percentiles count too</span></div>
+      <div><span class="label">Permission</span><b><code>logs_generate_metrics</code></b><span>Standard role by default</span></div>
+    </div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Create</h3>
+        <ul class="notes">
+          <li>Log Explorer <b>Export → Generate new metric</b> (long-term KPIs), or Logs &gt; Generate Metrics &gt; <b>+ New Metric</b></li>
+          <li>Query on the ingest stream: no <code>*:term</code> full text; only logs timestamped within the last 20 minutes</li>
+          <li>Field <code>*</code> = <b>count</b>; a numeric attribute = <b>distribution</b> (count, sum, min, max, avg; optional p50-p99)</li>
+          <li>No tags unless you group by; avoid user IDs, request IDs, timestamps</li>
+          <li>Name: starts with a letter, ASCII letters, digits, <code>_</code>, <code>.</code>, max 200 chars</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Change and cost</h3>
+        <ul class="notes">
+          <li>Editable: query, group-by, percentiles. <b>Not</b> editable: name and type (create a new metric)</li>
+          <li>No backfill: values start when the metric is created</li>
+          <li>Distribution = 5 × tag combinations; with percentiles 10 ×</li>
+          <li>Pattern to cut cost: metric on 200 OK logs, then exclude them from the index</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/" target="_blank" rel="noopener">Generate metrics</a> <a href="https://docs.datadoghq.com/account_management/billing/custom_metrics/" target="_blank" rel="noopener">Custom metric billing</a> <a href="https://docs.datadoghq.com/metrics/custom_metrics/" target="_blank" rel="noopener">Custom metrics</a> <a href="https://docs.datadoghq.com/metrics/distributions/" target="_blank" rel="noopener">Distributions</a></p>
+  </section>
+
+  <!-- EXPORT -->
+  <section class="panel" id="lm-export">
+    <div class="cs-head"><h2>Export, archives, rehydration</h2><span class="badge">Exam-heavy</span></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Export menu item</th><th>Use it to</th></tr></thead>
+      <tbody>
+        <tr><td>Saved View</td><td>Save the investigation for you or teammates</td></tr>
+        <tr><td>Dashboard / Notebook widget</td><td>Reporting and consolidation</td></tr>
+        <tr><td><b>Monitor</b></td><td>Alert people on thresholds from the search query</td></tr>
+        <tr><td><b>Generate new metric</b></td><td>Long-term KPIs (15 months), computed at ingestion</td></tr>
+        <tr><td>cURL command</td><td>Reuse the query with the Logs API</td></tr>
+        <tr><td>CSV</td><td>Up to 100,000 logs, 300 patterns, 500 transactions. Sanitized (line breaks removed, <code>=</code>/<code>+</code>/<code>-</code>/<code>@</code> prefixed with <code>'</code>)</td></tr>
+        <tr><td>Share View</td><td>Link to the current view by email, Slack and so on</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Archives</h3>
+        <ul class="notes">
+          <li>All ingested logs, indexed or not, to your S3, Azure Storage or GCS. Logs go to the first archive whose filter matches</li>
+          <li>Compressed JSON, zstd default (gzip optional), path <code>/dt=YYYYMMDD/hour=HH/</code></li>
+          <li>S3: <code>s3:PutObject</code> to write, <code>s3:GetObject</code> + <code>s3:ListBucket</code> to read back. No Azure immutability, no GCS retention policy</li>
+          <li>Check the bucket after 15 minutes. Permission <code>logs_write_archives</code></li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Reading archives back</h3>
+        <ul class="notes">
+          <li><b>Archive Search</b> (recommended): no re-indexing, 100,000 logs kept 24 hours, no aggregations</li>
+          <li><b>Rehydration</b>: historical view by time range + query, up to 1 billion logs, exclusion filters ignored, default retention 15 days</li>
+          <li>Scan size = everything in the time range, so shorten the range to save cost</li>
+          <li>Forwarding to Splunk, Elasticsearch, HTTP, Sentinel, Google SecOps: Custom Destinations</li>
+          <li>Logs Search API: API key + application key, max 1,000 logs per page, cursor pagination</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/explorer/export/" target="_blank" rel="noopener">Export</a> <a href="https://docs.datadoghq.com/logs/log_configuration/archives/" target="_blank" rel="noopener">Archives</a> <a href="https://docs.datadoghq.com/logs/explorer/archive_search/" target="_blank" rel="noopener">Archive Search</a> <a href="https://docs.datadoghq.com/logs/log_configuration/rehydrating/" target="_blank" rel="noopener">Rehydration</a> <a href="https://docs.datadoghq.com/logs/log_configuration/forwarding_custom_destinations/" target="_blank" rel="noopener">Custom destinations</a> <a href="https://docs.datadoghq.com/logs/guide/access-your-log-data-programmatically/" target="_blank" rel="noopener">Logs API</a></p>
+  </section>
+
+  <!-- EXAM AT A GLANCE -->
+  <section class="panel" id="lm-glance">
+    <h2>Exam at a glance</h2>
+    <p>Log Management Fundamentals: overall knowledge of Datadog Log Management, independent of job role. Pilot exam. Ideal candidates have at least 6 months of hands-on Log Management experience.</p>
+    <div class="facts">
+      <div><span class="label">Questions</span><b>90</b><span>75 scored + 15 unscored pre-test items you cannot tell apart</span></div>
+      <div><span class="label">Seat time</span><b>2 hours</b><span>Maximum. Unanswered questions count as wrong</span></div>
+      <div><span class="label">Format</span><b>Multiple choice</b><span>One correct answer, two or more plausible distractors</span></div>
+      <div><span class="label">Outline</span><b>6 domains</b><span>17 subdomains, no published weights</span></div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Domain</th><th>Subdomains</th></tr></thead>
+      <tbody>
+        <tr><td>Logging Fundamentals</td><td>Logging Systems (rationale &amp; justification) · Logging Formats · Log Emission</td></tr>
+        <tr><td>Log Collection</td><td>Enabling Log Collection · Log Filtering &amp; Obfuscation · Processors &amp; Pipelines · Standard Attributes (the guide's intro calls these last two "log parsing")</td></tr>
+        <tr><td>Log Searching &amp; Filtering</td><td>Live vs. Explorer · Search Syntax · Explorer Functionality</td></tr>
+        <tr><td>Log Analysis</td><td>Filtering and Excluding · Aggregations · Visualizing</td></tr>
+        <tr><td>Log Utilization</td><td>Monitors &amp; Alerting · Metric Generation · Exporting</td></tr>
+        <tr><td>Log Troubleshooting</td><td>Ingestion Issues</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Out of scope</h3>
+        <ul class="notes">
+          <li>Programming, systems architecture, testing</li>
+          <li>Cross-product uses of logs (Cloud SIEM, APM correlation): know the concept only</li>
+          <li>Observability Pipelines (on-premises processing and forwarding)</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Official practice answers to remember</h3>
+        <ul class="notes">
+          <li>Logs explain <b>why</b> something failed and are records for audit/compliance</li>
+          <li>JSON is parsed automatically · Linux logs live in <code>/var/log/</code> · the Agent tails <b>files on disk</b></li>
+          <li><code>dd-agent</code> owns <code>/var/log/datadog/</code> · <code>configcheck</code> prints loaded configs</li>
+          <li>Logging without Limits benefit: <b>archive all logs</b> · Cloud SIEM finds security signals in logs</li>
+          <li>Browser logs are <b>not stored by default</b>; JavaScript apps send logs through the Datadog SDK</li>
+          <li>Log-based metrics are kept <b>15 months</b> · Timeseries/Table split by up to <b>3</b> facets</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://learn.datadoghq.com/bundles/log-management-fundamentals-certification-learning-path" target="_blank" rel="noopener">Learning path</a> <a href="https://learn.datadoghq.com/courses/log-management-fundamentals-practice-exam" target="_blank" rel="noopener">Practice exam</a> <a href="https://docs.datadoghq.com/logs/" target="_blank" rel="noopener">Log Management</a> <a href="https://docs.datadoghq.com/agent/logs/?tab=tailfiles" target="_blank" rel="noopener">Host Agent log collection</a> <a href="https://docs.datadoghq.com/agent/configuration/agent-configuration-files/" target="_blank" rel="noopener">Agent config files</a> <a href="https://docs.datadoghq.com/getting_started/tagging/" target="_blank" rel="noopener">Getting started with tags</a></p>
+  </section>
+
+  <!-- WHY LOGS, LWL -->
+  <section class="panel" id="lm-lwl">
+    <h2>Why logs, Logging without Limits, storage tiers</h2>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>What each signal is good at</h3>
+        <ul class="notes">
+          <li><b>Logs</b>: timestamped records of discrete events. Root cause (the exact error, stack trace, user, request), audit trail, security forensics</li>
+          <li><b>Metrics</b>: numbers over time. Health at a glance, long-term trends, cheap alerting</li>
+          <li><b>Traces</b>: time spent per request across services. "Time in code, CPU, GC, lock contention, I/O" is profiling, not logs</li>
+          <li>Correlate: log side panel <b>Metrics</b> tab; click a graph point &gt; <b>View related logs</b></li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Logging without Limits</h3>
+        <ul class="notes">
+          <li>Decouples <b>ingestion from indexing</b>: ingest and process everything, index what you need, archive everything, generate metrics from everything</li>
+          <li>Lifecycle: intake → JSON preprocessing → pipelines → Live Tail → indexes / archives / log-based metrics</li>
+          <li>Excluded or over-quota logs: <b>not</b> searchable in the Explorer, but still in Live Tail, archives, log-based metrics and Cloud SIEM</li>
+          <li>Noise workflow: Patterns view → pattern panel <b>Add Exclusion Filter</b> → Generate Metrics with the same query → anomaly monitor on that metric</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Pick a storage tier</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Tier</th><th>Use it for</th><th>Key facts</th></tr></thead>
+      <tbody>
+        <tr><td>Standard indexing</td><td>Logs queried often, short retention (application logs)</td><td>Full Explorer, analytics, log monitors, Watchdog. Retention per index</td></tr>
+        <tr><td>Flex Logs</td><td>Long retention, occasional urgent queries (security, CDN, DNS, load balancer, VPC flow, CI/CD, audit)</td><td>Storage decoupled from compute. <b>No monitors, no Watchdog</b>; dashboards ok. Starter retention 3/6/12/15 months; scalable 30-450 days. Sizes Starter, XS, XS+, S, M, L. Downgrade once per 15 days</td></tr>
+        <tr><td>Archives</td><td>Rarely queried, long-term (audit, config, compliance)</td><td>Your own S3 / Azure / GCS bucket. Read back with Archive Search or rehydration</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>Standard 3 days + Flex 90 days = 3 days Standard, then 87 days Flex. Enable on <b>Flex Logs Controls</b> (<code>flex_logs_config_write</code>), then per index under Configure Storage Tier and Retention. Toggle <b>Include Flex Logs</b> next to the time picker to search them.</li>
+    </ul>
+    <h3>Severity and the official <code>status</code></h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Value starts with</th><th>Status</th><th>Value starts with</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td><code>emerg</code> or <code>f</code> (FATAL)</td><td>emerg (0)</td><td><code>w</code></td><td>warning (4)</td></tr>
+        <tr><td><code>a</code></td><td>alert (1)</td><td><code>n</code></td><td>notice (5)</td></tr>
+        <tr><td><code>c</code></td><td>critical (2)</td><td><code>i</code></td><td>info (6)</td></tr>
+        <tr><td><code>err</code></td><td>error (3)</td><td><code>d</code>, <code>t</code>, <code>v</code>, <code>trace</code>, <code>verbose</code></td><td>debug (7)</td></tr>
+        <tr><td><code>o</code> or <code>s</code>, <code>OK</code>, <code>Success</code></td><td><b>OK</b> (so <code>SEVERE</code> → OK)</td><td>Integers 0-7 / anything else</td><td>Syslog severity / info (6)</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>Default status is <b>INFO</b>. JSON keys read as status: <code>status</code>, <code>severity</code>, <code>level</code>, <code>syslog.severity</code>. Any other key needs a Log Status Remapper (or add it first in Preprocessing for JSON logs).</li>
+      <li>Only the <b>first</b> status remapper applies, across all matching pipelines. Integrations map HTTP codes 2xx OK, 3xx notice, 4xx warning, 5xx error.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/" target="_blank" rel="noopener">Log Management</a> <a href="https://docs.datadoghq.com/logs/guide/getting-started-lwl/" target="_blank" rel="noopener">LwL guide</a> <a href="https://docs.datadoghq.com/logs/log_configuration/flex_logs/" target="_blank" rel="noopener">Flex Logs</a> <a href="https://docs.datadoghq.com/logs/log_configuration/archives/" target="_blank" rel="noopener">Archives</a> <a href="https://docs.datadoghq.com/logs/log_configuration/processors/log_status_remapper/" target="_blank" rel="noopener">Status remapper</a> <a href="https://docs.datadoghq.com/logs/guide/correlate-logs-with-metrics/" target="_blank" rel="noopener">Correlate logs and metrics</a> <a href="https://docs.datadoghq.com/glossary/" target="_blank" rel="noopener">Glossary</a></p>
+  </section>
+
+  <!-- FORMATS -->
+  <section class="panel" id="lm-formats">
+    <h2>Formats, reserved attributes, timestamps, limits</h2>
+    <p class="hint"><b>JSON is parsed automatically</b>: every key becomes an attribute with no pipeline. Plain text, syslog, Apache/NGINX lines and key=value arrive as one <code>message</code> and need a Grok parser (or the matching integration pipeline).</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Reserved attribute</th><th>JSON keys read by default (preprocessing, checked in order)</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>host</code></td><td><code>host</code>, <code>hostname</code>, <code>syslog.hostname</code></td><td>Preprocessing is the <b>only</b> way to set host. On Kubernetes a JSON <code>hostname</code> overrides the Agent hostname and loses host tags</td></tr>
+        <tr><td><code>source</code></td><td><code>ddsource</code></td><td>Matching an integration name installs that integration's pipeline and facets</td></tr>
+        <tr><td><code>date</code></td><td><code>@timestamp</code>, <code>timestamp</code>, <code>_timestamp</code>, <code>Timestamp</code>, <code>eventTime</code>, <code>date</code>, <code>published_date</code>, <code>syslog.timestamp</code></td><td>Put a custom key <b>first</b> to make it win. No date = intake time</td></tr>
+        <tr><td><code>message</code></td><td><code>message</code>, <code>msg</code>, <code>log</code></td><td>Log body, indexed for full-text search</td></tr>
+        <tr><td><code>status</code></td><td><code>status</code>, <code>severity</code>, <code>level</code>, <code>syslog.severity</code></td><td>Used by Patterns and the UI layout</td></tr>
+        <tr><td><code>service</code></td><td><code>service</code>, <code>syslog.appname</code>, <code>dd.service</code></td><td>Must match the APM service name (unified service tagging)</td></tr>
+        <tr><td><code>trace_id</code> / span ID</td><td><code>dd.trace_id</code>, <code>contextMap.dd.trace_id</code>, <code>named_tags.dd.trace_id</code>, <code>trace_id</code> (span: same with <code>span_id</code>)</td><td>Correlates the log with its trace</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Timestamps</h3>
+        <ul class="notes">
+          <li>Recognized: <b>ISO8601</b>, <b>UNIX milliseconds</b>, <b>RFC3164</b>. Epoch seconds or nanoseconds are not, and may be dropped</li>
+          <li>Accepted window: up to <b>18 h in the past</b> (7 days in Preview) and 2 h in the future. Older logs are dropped at intake: <code>datadog.estimated_usage.logs.drop_count</code></li>
+          <li>Stored in UTC, shown in your time zone. Epoch is read as UTC, so New York local time shows 5 h in the past</li>
+          <li>Grok <code>date()</code> outputs epoch ms but does <b>not</b> set the official date: add a <b>Log Date Remapper</b>. The <b>last</b> date remapper wins</li>
+          <li>Epoch seconds: remove <code>timestamp</code> from the preprocessing list, Arithmetic <code>timestamp * 1000</code>, then a date remapper</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Limits per log</h3>
+        <ul class="notes">
+          <li>HTTP intake accepts up to <b>1 MB</b> per log (larger is truncated, still 2xx); recommended ≤ <b>25 KB</b>; the Agent splits at <b>900 KB</b></li>
+          <li>&lt; 2048 attributes · keys &lt; 50 chars · nesting &lt; 20 levels · faceted values &lt; 1024 chars</li>
+          <li>≤ <b>100 tags</b> per log, each ≤ 256 chars, 10 million unique tags per day</li>
+          <li>Null-valued attributes are not kept. Indexed grouped queries truncate <code>message</code> to 75 KiB, other fields to 25 KiB</li>
+          <li>Truncation metrics: <code>datadog.estimated_usage.logs.truncated_count</code> / <code>_bytes</code></li>
+        </ul>
+      </div>
+    </div>
+    <ul class="notes hint">
+      <li><b>Multi-line</b>: without aggregation each line of a stack trace is a separate log. Log in JSON, or aggregate at the Agent (see <i>Agent filtering &amp; scrubbing</i>). Stack trace attributes with a dedicated display: <code>error.stack</code>, <code>error.message</code>, <code>error.kind</code>, <code>logger.name</code>, <code>logger.thread_name</code>.</li>
+      <li>The Agent assumes UTF-8; <code>encoding:</code> <code>utf-16-le</code>, <code>utf-16-be</code>, <code>shift-jis</code> for <code>type: file</code>. Every line must end with <code>\n</code> or <code>\r\n</code>, or it is never sent.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/log_configuration/pipelines/#preprocessing" target="_blank" rel="noopener">JSON preprocessing</a> <a href="https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes" target="_blank" rel="noopener">Reserved attributes</a> <a href="https://docs.datadoghq.com/logs/guide/logs-not-showing-expected-timestamp/" target="_blank" rel="noopener">Timestamp guide</a> <a href="https://docs.datadoghq.com/logs/log_configuration/processors/log_date_remapper/" target="_blank" rel="noopener">Date remapper</a> <a href="https://docs.datadoghq.com/logs/log_collection/#limitations" target="_blank" rel="noopener">Log limits</a> <a href="https://docs.datadoghq.com/logs/troubleshooting/" target="_blank" rel="noopener">Logs troubleshooting</a></p>
+  </section>
+
+  <!-- EMISSION -->
+  <section class="panel" id="lm-emit">
+    <h2>Log emission: how logs reach Datadog</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Path</th><th>How</th><th>Watch out</th></tr></thead>
+      <tbody>
+        <tr><td>File + Agent (default, recommended)</td><td>App logs <b>JSON to a file</b>, Agent tails it with <code>type: file</code></td><td>Agent reads only new lines (<code>start_position: end</code>)</td></tr>
+        <tr><td>Containers</td><td>App writes to <code>stdout</code>/<code>stderr</code>; the Agent collects it with container tags</td><td><code>stderr</code> logs default to status <b>Error</b></td></tr>
+        <tr><td>Agent network listener</td><td><code>type: tcp</code> / <code>udp</code> + <code>port</code> (raw, JSON or Syslog lines)</td><td>Lines separated by line breaks; Agent 7.31+ keeps idle TCP open</td></tr>
+        <tr><td>journald / Windows Event Log</td><td><code>type: journald</code> / <code>type: windows_event</code> + <code>channel_path</code></td><td><code>systemd-journal</code> group; Security channel needs Event Log Readers</td></tr>
+        <tr><td>Existing shippers</td><td>Rsyslog, Syslog-ng, NXLog, Fluentd, Logstash</td><td>Use one with root for root-only files</td></tr>
+        <tr><td>HTTP intake (agentless)</td><td><code>POST https://http-intake.logs.&lt;site&gt;/api/v2/logs</code>, header <code>DD-API-KEY</code></td><td>202 Accepted; 5 MB per payload, 1 MB per log, 1000 logs per array; no Agent retries or scrubbing</td></tr>
+        <tr><td>Browser SDK</td><td><code>@datadog/browser-logs</code>, <code>datadogLogs.init({ clientToken, site, ... })</code></td><td><b>Client token</b>, never an API key. Browser logs are not stored anywhere unless you send them</td></tr>
+        <tr><td>Cloud</td><td>Datadog Forwarder (Lambda), Amazon Data Firehose, Azure forwarding, GCP Pub/Sub + Dataflow</td><td>Install the Forwarder in every region</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Logging libraries (log JSON to a file)</h3>
+        <ul class="notes">
+          <li>Python: python-json-logger, JSON-log-formatter, django-datadog-logger</li>
+          <li>Java: Logback + <code>logstash-logback-encoder</code>, Log4j 2 JSON layout. Raw Java stack traces become several events</li>
+          <li>Node.js: Winston <code>format.json()</code>, Bunyan, Pino · Go: logrus <code>JSONFormatter</code></li>
+          <li>Ruby: Lograge JSON · .NET: Serilog, NLog, log4net · PHP: Monolog <code>JsonFormatter</code></li>
+          <li>Agent folder and <code>source</code> per language: <code>python.d/</code> + <code>source: python</code>, and so on</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Linux and rotation</h3>
+        <ul class="notes">
+          <li>System and app logs live under <b><code>/var/log/</code></b>, usually root-readable only</li>
+          <li>The Agent runs as <code>dd-agent</code>, not root. Running it as root is strongly not recommended</li>
+          <li>On rotation the Agent keeps reading the old file for <b>60 s</b> (<code>logs_config.close_timeout</code>)</li>
+          <li>APM tracers inject <code>dd.trace_id</code> / <code>dd.span_id</code> into logs (Java 0.74.0+ automatically into JSON logs)</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/log_collection/" target="_blank" rel="noopener">Log collection</a> <a href="https://docs.datadoghq.com/api/latest/logs/#send-logs" target="_blank" rel="noopener">Send logs API</a> <a href="https://docs.datadoghq.com/logs/log_collection/javascript/" target="_blank" rel="noopener">Browser logs SDK</a> <a href="https://docs.datadoghq.com/logs/log_collection/java/" target="_blank" rel="noopener">Java</a> <a href="https://docs.datadoghq.com/logs/log_collection/python/" target="_blank" rel="noopener">Python</a> <a href="https://docs.datadoghq.com/containers/docker/log/" target="_blank" rel="noopener">Docker logs</a> <a href="https://docs.datadoghq.com/logs/guide/mechanisms-ensure-logs-not-lost/" target="_blank" rel="noopener">Logs not lost</a> <a href="https://docs.datadoghq.com/logs/guide/custom-log-file-with-heightened-read-permissions/" target="_blank" rel="noopener">Heightened permissions</a></p>
+  </section>
+
+  <!-- LOG SOURCES -->
+  <section class="panel" id="lm-sources">
+    <h2>Log source settings, containers, tags, transport</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Key</th><th>Required</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>type</code></td><td>Yes</td><td><code>file</code>, <code>tcp</code>, <code>udp</code>, <code>journald</code>, <code>windows_event</code>, <code>docker</code></td></tr>
+        <tr><td><code>path</code> / <code>port</code> / <code>channel_path</code></td><td>Per type</td><td>Wildcards in <code>path</code> (case sensitive); <code>exclude_paths</code> (6.18+); <code>**</code> needs 7.76+ and <code>enable_recursive_glob</code></td></tr>
+        <tr><td><code>service</code></td><td>Yes</td><td>Same as the APM service name</td></tr>
+        <tr><td><code>source</code></td><td>Yes</td><td>Integration name → integration pipeline and facets installed on the first log</td></tr>
+        <tr><td><code>start_position</code></td><td>No</td><td><code>end</code> (default), <code>beginning</code> (no wildcards), <code>forceBeginning</code>, <code>forceEnd</code>. A stored offset beats <code>beginning</code>/<code>end</code></td></tr>
+        <tr><td><code>tags</code>, <code>sourcecategory</code>, <code>encoding</code>, <code>log_processing_rules</code></td><td>No</td><td>Tags added to every log; per-source processing rules</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Docker and Kubernetes</h3>
+        <ul class="notes">
+          <li><code>DD_LOGS_ENABLED=true</code> + <code>DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true</code> (default false: nothing collected without an Autodiscovery config)</li>
+          <li>Mounts: <code>/var/run/docker.sock</code>, <code>/var/lib/docker/containers</code> (file mode, default 6.33/7.33), <code>/opt/datadog-agent/run:rw</code> (remembers position)</li>
+          <li>Docker label <code>com.datadoghq.ad.logs='[{"source":"nginx","service":"webapp"}]'</code></li>
+          <li>K8s annotation <code>ad.datadoghq.com/&lt;CONTAINER_NAME&gt;.logs</code> on the <b>pod template</b>, keyed by container name. Logs read from <code>/var/log/pods</code></li>
+          <li>Default <code>source</code>/<code>service</code> = container short image. <code>DD_CONTAINER_EXCLUDE_LOGS</code> / <code>DD_CONTAINER_INCLUDE_LOGS</code> filter containers</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Tags and transport</h3>
+        <ul class="notes">
+          <li>Tags are <code>key:value</code>, start with a letter, up to 200 chars. <code>DD_TAGS</code> splits on whitespace</li>
+          <li>Unified service tagging: <code>env</code>, <code>service</code>, <code>version</code> (K8s labels <code>tags.datadoghq.com/*</code>, Docker labels <code>com.datadoghq.tags.*</code>)</li>
+          <li>Default transport: <b>compressed HTTPS on 443</b> (6.19/7.19+). HTTPS test only at startup, TCP fallback until restart</li>
+          <li><code>logs_config.force_use_http: true</code>; always force a transport behind a proxy. SOCKS5 proxy forces TCP</li>
+          <li>Batches: 1 MB, 900 KB per log, 1,000 logs; <code>batch_wait</code> 5 s (1-10); <code>compression_level</code> 6 (0-9)</li>
+          <li>TCP to the intake is <b>not supported</b>. Legacy endpoints only for US1 (10516 TLS, 10514 plain) and EU (443)</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/agent/logs/?tab=tailfiles" target="_blank" rel="noopener">Custom log collection</a> <a href="https://docs.datadoghq.com/agent/logs/advanced_log_collection/" target="_blank" rel="noopener">Advanced log collection</a> <a href="https://docs.datadoghq.com/containers/docker/log/" target="_blank" rel="noopener">Docker logs</a> <a href="https://docs.datadoghq.com/containers/kubernetes/log/" target="_blank" rel="noopener">Kubernetes logs</a> <a href="https://docs.datadoghq.com/getting_started/tagging/" target="_blank" rel="noopener">Tagging</a> <a href="https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/" target="_blank" rel="noopener">Unified service tagging</a> <a href="https://docs.datadoghq.com/agent/logs/log_transport/" target="_blank" rel="noopener">Log transport</a></p>
+  </section>
+
+  <!-- PROCESSORS -->
+  <section class="panel" id="lm-procs">
+    <h2>Processors</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Processor</th><th>What it does</th><th>Remember</th></tr></thead>
+      <tbody>
+        <tr><td>Grok Parser</td><td>Extracts attributes from <code>message</code> (or another attribute via Extract from)</td><td>Up to 10 samples, 5000 chars each; Tap to Parse builds rules</td></tr>
+        <tr><td>Log Date Remapper</td><td>Sets the official timestamp</td><td>Last one wins</td></tr>
+        <tr><td>Log Status Remapper</td><td>Sets the official status</td><td>First one wins; prefix mapping table above</td></tr>
+        <tr><td>Service / Message Remapper</td><td>Sets <code>service</code> / <code>message</code></td><td>Message remapper takes fallbacks in order</td></tr>
+        <tr><td>Trace / Span Remapper</td><td>Sets trace and span IDs for log-trace correlation</td><td>Defaults <code>dd.trace_id</code>, <code>dd.span_id</code></td></tr>
+        <tr><td>Remapper (attribute)</td><td>Renames attributes or tags to a target attribute or tag</td><td>Cannot touch <code>host</code> or other reserved attributes. Source removed by default</td></tr>
+        <tr><td>Category</td><td>Adds an attribute from the first matching query</td><td>Then a status remapper, e.g. <code>http.status_code:5*</code> → error</td></tr>
+        <tr><td>Arithmetic</td><td>Computes a number (<code>+ - * /</code>)</td><td>Missing attribute skips it unless "Replace missing by 0"</td></tr>
+        <tr><td>String Builder</td><td>Template like <code>Request %{http.method} %{http.url}</code></td><td>Result max 256 chars</td></tr>
+        <tr><td>GeoIP / URL / User-Agent parsers</td><td><code>network.client.ip</code> → <code>network.client.geoip</code>; <code>http.url</code> → <code>http.url_details</code>; <code>http.useragent</code> → <code>http.useragent_details</code></td><td>Standard attribute outputs</td></tr>
+        <tr><td>Lookup</td><td>Maps a value with a mapping table or Reference Table</td><td>Mapping tables share 100 Kb; Reference Tables up to 200 MB</td></tr>
+        <tr><td>Array, Array Map, Decoder, Exclude Attribute, OCSF</td><td>Arrays, base64/hex, drop an attribute, security schema</td><td>Exclude Attribute does not reduce ingestion cost</td></tr>
+      </tbody>
+    </table></div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/log_configuration/processors/" target="_blank" rel="noopener">Processors</a> <a href="https://docs.datadoghq.com/logs/log_configuration/processors/grok_parser/" target="_blank" rel="noopener">Grok parser</a> <a href="https://docs.datadoghq.com/logs/log_configuration/processors/remapper/" target="_blank" rel="noopener">Remapper</a> <a href="https://docs.datadoghq.com/logs/log_configuration/processors/category_processor/" target="_blank" rel="noopener">Category</a> <a href="https://docs.datadoghq.com/logs/log_configuration/processors/arithmetic_processor/" target="_blank" rel="noopener">Arithmetic</a> <a href="https://docs.datadoghq.com/logs/log_configuration/processors/lookup_processor/" target="_blank" rel="noopener">Lookup</a> <a href="https://docs.datadoghq.com/logs/log_configuration/processors/exclude_attribute_processor/" target="_blank" rel="noopener">Exclude attribute</a></p>
+  </section>
+
+  <!-- GROK -->
+  <section class="panel" id="lm-grok">
+    <h2>Grok parsing</h2>
+    <p class="hint">Rule: <code>RuleName %{MATCHER:EXTRACT:FILTER}</code>. A rule must match the <b>whole</b> log; with several rules the first match top to bottom wins. Escape <code>|</code>, <code>[</code>, <code>(</code>.</p>
+    <pre class="code"># john connected on 11/08/2017
+MyParsingRule %{word:user} connected on %{date("MM/dd/yyyy"):date}
+# WARNING: John disconnected on 09/26/2017
+status_rule %{word:log_status}: %{word:user.name} %{word:action}.*
+kv_rule %{data::keyvalue}                      # key=value / logfmt
+json_after_prefix %{word:level} %{data::json}   # JSON after a text prefix</pre>
+    <div class="tbl"><table>
+      <thead><tr><th>Matcher / filter</th><th>Matches or does</th></tr></thead>
+      <tbody>
+        <tr><td><code>word</code> · <code>notSpace</code> · <code>data</code></td><td>Letters/digits/underscore · up to the next space · anything incl. spaces and newlines</td></tr>
+        <tr><td><code>number</code> · <code>integer</code></td><td>Decimal as double · integer</td></tr>
+        <tr><td><code>date("pattern"[, "tz"])</code></td><td>Parses to epoch ms. Timezone like <code>UTC+1</code>, <code>Europe/Paris</code>. Needs a date remapper to become the official date</td></tr>
+        <tr><td><code>regex("...")</code>, <code>ip</code>, <code>hostname</code>, <code>uuid</code>, <code>quotedString</code>, <code>boolean</code></td><td>Ingest-time only</td></tr>
+        <tr><td><code>keyvalue([sep[, allow[, quote[, delim]]]])</code></td><td>Default separator <code>=</code>; <code>keyvalue(": ")</code>, <code>keyvalue("=","/:")</code> for URLs, <code>keyvalue("=", "", "", "|")</code></td></tr>
+        <tr><td><code>json</code> · <code>xml</code> · <code>csv(headers)</code> · <code>url</code> · <code>querystring</code> · <code>useragent</code></td><td>Structured filters</td></tr>
+        <tr><td><code>nullIf("-")</code> · <code>lowercase</code> · <code>scale(factor)</code> · <code>array(...)</code></td><td>Clean-up filters</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>Debug a rule with the star trick: end it with <code>.*</code> and remove attributes from the end until it matches. Common culprits: <code>notSpace</code> on a value with spaces, <code>integer</code> on a decimal.</li>
+      <li>Query-time parsing (calculated field extractions) supports only <code>data</code>, <code>integer</code>, <code>notSpace</code>, <code>number</code>, <code>word</code>.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/log_configuration/parsing/" target="_blank" rel="noopener">Parsing</a> <a href="https://docs.datadoghq.com/logs/guide/log-parsing-best-practice/" target="_blank" rel="noopener">Parsing best practices</a> <a href="https://docs.datadoghq.com/logs/faq/how-to-investigate-a-log-parsing-issue/" target="_blank" rel="noopener">Parsing issues</a></p>
+  </section>
+
+  <!-- STANDARD ATTRIBUTES -->
+  <section class="panel" id="lm-attrs">
+    <h2>Standard attributes and aliasing</h2>
+    <p class="hint">Standard attributes give one name per concept across sources, so logs are <b>easy to search</b>, facet and correlate. Integrations already use them. Search them with <code>@</code>; only reserved attributes go without it.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Domain</th><th>Attributes</th></tr></thead>
+      <tbody>
+        <tr><td>Network</td><td><code>network.client.ip</code>, <code>network.destination.ip</code>, <code>network.client.port</code>, <code>network.bytes_read</code>, <code>network.bytes_written</code></td></tr>
+        <tr><td>Geolocation</td><td><code>network.client.geoip.country.iso_code</code>, <code>.continent.code</code>, <code>.city.name</code> (GeoIP parser)</td></tr>
+        <tr><td>HTTP</td><td><code>http.url</code>, <code>http.status_code</code>, <code>http.method</code>, <code>http.referer</code>, <code>http.request_id</code>, <code>http.useragent</code>, <code>http.url_details.*</code>, <code>http.useragent_details.*</code></td></tr>
+        <tr><td>Source code / errors</td><td><code>logger.name</code>, <code>logger.thread_name</code>, <code>error.kind</code>, <code>error.message</code>, <code>error.stack</code></td></tr>
+        <tr><td>Database</td><td><code>db.instance</code>, <code>db.statement</code>, <code>db.user</code>, <code>db.operation</code></td></tr>
+        <tr><td>Performance</td><td><code>duration</code> in <b>nanoseconds</b></td></tr>
+        <tr><td>User</td><td><code>usr.id</code>, <code>usr.name</code>, <code>usr.email</code> (prefix <code>usr</code>, not <code>user</code>)</td></tr>
+        <tr><td>Syslog / DNS / events</td><td><code>syslog.hostname</code>, <code>syslog.appname</code>, <code>syslog.severity</code> · <code>dns.question.name</code> · <code>evt.name</code>, <code>evt.outcome</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Aliasing rules</h3>
+        <ul class="notes">
+          <li>Runs <b>after</b> pipelines; the log keeps both source and standard attribute</li>
+          <li>Type is enforced; if the cast fails, aliasing is skipped</li>
+          <li>Overrides an existing destination value; only one source is aliased if a log has several</li>
+          <li>Only to standard attributes; standard attributes cannot be aliased; <code>user</code> and <code>user.name</code> cannot both be standard</li>
+          <li>Applies to new logs only. Managed at Logs &gt; Pipelines &gt; Standard Attributes (admins)</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Attribute Remapper vs aliasing</h3>
+        <ul class="notes">
+          <li>Remapper: inside a pipeline, order matters, can rename tags, removes the source by default (<code>preserve_source: false</code>) and does not overwrite an existing target (<code>override_on_conflict: false</code>)</li>
+          <li>Aliasing: configured on the standard attribute or facet ("Alias to..."), keeps the source</li>
+          <li>Aliased facets still work but are deprecated: use <b>switch to alias</b></li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/" target="_blank" rel="noopener">Attributes and aliasing</a> <a href="https://docs.datadoghq.com/standard-attributes/?product=log+management" target="_blank" rel="noopener">Default standard attributes</a> <a href="https://docs.datadoghq.com/logs/log_configuration/processors/remapper/" target="_blank" rel="noopener">Remapper</a> <a href="https://docs.datadoghq.com/logs/explorer/facets/#alias-facets" target="_blank" rel="noopener">Alias facets</a></p>
+  </section>
+
+  <!-- LIVE VS EXPLORER -->
+  <section class="panel" id="lm-live">
+    <h2>Live Tail vs Log Explorer</h2>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>Live Tail</th><th>Log Explorer</th></tr></thead>
+      <tbody>
+        <tr><td>Logs shown</td><td>All ingested logs after pipelines, indexed or not</td><td>Indexed logs (plus Flex if toggled, plus historical views)</td></tr>
+        <tr><td>Exclusion filters / daily quota</td><td>Do not hide logs</td><td>Excluded and over-quota logs are absent</td></tr>
+        <tr><td>Time</td><td>Real time only (15-minute window), no history</td><td>Any range within index retention</td></tr>
+        <tr><td>Analytics (Fields, Patterns, Transactions)</td><td>No</td><td>Yes</td></tr>
+        <tr><td>Busy queries</td><td>Uniformly sampled: narrow the query to see everything</td><td>Complete</td></tr>
+        <tr><td>Permission</td><td><code>logs_live_tail</code></td><td><code>logs_read_data</code></td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>Open Live Tail from the <b>time range selector</b> in the Log Explorer. Use it to check a deployment, new log collection or pipeline changes.</li>
+      <li>In Live Tail but not in the Explorer = an index decision (exclusion filter, no matching index, daily quota), not a collection problem.</li>
+      <li><code>*:term</code> full-text search does not work in Live Tail. Restriction queries still apply.</li>
+      <li>Older than retention: Flex (if set), <b>Archive Search</b>, or rehydration.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/explorer/live_tail/" target="_blank" rel="noopener">Live Tail</a> <a href="https://docs.datadoghq.com/logs/explorer/" target="_blank" rel="noopener">Log Explorer</a> <a href="https://docs.datadoghq.com/logs/troubleshooting/live_tail/" target="_blank" rel="noopener">Live Tail troubleshooting</a> <a href="https://docs.datadoghq.com/logs/guide/logs-rbac-permissions/" target="_blank" rel="noopener">Logs RBAC</a></p>
+  </section>
+
+  <!-- INDEXES -->
+  <section class="panel" id="lm-indexes">
+    <h2>Indexes, exclusion filters, daily quotas</h2>
+    <div class="facts">
+      <div><span class="label">Index routing</span><b>First match</b><span>A log goes to the first index whose filter it matches; put the <code>*</code> catch-all last</span></div>
+      <div><span class="label">Exclusion filter defaults</span><b>Exclude 100%</b><span>Query <code>*</code>, active. Only the first active matching filter applies</span></div>
+      <div><span class="label">Daily quota</span><b>Reset 2:00pm UTC</b><span>Millions of logs, after exclusion filters. Warning threshold at least 50%</span></div>
+      <div><span class="label">Indexes</span><b>100 max</b><span>Default per account. Names: lowercase letters, numbers, <code>-</code></span></div>
+    </div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Exclusion filters</h3>
+        <ul class="notes">
+          <li>Sample 0-100% of individual logs or per attribute value (<code>@user.email</code>, trace ID)</li>
+          <li>Example: exclude 95% of <code>source:nginx AND http.status_code:[200 TO 299]</code>; keep a log-based metric for full counts</li>
+          <li>Toggling a filter off affects new logs only</li>
+          <li>Excluded logs stay in Live Tail, archives, log-based metrics and Cloud SIEM</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Quota, retention, usage</h3>
+        <ul class="notes">
+          <li>Quota reached: not indexed, but still in Live Tail, archives, metrics. An event is generated; alert at 80%</li>
+          <li>Retention per index; out-of-contract 3, 7, 15, 30, 45, 60 days (Org Management enables it)</li>
+          <li><code>datadog.estimated_usage.logs.ingested_events</code> / <code>_bytes</code>, free for 15 months; <code>datadog_is_excluded:false</code> = indexed</li>
+          <li>Deleting an index needs <code>logs_delete_data</code>; the name cannot be reused</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/log_configuration/indexes/" target="_blank" rel="noopener">Indexes</a> <a href="https://docs.datadoghq.com/logs/guide/best-practices-for-log-management/" target="_blank" rel="noopener">Log Management best practices</a> <a href="https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#logs-usage-metrics" target="_blank" rel="noopener">Usage metrics</a> <a href="https://docs.datadoghq.com/account_management/org_settings/" target="_blank" rel="noopener">Org settings</a></p>
+  </section>
+
+  <!-- ANALYTICS -->
+  <section class="panel" id="lm-analytics">
+    <h2>Aggregations and visualizations</h2>
+    <p class="hint"><b>Group into</b> Fields, Patterns or Transactions, then pick a visualization. Analytics cover <b>indexed logs only</b>. To count logs per facet value: Group into <b>Fields</b> and choose the facet in the group-by.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Group into</th><th>Does</th><th>Facts</th></tr></thead>
+      <tbody>
+        <tr><td>Fields</td><td>Count, unique count (dimension) or min/max/avg/sum/percentiles (measure) per group</td><td>A multi-valued log counts in every group. Nested top values: second dimension inside each top value of the first</td></tr>
+        <tr><td>Patterns</td><td>Clusters similar <code>message</code> values, grouped by Status and Service</td><td>10,000-log sample; side panel kick-starts a Grok rule or an exclusion filter; Pattern Inspector</td></tr>
+        <tr><td>Transactions</td><td>Groups logs by a shared ID (<code>requestId</code>)</td><td>Includes all logs of the transaction; Duration and Max Severity added automatically</td></tr>
+      </tbody>
+    </table></div>
+    <div class="tbl plain"><table>
+      <thead><tr><th>Visualization</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td>List</td><td>Individual logs, or Patterns / Transactions aggregates</td></tr>
+        <tr><td>Timeseries</td><td>A measure or unique count over time, split by up to <b>3</b> facets (practice answer; the Analytics page says up to 4 dimensions). Bars for counts, lines for statistics</td></tr>
+        <tr><td>Top List</td><td><b>One</b> dimension ranked by a measure</td></tr>
+        <tr><td>Table</td><td>Top values of up to 3 facets; the first measure sets the order</td></tr>
+        <tr><td>Pie chart / Tree map</td><td>Share of a whole</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li>Multiple queries in Timeseries and Table; formulas (<code>A / B</code>) need queries grouped by the same field; functions (Σ) in every visualization: timeshift, rollup, exclusion.</li>
+      <li>Dashboards: List widget for log events, Timeseries, Top List, Table, Query Value. Template variables on facets start with <code>@</code>.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/explorer/analytics/" target="_blank" rel="noopener">Log Analytics</a> <a href="https://docs.datadoghq.com/logs/explorer/visualize/" target="_blank" rel="noopener">Visualizations</a> <a href="https://docs.datadoghq.com/logs/explorer/analytics/patterns/" target="_blank" rel="noopener">Patterns</a> <a href="https://docs.datadoghq.com/logs/explorer/analytics/transactions/" target="_blank" rel="noopener">Transactions</a> <a href="https://docs.datadoghq.com/dashboards/widgets/list/" target="_blank" rel="noopener">List widget</a> <a href="https://docs.datadoghq.com/dashboards/template_variables/" target="_blank" rel="noopener">Template variables</a></p>
+  </section>
+
+  <!-- MONITORS -->
+  <section class="panel" id="lm-monitors">
+    <h2>Log monitors</h2>
+    <div class="facts">
+      <div><span class="label">Data</span><b>Indexed only</b><span>Standard tier; no Flex, no excluded logs</span></div>
+      <div><span class="label">Window</span><b>2 days max</b><span>Rolling; plus current hour / current day</span></div>
+      <div><span class="label">Limit</span><b>1000</b><span>Log monitors per account by default</span></div>
+      <div><span class="label">Group by</span><b>4 facets</b><span>1000 groups max in total</span></div>
+    </div>
+    <div class="cols">
+      <div class="stack" style="gap:6px">
+        <h3>Setup</h3>
+        <ul class="notes">
+          <li>Monitors &gt; New Monitor &gt; Logs, or Log Explorer <b>Export → monitor</b> (how to notify stakeholders from a search)</li>
+          <li>Monitor a log count, a facet's unique count, or a measure (avg, sum, percentiles...)</li>
+          <li>Simple alert = one alert overall; Multi Alert = one per group</li>
+          <li>Recovery threshold stops flapping; <code>below 1</code> catches "no logs at all"</li>
+          <li>Count queries evaluate missing data as zero by default</li>
+        </ul>
+      </div>
+      <div class="stack" style="gap:6px">
+        <h3>Notification message</h3>
+        <ul class="notes">
+          <li>Dynamic links use <b>template variables</b>, e.g. <code>https://app.datadoghq.com/dash/integration/system_overview?tpl_var_scope=host:{{host.name}}</code></li>
+          <li><code>{{#is_alert}}...{{/is_alert}}</code>, <code>{{#is_recovery}}</code>, <code>{{#is_warning}}</code></li>
+          <li><code>{{log.message}}</code>, <code>{{log.attributes.[error.message]}}</code>, <code>{{log.link}}</code></li>
+          <li>Up to 10 log samples or breaching values in the notification; not in recoveries</li>
+          <li><code>@slack-...</code>, <code>@pagerduty-...</code>, <code>@email</code>; priority P1-P5</li>
+        </ul>
+      </div>
+    </div>
+    <ul class="notes hint">
+      <li>Need non-indexed logs, a window over 2 days or anomaly detection on long history? Create a <b>log-based metric</b> and a metric monitor.</li>
+      <li>Watchdog log anomalies need no setup; severe ones (error logs, at least 10 minutes) can trigger a Watchdog monitor.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/monitors/types/log/" target="_blank" rel="noopener">Log monitor</a> <a href="https://docs.datadoghq.com/monitors/configuration/" target="_blank" rel="noopener">Monitor configuration</a> <a href="https://docs.datadoghq.com/monitors/notify/variables/" target="_blank" rel="noopener">Notification variables</a> <a href="https://docs.datadoghq.com/monitors/notify/" target="_blank" rel="noopener">Notifications</a> <a href="https://docs.datadoghq.com/watchdog/" target="_blank" rel="noopener">Watchdog</a></p>
+  </section>
+
+  <!-- TROUBLESHOOTING -->
+  <section class="panel" id="lm-trouble">
+    <h2>Troubleshooting checklist</h2>
+    <p class="hint">First question: is the log in <b>Live Tail</b>? Yes → indexing or access problem. No → it never reached Datadog, or was dropped at intake.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Symptom</th><th>Check</th></tr></thead>
+      <tbody>
+        <tr><td>Nothing arrives</td><td><code>api_key</code> and <code>site</code>, <code>logs_enabled: true</code>, a <code>logs:</code> section, valid YAML, Agent restarted, new lines written, lines end with a newline</td></tr>
+        <tr><td><code>status</code> shows a permission error</td><td>Agent user needs read on the file and read + execute on every directory: <code>namei -m</code>, <code>chmod o+rx</code>, <code>setfacl -R -d -m u:dd-agent:rx</code>, logrotate <code>create 644</code>; Windows <code>icacls ... (OI)(CI)(RX)</code></td></tr>
+        <tr><td>journald logs empty</td><td><code>usermod -a -G systemd-journal dd-agent</code> (no error is shown)</td></tr>
+        <tr><td>Only some files tailed</td><td><code>logs_config.open_files_limit</code>; extra files chosen by reverse name or modification time</td></tr>
+        <tr><td>Dropped at intake</td><td>Timestamp older than 18 h: <code>datadog.estimated_usage.logs.drop_count</code></td></tr>
+        <tr><td>In Live Tail, not in Explorer</td><td>Exclusion filters, index filter order (<code>datadog_index:N/A</code>), daily quota event</td></tr>
+        <tr><td>You see no logs, teammates do</td><td>Restriction query on your role (Data Access page)</td></tr>
+        <tr><td>Wrong time</td><td>Preferences time zone, <code>date()</code> timezone, date remapper, ISO8601 / epoch ms</td></tr>
+        <tr><td>Status shows Info</td><td>Grok the level + Status Remapper, or add the key first in JSON preprocessing</td></tr>
+        <tr><td>No attributes</td><td><code>datadog.pipelines:false</code>; set <code>source</code> to an integration name or build a custom pipeline</td></tr>
+        <tr><td>Duplicates from Lambda</td><td>Remove the Forwarder subscription when moving to the Lambda Extension</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="notes hint">
+      <li><code>agent status</code> → <code>stream-logs</code> to watch logs live → <code>configcheck</code> for loaded configs → <code>grep -i error /var/log/datadog/agent.log</code> → debug mode → <code>flare</code>.</li>
+      <li>Behind a proxy: set <code>proxy:</code> and force a transport (<code>force_use_http: true</code>). Allow outbound TCP 443.</li>
+    </ul>
+    <p class="src"><span>Sources:</span> <a href="https://docs.datadoghq.com/logs/troubleshooting/" target="_blank" rel="noopener">Logs troubleshooting</a> <a href="https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/" target="_blank" rel="noopener">Collection troubleshooting</a> <a href="https://docs.datadoghq.com/logs/guide/setting-file-permissions-for-rotating-logs/" target="_blank" rel="noopener">Rotating log permissions</a> <a href="https://docs.datadoghq.com/logs/guide/increase-number-of-log-files-tailed/" target="_blank" rel="noopener">Files tailed</a> <a href="https://docs.datadoghq.com/containers/troubleshooting/log-collection/" target="_blank" rel="noopener">Container log collection</a> <a href="https://docs.datadoghq.com/agent/configuration/proxy/" target="_blank" rel="noopener">Proxy</a></p>
+  </section>
+</div>

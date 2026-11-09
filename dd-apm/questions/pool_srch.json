@@ -1,0 +1,527 @@
+[
+  {
+    "id": "ap-srch-001",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "Spans from a checkout service carry the attribute `http.status_code`, set by automatic instrumentation. Which Trace Explorer query finds spans where it equals `500`?",
+    "options": [
+      "`http.status_code:500`",
+      "`@http.status_code:500`",
+      "`#http.status_code:500`"
+    ],
+    "answer": 1,
+    "explanation": "Span attributes are the content of the span and must be searched with an `@` before the attribute key. Only reserved attributes and span tags are queried without it.",
+    "notes": [
+      "Wrong: without `@` the term is read as a span tag, not the span attribute.",
+      "Correct: span attributes need the `@` prefix.",
+      "Wrong: `#` is not a Trace Explorer prefix; attributes use `@`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/#attribute-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-002",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "Which of these Trace Explorer terms is correctly written WITHOUT an `@` prefix?",
+    "options": [
+      "`resource_name:\"GET /cart\"`",
+      "`http.method:POST`",
+      "`db.statement:\"SELECT *\"`"
+    ],
+    "answer": 0,
+    "explanation": "`resource_name` is a reserved attribute, present on every span, so it is queried without `@`. Other span attributes such as `http.method` and `db.statement` need the `@` prefix.",
+    "notes": [
+      "Correct: `resource_name` is a reserved attribute and needs no `@`.",
+      "Wrong: `http.method` is a regular span attribute, so it must be written `@http.method`.",
+      "Wrong: `db.statement` is a regular span attribute, so it must be written `@db.statement`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/span_tags_attributes/#reserved-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-003",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "An SRE suspects that slow requests come from one availability zone. The spans inherit the host tag `availability-zone:us-east-1a`. Which query isolates those spans?",
+    "options": [
+      "`@availability-zone:us-east-1a`",
+      "`@host.availability-zone:us-east-1a`",
+      "`availability-zone:us-east-1a`"
+    ],
+    "answer": 2,
+    "explanation": "Host and container tags are span tags: context added from the infrastructure the service runs on. Span tags are queried as plain `key:value`, without the `@` prefix used for span attributes.",
+    "notes": [
+      "Wrong: `@` is for span attributes; this is an infrastructure span tag.",
+      "Wrong: there is no `host.` path for tags, and tags do not take `@`.",
+      "Correct: span tags such as host tags are searched as `key:value` with no `@`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/span_tags_attributes/#span-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-004",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "Which query returns only the error spans of the `payment-api` service?",
+    "options": [
+      "`service:payment-api status:error`",
+      "`service:payment-api @status:failed`",
+      "`service:payment-api level:error`"
+    ],
+    "answer": 0,
+    "explanation": "`status` is a reserved attribute, and error spans have `status:error`. The two terms are joined by the implicit `AND`.",
+    "notes": [
+      "Correct: `status:error` selects error spans; `status` is reserved, so no `@`.",
+      "Wrong: `status` is reserved (no `@`) and the value for errors is `error`, not `failed`.",
+      "Wrong: `level` is not a span field for errors; error spans are selected with the reserved attribute `status:error`."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/search/product_specific_reference/#traces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-005",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "An engineer enters this query in the Trace Explorer:\n\nservice:web-store env:prod\n\nWhich spans match?",
+    "options": [
+      "Spans from `web-store` in any environment, plus every span in `prod`",
+      "Only the first term is applied until an explicit operator is added",
+      "Spans that are from `web-store` and also in the `prod` environment"
+    ],
+    "answer": 2,
+    "explanation": "When no operator is written between terms, `AND` is used by default. Both conditions must be true.",
+    "notes": [
+      "Wrong: that is `OR`, which must be written explicitly.",
+      "Wrong: both terms apply; the missing operator defaults to `AND`.",
+      "Correct: `AND` is the default operator, so both terms must match."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/#search-syntax",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-006",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "A team runs a canary of the `api` service. What does this query return?\n\nservice:api AND -kube_deployment:canary",
+    "options": [
+      "Spans from every service except `api` that run in the canary deployment",
+      "Spans from the `api` service that are not running in the `canary` deployment",
+      "Only spans from the `api` service that run in the `canary` deployment"
+    ],
+    "answer": 1,
+    "explanation": "The `-` operator excludes the term that follows it. The query keeps `api` spans and drops those tagged `kube_deployment:canary`.",
+    "notes": [
+      "Wrong: the `-` applies to `kube_deployment:canary`, not to `service:api`.",
+      "Correct: `-` is exclusion, so canary spans of `api` are removed.",
+      "Wrong: that would be `service:api AND kube_deployment:canary`, without the `-`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/#tags-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-007",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "A company names its frontend services `web-store`, `web-admin` and `web-checkout`. Which query matches spans from all of them in one term?",
+    "options": [
+      "`service:web*`",
+      "`service:web.*`",
+      "`service:%web%`"
+    ],
+    "answer": 0,
+    "explanation": "The `*` symbol is the multi-character wildcard, so `service:web*` matches every service name that starts with `web`.",
+    "notes": [
+      "Correct: `*` is the multi-character wildcard.",
+      "Wrong: `.*` is regular-expression syntax; the Trace Explorer wildcard is a plain `*`, so this looks for names starting with `web.`.",
+      "Wrong: `%` is SQL `LIKE` syntax, not Trace Explorer syntax."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/#wildcards",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-008",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "You want every span whose HTTP status code is a 4xx client error. Which query is valid Trace Explorer syntax?",
+    "options": [
+      "`@http.status_code:[400-499]`",
+      "`@http.status_code:(400..499)`",
+      "`@http.status_code:[400 TO 499]`"
+    ],
+    "answer": 2,
+    "explanation": "Numerical ranges use square brackets with `TO` between the bounds. The docs use `@http.status_code:[400 TO 499]` as the example for all 4xx errors.",
+    "notes": [
+      "Wrong: ranges use the `TO` keyword, not a hyphen.",
+      "Wrong: `..` inside parentheses is not range syntax.",
+      "Correct: `[min TO max]` is the range syntax."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/#numerical-values",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-009",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "During a load test you want to see `GET /checkout` spans that took longer than 2 seconds in production. Which query does this?",
+    "options": [
+      "`resource_name:\"GET /checkout\" @duration>2s env:prod`",
+      "`resource_name:\"GET /checkout\" @duration:>2s env:prod`",
+      "`resource_name:\"GET /checkout\" @duration:gt(2s) env:prod`"
+    ],
+    "answer": 1,
+    "explanation": "Comparisons are written after the colon (`key:>value`), and the `duration` measure accepts time units such as `s` or `ms`. Datadog uses exactly this query as a retention filter example.",
+    "notes": [
+      "Wrong: the colon is missing; comparisons are written `@duration:>2s`.",
+      "Correct: `:>` plus a unit (`2s`) filters spans longer than 2 seconds.",
+      "Wrong: there is no `gt()` function; use `>`, `<`, `>=` or `<=`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#create-your-own-retention-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-010",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "The `duration` measure stores span durations in nanoseconds. An engineer queries `duration:>20ms` instead of writing a raw nanosecond value, and gets the expected spans. Why does this work?",
+    "options": [
+      "Measures carry a unit, so values written with units are handled at query time",
+      "Each tracer sends its own time unit with every span, and the query reads it per span",
+      "The search bar converts every number in a query to milliseconds before running it"
+    ],
+    "answer": 0,
+    "explanation": "Measures support units (time in seconds or size in bytes) to handle orders of magnitude at query time and display time. The unit is a property of the measure itself, not of the field, so `20ms` is compared correctly with nanosecond values.",
+    "notes": [
+      "Correct: the unit belongs to the measure, so `20ms` is handled at query time.",
+      "Wrong: the unit is not carried per span; it is a property of the measure.",
+      "Wrong: there is no blanket milliseconds conversion; the measure's unit is used."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/span_tags_attributes/#units",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-011",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "You need spans whose `url` attribute contains the text `user=JaneDoe` anywhere. Which query is correct?",
+    "options": [
+      "`@url:*user=JaneDoe*`",
+      "`@url:*user/=JaneDoe*`",
+      "`@url:*user\\=JaneDoe*`"
+    ],
+    "answer": 2,
+    "explanation": "`=` is a special character, so it must be escaped with a backslash. Special characters are `?`, `>`, `<`, `:`, `=`, `\"`, `~`, `/` and `\\`.",
+    "notes": [
+      "Wrong: the `=` is not escaped.",
+      "Wrong: escaping uses a backslash, not a forward slash; `/` is itself a special character.",
+      "Correct: `\\=` escapes the special character."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/#escaping-of-special-characters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-012",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "A legacy service added a custom attribute named `user.first name`, with a space. How do you search it for the value `myvalue`?",
+    "options": [
+      "`@user.first_name:myvalue`",
+      "`@user.first\\ name:myvalue`",
+      "`@user.first%20name:myvalue`"
+    ],
+    "answer": 1,
+    "explanation": "Spaces in attribute names are not recommended. When they exist, escape the space with a backslash, as in `@user.first\\ name:myvalue`.",
+    "notes": [
+      "Wrong: that searches a different attribute, `user.first_name`; the name is not rewritten.",
+      "Correct: the space is escaped with `\\`.",
+      "Wrong: URL encoding is not query syntax; the space is escaped with a backslash."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/#escaping-of-special-characters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-013",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "Spans carry the Kubernetes tag `auto-discovery.cluster-autoscaler.k8s.io/daffy`, which does not follow tagging best practices. How should you search for it?",
+    "options": [
+      "`tags:\"auto-discovery.cluster-autoscaler.k8s.io/daffy\"`",
+      "`@auto-discovery.cluster-autoscaler.k8s.io:daffy`",
+      "`auto-discovery.cluster-autoscaler.k8s.io:daffy`"
+    ],
+    "answer": 0,
+    "explanation": "For tags that do not follow best practices, do not use `key:value` syntax. Use `tags:<MY_TAG>` instead, with the tag in quotes.",
+    "notes": [
+      "Correct: non-standard tags are searched with `tags:\"...\"`.",
+      "Wrong: it is a tag, not an attribute, and it cannot be split into `key:value`.",
+      "Wrong: the docs say not to use `key:value` syntax for non-standard tags."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/#non-standard-tag-formats",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-014",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "In Live Search, `@customer_id:4821` returns many spans. The engineer changes the time selector to `Past 4 Hours` and the same query returns nothing. What is the most likely cause?",
+    "options": [
+      "Live Search uses different query syntax, so the query must be rewritten for indexed search",
+      "`customer_id` needs a facet before it can be searched beyond 15 minutes",
+      "No retention filter indexed the spans that carry it, so only Live Search sees them"
+    ],
+    "answer": 2,
+    "explanation": "Past 15 minutes the Trace Explorer searches only indexed spans. If a tag is only on spans that no retention filter kept, the indexed search returns no results, unlike Live Search.",
+    "notes": [
+      "Wrong: the search syntax is the same in Live Search and indexed views.",
+      "Wrong: facets are not required to search spans.",
+      "Correct: indexed search only sees spans kept by retention filters."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#indexed-spans-search-with-15-day-retention",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-015",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "On a high-traffic application, the span list is flooded with internal spans. The team only wants to see the spans where requests enter each service. What should they do?",
+    "options": [
+      "Group the list by `service` from `root` in the Group by clause",
+      "Change the selection box above the trace table to service entry spans",
+      "Hide every facet except `service` in the facet panel beside the list"
+    ],
+    "answer": 1,
+    "explanation": "The box above the trace table lets you query service entry spans, root spans, or all spans. Service entry spans reduce the list to the entry point of each service.",
+    "notes": [
+      "Wrong: group by from `root` changes where grouping values come from; it does not filter spans.",
+      "Correct: the selector above the table switches between service entry, root and all spans.",
+      "Wrong: hiding facets only changes the facet panel, not which spans are listed."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#filtering",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-016",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "An engineer saves a Trace Explorer search that has a long query, extra columns and a 4-hour time range. What does the saved search store, and how is it found again?",
+    "options": [
+      "The query, columns and time horizon; search bar autocomplete suggests it by name or query",
+      "Only the query text; it is listed under a Saved Queries section of the facet panel",
+      "The query and its matching spans, kept 15 days; it is listed on the Retention Filters page"
+    ],
+    "answer": 0,
+    "explanation": "Saved searches contain the search query, columns and time horizon. They are available in the search bar through autocomplete, which matches either the search name or the query.",
+    "notes": [
+      "Correct: query, columns and time horizon are saved, and autocomplete surfaces the saved search.",
+      "Wrong: columns and time horizon are saved too, and saved searches are reached from the search bar, not the facet panel.",
+      "Wrong: a saved search does not keep spans; retention is set by retention filters, which are separate."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/#saved-searches",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-017",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "A developer added a custom `cart.value` attribute yesterday. No facet exists for it yet. What is true about filtering spans on it?",
+    "options": [
+      "A facet must be created first, and only spans received after that are searchable",
+      "It can only be searched in Live Search until someone creates a facet for it",
+      "It can be searched right away, for example by clicking it in the trace details panel"
+    ],
+    "answer": 2,
+    "explanation": "Facets are not required to search spans. You can click `cart.value` in the trace details panel to add it to the query, or type it in the search bar.",
+    "notes": [
+      "Wrong: facets are not required for searching spans.",
+      "Wrong: facets are not required to search spans, in Live Search or in indexed search.",
+      "Correct: attributes that are not facets can still be filtered on."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#filtering",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-018",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "In the trace side panel, an engineer clicks the string attribute `@merchant.tier` to create a facet. Which option does Datadog offer?",
+    "options": [
+      "A facet or a measure",
+      "A facet only",
+      "A measure only"
+    ],
+    "answer": 1,
+    "explanation": "From the trace side panel, a numerical field can become a facet or a measure, but a string field can only become a facet.",
+    "notes": [
+      "Wrong: the choice between facet and measure is offered only for numerical fields.",
+      "Correct: string fields can only become facets.",
+      "Wrong: measures are for quantitative values, so a string cannot be a measure."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/span_tags_attributes/#creating-facets-from-the-trace-side-panel",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-019",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "easy",
+    "q": "No span with the `payment.method` attribute has arrived yet, so an admin creates the facet from the facet list with **+ Add**. What should they enter as the field?",
+    "options": [
+      "`@payment.method`",
+      "`payment.method`",
+      "`tags:payment.method`"
+    ],
+    "answer": 0,
+    "explanation": "When creating a facet from the facet list, use the attribute path with the `@` prefix for span attributes, and the tag key name for infrastructure tags.",
+    "notes": [
+      "Correct: span attributes use their path with the `@` prefix.",
+      "Wrong: the bare key name is used for infrastructure tags, not span attributes.",
+      "Wrong: `tags:` is search syntax for non-standard tags, not a facet field path."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/span_tags_attributes/#creating-facets-from-the-facet-list",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-020",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "Postgres is not instrumented with APM. You want the spans that represent calls from your services to the `users` table in Postgres. Which query fits?",
+    "options": [
+      "`service:postgres resource_name:users`",
+      "`db.name:users db.system:postgres`",
+      "`@peer.db.name:users @peer.db.system:postgres`"
+    ],
+    "answer": 2,
+    "explanation": "Entities that are not instrumented, such as databases, are described by peer attributes. Peer attributes are span attributes, so they take the `@` prefix.",
+    "notes": [
+      "Wrong: `service` identifies the instrumented service emitting the span; the docs say to use peer attributes for uninstrumented entities such as databases.",
+      "Wrong: without `@` these are read as span tags; the called database is described by the peer attributes `@peer.db.name` and `@peer.db.system`.",
+      "Correct: peer attributes with `@` describe the called database and table."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/span_tags_attributes/#span-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-021",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "medium",
+    "q": "In Trace Queries, span query `a` is `service:checkoutservice` and span query `b` is `service:shippingservice`. You want only traces where checkout calls shipping directly, with no service in between. Which expression goes in the **Traces matching** field?",
+    "options": [
+      "`a -> b`",
+      "`a => b`",
+      "`a && b`"
+    ],
+    "answer": 1,
+    "explanation": "`=>` is the direct relationship operator: the left span is the direct parent of the right span.",
+    "notes": [
+      "Wrong: `->` is the indirect relationship; `a` can be anywhere upstream of `b`.",
+      "Correct: `=>` requires `a` to be the direct parent of `b`.",
+      "Wrong: `&&` only requires both spans in the trace, with no relationship."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_queries/#trace-query-operators",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-022",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "You want traces that contain spans from `web-store` but never reach `payments-go`. Which trace query expresses this?",
+    "options": [
+      "`service:web-store && NOT(service:payments-go)`",
+      "`service:web-store && -service:payments-go`",
+      "`service:web-store || NOT(service:payments-go)`"
+    ],
+    "answer": 0,
+    "explanation": "In trace queries, `NOT` excludes traces that contain spans matching the query, and `&&` requires the `web-store` spans.",
+    "notes": [
+      "Correct: `&&` with `NOT(...)` returns traces with `web-store` spans and no `payments-go` spans.",
+      "Wrong: `-` excludes terms inside a single span query; between span queries the operator is `NOT`.",
+      "Wrong: `||` would also return traces without any `web-store` spans."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_queries/#trace-query-operators",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-023",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "In Trace Queries you want traces whose whole end-to-end execution took more than 5 seconds. What do you add?",
+    "options": [
+      "`@duration:>5s` in span query `a`",
+      "`total_span_count:>5` in the **Where** statement",
+      "`trace_duration:>5s` in the **Where** statement"
+    ],
+    "answer": 2,
+    "explanation": "Trace-level filters go in the **Where** statement, and `trace_duration` is the end-to-end duration of the trace.",
+    "notes": [
+      "Wrong: `@duration` filters on the duration of the matching span, not the whole trace.",
+      "Wrong: `total_span_count` counts the spans in the trace; it says nothing about time.",
+      "Correct: `trace_duration` in the Where statement filters on end-to-end duration."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_queries/#trace-level-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-024",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "A custom retention filter indexes 100% of `service:billing` spans, and they appear in the Trace Explorer. Trace Queries that use those spans together with their downstream calls still return no matching traces. What should the team change?",
+    "options": [
+      "Create facets for the attributes used in the span queries",
+      "Set a Trace rate on the retention filter so whole traces are indexed",
+      "Move the custom filter above the intelligent retention filter in the filter list"
+    ],
+    "answer": 1,
+    "explanation": "Trace Queries run on traces indexed by the intelligent retention filter and by trace-level retention filters. A filter without a trace rate indexes only the matching spans, not the whole trace, so the traces cannot be matched.",
+    "notes": [
+      "Wrong: facets are not required for searching; the issue is that the traces are incomplete.",
+      "Correct: a Trace rate indexes all spans of the selected traces, making them queryable in Trace Queries.",
+      "Wrong: ordering does not change what is indexed; without a trace rate, only matching spans are kept."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_queries/#how-trace-queries-source-data",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-srch-025",
+    "topic": "Insight Discovery",
+    "subtopic": "Search Syntax",
+    "difficulty": "hard",
+    "q": "In the Trace Queries trace list, an engineer reads the Duration column to decide which trace was slowest end to end. Why can this be misleading?",
+    "options": [
+      "It shows the root span's duration, not the whole trace's",
+      "It shows the average duration across all spans in the trace",
+      "It shows the duration of the span matched by query `a` only"
+    ],
+    "answer": 0,
+    "explanation": "Information in the trace list table comes from the root span of each trace. Its duration does not represent the end-to-end duration of the trace.",
+    "notes": [
+      "Correct: the table shows root span attributes, including duration.",
+      "Wrong: no average across spans is shown; the values come from the root span.",
+      "Wrong: the table comes from the root span, not from the span matched by query `a`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_queries/#trace-list",
+    "verified": "2026-11"
+  }
+]

@@ -1,0 +1,422 @@
+[
+  {
+    "id": "lm-sys-001",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "easy",
+    "q": "A new engineering manager asks why the platform team keeps application logs at all. Which answer best describes what logs are for?",
+    "options": [
+      "Breaking down slow requests by the time each function spends on CPU, garbage collection and lock contention",
+      "Summarizing system health as cheap numeric timeseries that drive autoscaling",
+      "Finding the cause of problems and keeping a record for audits and investigations"
+    ],
+    "answer": 2,
+    "explanation": "Logs record individual events with their context, which makes them the tool for finding the cause of a problem. Datadog also positions logs (especially archived logs) as the record security and IT teams use during audits and assessments.",
+    "notes": [
+      "Wrong: per-function CPU, GC and lock breakdowns are profiling data, not logs.",
+      "Wrong: numeric timeseries for health at a glance and scaling decisions are what metrics do.",
+      "Correct: logs explain the cause of failures and serve as an audit and compliance record."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-002",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "medium",
+    "q": "A dashboard shows the error-rate metric for the `checkout` service jumping at 14:05. According to Datadog's guidance on metrics, what is the next step to find out why?",
+    "options": [
+      "Use logs and traces from around 14:05 to troubleshoot the cause",
+      "Add more tags to the error-rate metric until the cause appears in the graph",
+      "Raise the metric's collection frequency and wait for the next spike"
+    ],
+    "answer": 0,
+    "explanation": "Datadog describes metrics as the overall picture of system health; once a metric identifies a problem, you use logs and tracing to troubleshoot further.",
+    "notes": [
+      "Correct: metrics show that something is wrong; logs and traces show why.",
+      "Wrong: more metric tags only split the same number; they do not give the event detail behind the errors.",
+      "Wrong: finer metric resolution still shows only a numeric value, not the cause."
+    ],
+    "ref": "https://docs.datadoghq.com/metrics/#why-are-metrics-useful",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-003",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "easy",
+    "q": "A single checkout request took 9 seconds. The team wants to see how much of that time was spent in each service the request passed through, and whether each step succeeded. Which type of telemetry is built for this?",
+    "options": [
+      "A log",
+      "A trace",
+      "A metric"
+    ],
+    "answer": 1,
+    "explanation": "The Datadog glossary defines a trace as tracking the time spent processing a request and its status; each trace consists of one or more spans.",
+    "notes": [
+      "Wrong: a log records an individual event; it does not by itself time a request from end to end.",
+      "Correct: a trace tracks the time spent processing a request and its status, broken into spans.",
+      "Wrong: a metric is a numeric value tracked over time, such as error rate or latency, not a breakdown of one request."
+    ],
+    "ref": "https://docs.datadoghq.com/glossary/#trace",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-004",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "easy",
+    "q": "What is the core idea behind Datadog's Logging without Limits?",
+    "options": [
+      "Ingestion is decoupled from indexing: collect everything, then choose what to index",
+      "Daily quotas are removed, so every ingested log is indexed at no extra cost",
+      "The Agent compresses logs before sending them, so more logs fit within an index's retention"
+    ],
+    "answer": 0,
+    "explanation": "Logging without Limits decouples log ingestion from indexing. You can ingest, process, archive and generate metrics from all logs, and only index the ones you need to search.",
+    "notes": [
+      "Correct: separating ingestion from indexing is the definition of Logging without Limits.",
+      "Wrong: indexes still have optional daily quotas, and indexing is what you pay to control.",
+      "Wrong: Agent compression has nothing to do with Logging without Limits or index retention."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-005",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "medium",
+    "q": "A service sends JSON logs like this:\n\n{\"log_level\": \"error\", \"message\": \"payment failed\"}\n\nNo pipeline processors touch `log_level`, and in the Log Explorer every one of these logs shows the status `info`. What is the reason?",
+    "options": [
+      "`log_level` is not an attribute that JSON preprocessing reads as the status",
+      "Status values must be uppercase, so the lowercase `error` is not recognized",
+      "Datadog only maps the integer syslog severities 0 to 7 from JSON logs to a status"
+    ],
+    "answer": 0,
+    "explanation": "For JSON logs, Datadog reads the official status only from `status`, `severity`, `level` or `syslog.severity`. Any other attribute, such as `log_level`, must be set as the status source with a Log Status Remapper (or added to the status attributes in Preprocessing for JSON logs).",
+    "notes": [
+      "Correct: `log_level` is not in the default status attribute list, so it needs a Log Status Remapper or a preprocessing change.",
+      "Wrong: status matching is case-insensitive; `error` and `ERROR` both map to error.",
+      "Wrong: strings are mapped too, for example values starting with `err` become error and values starting with `w` become warning."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#preprocessing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-006",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "medium",
+    "q": "To save cost, a team excludes 95% of its 2xx nginx access logs from indexing. Product managers still want a year-over-year view of request volume by status code. What is the cost-efficient approach?",
+    "options": [
+      "Build a dashboard timeseries over the indexed nginx logs for the last 12 months",
+      "Generate a count metric from the ingested nginx logs, grouped by status code",
+      "Create a log monitor on the 2xx logs, since monitor history is kept for a year"
+    ],
+    "answer": 1,
+    "explanation": "Log-based metrics summarize the entire ingest stream, even logs excluded from indexes, and keep 10-second granularity data for 15 months.",
+    "notes": [
+      "Wrong: 95% of the 2xx logs were never indexed, and index retention is far shorter than a year.",
+      "Correct: a log-based metric counts all ingested logs and is kept for 15 months.",
+      "Wrong: a monitor alerts on conditions; it is not a way to keep a year of request trends."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-007",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "medium",
+    "q": "The Agent is configured to tail `/var/log/apache/access.log` on a Linux host, but no logs arrive and the Agent reports a permission error. What does Datadog recommend?",
+    "options": [
+      "Give `dd-agent` read access with ACLs, for example `setfacl -R -m u:dd-agent:rx /var/log/apache`",
+      "Run the Agent as the root user instead of `dd-agent` so it can read every file under `/var/log`",
+      "Move the file to `/var/log/datadog/` so the Agent's own permissions apply"
+    ],
+    "answer": 0,
+    "explanation": "The Agent runs as the `dd-agent` user, and files in `/var/log` are often readable only by root. Datadog recommends ACLs (plus a default ACL or logrotate rule so rotated files keep access).",
+    "notes": [
+      "Correct: ACLs give `dd-agent` read-only access without extra privileges.",
+      "Wrong: the guide gives `dd-agent` read-only access instead; Datadog strongly recommends against giving the Agent root access.",
+      "Wrong: `/var/log/datadog/` holds the Agent's own log files; moving application logs there is not the fix."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/setting-file-permissions-for-rotating-logs/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-008",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "medium",
+    "q": "An engineer adds this to `journald.d/conf.yaml` and restarts the Agent, but no journal logs are collected:\n\nlogs:\n  - type: journald\n\nLog collection is already enabled in `datadog.yaml`. Which step is missing?",
+    "options": [
+      "Add `path: /var/log/journal`, because the Agent has no default journal location",
+      "Add `dd-agent` to the `adm` group with `usermod`",
+      "Add `dd-agent` to the `systemd-journal` group"
+    ],
+    "answer": 2,
+    "explanation": "Journal files are owned by and readable by the `systemd-journal` group by default, so the `dd-agent` user must be added to that group.",
+    "notes": [
+      "Wrong: by default the Agent already looks in `/var/log/journal` and `/run/log/journal`; `path` is only needed for other locations.",
+      "Wrong: the journal is readable by `systemd-journal`, not `adm`.",
+      "Correct: membership in `systemd-journal` (`usermod -a -G systemd-journal dd-agent`) lets the Agent read the journal."
+    ],
+    "ref": "https://docs.datadoghq.com/integrations/journald/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-009",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "easy",
+    "q": "A JSON log arrives with this content:\n\n{\"level\": 4, \"message\": \"disk usage at 85%\"}\n\n`level` is a default status attribute. Which official status does Datadog assign?",
+    "options": [
+      "error",
+      "warning",
+      "critical"
+    ],
+    "answer": 1,
+    "explanation": "Integers 0 to 7 map to syslog severities: 0 emerg, 1 alert, 2 critical, 3 error, 4 warning, 5 notice, 6 info, 7 debug. So 4 becomes warning.",
+    "notes": [
+      "Wrong: error is syslog severity 3.",
+      "Correct: syslog severity 4 is warning.",
+      "Wrong: critical is syslog severity 2."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/log_status_remapper/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-010",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "hard",
+    "q": "A Java service logs severity as the string `SEVERE`, and a Log Status Remapper uses that attribute with no other processing. Which status do these logs get?",
+    "options": [
+      "error",
+      "critical",
+      "OK"
+    ],
+    "answer": 2,
+    "explanation": "Strings that begin with `o` or `s` (case-insensitive) map to OK, so `SEVERE` becomes OK. Use a Category Processor to map `SEVERE` to a value such as `error` before the status remapper.",
+    "notes": [
+      "Wrong: only strings beginning with `err` map to error.",
+      "Wrong: critical comes from strings beginning with `c`.",
+      "Correct: strings beginning with `s` map to OK, a common pitfall for `SEVERE`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/log_status_remapper/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-011",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "easy",
+    "q": "Security logs must stay searchable for 30 days, while noisy debug logs from a batch job only need 3 days. How should this be set up?",
+    "options": [
+      "Keep one index and add an exclusion filter that samples out 90% of the batch job's debug logs",
+      "Create two indexes with filters that route each log type, each with its own retention",
+      "Create two archives, one set to keep logs for 3 days and the other for 30 days"
+    ],
+    "answer": 1,
+    "explanation": "Datadog recommends multiple indexes when you need multiple retention periods or daily quotas. Each index has its own filter and retention.",
+    "notes": [
+      "Wrong: an exclusion filter reduces what is indexed but does not give a second retention period.",
+      "Correct: separate indexes let each log type keep its own retention.",
+      "Wrong: archives store logs in your own cloud storage bucket; they are not indexes with a searchable retention period."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#multiple-indexes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-012",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "hard",
+    "q": "An index has a daily quota with default settings. A developer accidentally switches a service to debug logging, and the quota is reached at 09:00 UTC. What happens to new logs routed to that index after 09:00 UTC?",
+    "options": [
+      "They stop being indexed until the 2:00pm UTC reset but still reach Live Tail, archives and metrics",
+      "They stop being ingested until the midnight UTC reset, so they are also missing from archives and Live Tail",
+      "The oldest logs in the index are deleted to make room, so new logs keep being indexed"
+    ],
+    "answer": 0,
+    "explanation": "After the daily quota is reached, logs are no longer indexed but are still available in Live Tail, sent to archives and used to generate metrics. By default, quotas reset at 2:00pm UTC.",
+    "notes": [
+      "Correct: the quota only stops indexing, and the default reset time is 2:00pm UTC.",
+      "Wrong: quotas never stop ingestion, and the default reset is 2:00pm UTC, not midnight.",
+      "Wrong: a quota does not delete older logs; it stops indexing new ones."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#set-daily-quota",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-013",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "hard",
+    "q": "An index is configured with the Standard Tier at 3 days of retention and the Flex Tier at 90 days. How long does a log stay in each tier?",
+    "options": [
+      "3 days in Standard, then 87 days in Flex, for 90 days in total",
+      "3 days in Standard, then 90 days in Flex, for 93 days in total",
+      "90 days in both tiers at the same time, since each tier keeps its own copy"
+    ],
+    "answer": 0,
+    "explanation": "When both tiers are selected, logs stay in the Standard Tier for its retention and then move to the Flex Tier for the rest of the Flex retention: 3 days Standard, then 87 days Flex.",
+    "notes": [
+      "Correct: the Flex retention is the total, so Flex covers the remaining 87 days.",
+      "Wrong: the 3 Standard days count toward the 90-day Flex retention; they are not added on top.",
+      "Wrong: logs are not stored in both tiers at once; they move from Standard to Flex."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/flex_logs/#configure-storage-tiers",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-014",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "medium",
+    "q": "A team moves its network logs to the Flex Tier only, with no Standard Tier. Which of these stops working for those logs?",
+    "options": [
+      "Dashboard widgets that query the logs",
+      "A log monitor that alerts on the logs",
+      "Log Explorer searches with the Include Flex Logs toggle on"
+    ],
+    "answer": 1,
+    "explanation": "Monitors and Watchdog are not supported in Flex Logs. Dashboards are supported, and the Log Explorer searches Flex logs when Include Flex Logs is toggled on.",
+    "notes": [
+      "Wrong: dashboards can query Flex logs, though their queries use Flex compute.",
+      "Correct: monitor queries are not supported for Flex Logs.",
+      "Wrong: Include Flex Logs, next to the time picker, adds Flex logs to Log Explorer results."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/flex_logs/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-015",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "medium",
+    "q": "A company ingests a high volume of CDN and load balancer logs. They rarely look at them but must keep them for 6 months and sometimes need to query them quickly during a security investigation. Which storage option fits best?",
+    "options": [
+      "Standard Indexing with a 6-month retention",
+      "An archive only, searched when needed",
+      "Flex Logs"
+    ],
+    "answer": 2,
+    "explanation": "Flex Logs is meant for high-volume logs that need long retention but sometimes must be queried urgently, such as security, network and CDN logs. Standard Indexing is for frequently queried, short-term logs; archives are for logs that are rarely queried.",
+    "notes": [
+      "Wrong: Standard Indexing is for logs queried often and kept short term; it is the costly option for long retention.",
+      "Wrong: archives suit rarely queried audit and configuration logs, not urgent investigations.",
+      "Correct: Flex Logs gives long retention with fast queries when needed, at lower cost."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/flex_logs/#when-to-use-flex-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-016",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "easy",
+    "q": "Which logs does Datadog forward to a log archive in your own storage bucket?",
+    "options": [
+      "Only the logs that were stored in an index, after exclusion filters ran",
+      "Every ingested log matching the archive filter, indexed or not",
+      "Only the logs removed by exclusion filters or daily quotas"
+    ],
+    "answer": 1,
+    "explanation": "Archives forward all ingested logs, indexed or not, to your own cloud storage. With multiple archives, each log goes to the first archive whose filter it matches.",
+    "notes": [
+      "Wrong: archiving does not depend on indexing.",
+      "Correct: archives receive every ingested log that matches their filter, indexed or not.",
+      "Wrong: indexed logs are archived too, not only excluded ones."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-017",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "medium",
+    "q": "A team creates a new log archive to Amazon S3 and keeps the default compression. In which format are the archive files written?",
+    "options": [
+      "Gzip-compressed JSON files (`.json.gz`)",
+      "Parquet files (`.parquet`)",
+      "zstd-compressed JSON (`.json.zst`)"
+    ],
+    "answer": 2,
+    "explanation": "Archives are compressed JSON. By default Datadog uses zstd (`.json.zst`), which compresses better and decompresses faster than gzip; gzip (`.json.gz`) can be chosen instead.",
+    "notes": [
+      "Wrong: gzip is an option you can select, but it is not the default.",
+      "Wrong: Datadog archives are compressed JSON, not Parquet.",
+      "Correct: zstd-compressed JSON is the default archive format."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/#compression",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-018",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "medium",
+    "q": "An auditor asks for logs about one `user_id` from three weeks ago, but index retention is only 15 days. The logs are in an S3 archive. What is the recommended quick, low-cost way to see them?",
+    "options": [
+      "Run an Archive Search on the S3 archive",
+      "Increase the index retention to 30 days so the old logs can be searched again",
+      "Open Live Tail and set its time range back three weeks"
+    ],
+    "answer": 0,
+    "explanation": "Archive Search queries archived logs directly from storage without re-indexing and charges only for the scan. Up to 100,000 results are kept for 24 hours, and you can rehydrate them to keep them longer.",
+    "notes": [
+      "Correct: Archive Search is the recommended way to read archived logs on demand.",
+      "Wrong: index retention controls how long logs stay searchable in the index; logs from three weeks ago already aged out of a 15-day index.",
+      "Wrong: Live Tail shows logs in near real time only; it has no historical time range."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/archive_search/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-019",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "hard",
+    "q": "A team wants an anomaly monitor on the number of logs that were actually indexed, split by service and index. Which metric query should they use?",
+    "options": [
+      "`datadog.estimated_usage.logs.ingested_bytes` filtered on `datadog_is_excluded:true`, summed by `service` and `datadog_index` tags",
+      "`datadog.estimated_usage.logs.ingested_events` filtered on `datadog_is_excluded:false`, summed by `service` and `datadog_index`",
+      "`datadog.archives.logs.count` summed by `datadog_index`"
+    ],
+    "answer": 1,
+    "explanation": "The free usage metric `datadog.estimated_usage.logs.ingested_events` counts logs; filtering on `datadog_is_excluded:false` keeps only indexed logs, and summing by `service` and `datadog_index` shows which service or index spikes.",
+    "notes": [
+      "Wrong: `datadog_is_excluded:true` selects excluded logs, and bytes are not a count of logs.",
+      "Correct: this is the query Datadog recommends to monitor indexed log volume.",
+      "Wrong: this metric counts logs written to archives, not logs indexed."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/best-practices-for-log-management/#alert-on-unexpected-log-traffic-spikes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-sys-020",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Systems – Rationale & Justification",
+    "difficulty": "medium",
+    "q": "A team does not need its DEBUG logs day to day, but wants them searchable during incidents or risky deployments. What does Datadog suggest?",
+    "options": [
+      "Set `log_level: debug` in the Agent's `datadog.yaml` file only while an incident or risky deployment is open",
+      "Set the index daily quota to zero and raise it during incidents",
+      "Add a 100% exclusion filter on `status:debug` and toggle it off when the logs are needed"
+    ],
+    "answer": 2,
+    "explanation": "Datadog's \"switch off, switch on\" example is a 100% exclusion filter on DEBUG logs that you toggle in the UI or API when needed. Excluded debug logs are still ingested, archived and available for metrics.",
+    "notes": [
+      "Wrong: `log_level` in `datadog.yaml` controls the Agent's own logging verbosity, not your application's logs.",
+      "Wrong: a quota limits every log in the index, not just debug logs.",
+      "Correct: toggling a 100% DEBUG exclusion filter turns indexing of those logs on and off."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#switch-off-switch-on",
+    "verified": "2026-11"
+  }
+]

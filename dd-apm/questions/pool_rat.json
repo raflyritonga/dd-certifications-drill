@@ -1,0 +1,422 @@
+[
+  {
+    "id": "ap-rat-001",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "easy",
+    "q": "The Datadog glossary sums up what Application Performance Monitoring watches in an application with three signals. Which three?",
+    "options": [
+      "Requests, errors, and latency",
+      "Throughput, memory usage, and log volume",
+      "CPU utilization, saturation, and errors"
+    ],
+    "answer": 0,
+    "explanation": "The glossary defines APM as monitoring requests, errors, and latency in your application. These are the same signals shown in the top graphs of every service page.",
+    "notes": [
+      "Correct: APM monitors requests, errors, and latency (the RED signals).",
+      "Wrong: memory usage and log volume are infrastructure and log signals, not the APM trio.",
+      "Wrong: CPU utilization and saturation are host-level resource signals; APM measures request behaviour."
+    ],
+    "ref": "https://docs.datadoghq.com/glossary/#apm",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-002",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "medium",
+    "q": "A checkout request starts in a Node.js `web-store` service and calls a Java `payment` service over HTTP. Both are auto-instrumented. What lets Datadog show the spans from both services in a single trace?",
+    "options": [
+      "The Agent groups spans from both services that arrive from the same host within the same time window.",
+      "Both services must report the same `DD_SERVICE` and `DD_ENV` values so the Agent merges their spans.",
+      "The calling SDK injects the trace ID and parent span ID into headers; the called SDK extracts them."
+    ],
+    "answer": 2,
+    "explanation": "Trace context propagation injects identifiers such as the trace ID and parent span ID into HTTP headers, and the downstream service extracts them and continues the trace. This is how spans from services in different languages are stitched into one distributed trace.",
+    "notes": [
+      "Wrong: spans are not joined by host or timing; services in one trace often run on different hosts.",
+      "Wrong: each service keeps its own `service` name; sharing `DD_SERVICE` would merge two services, not link a request across them.",
+      "Correct: trace context propagation passes the trace ID and parent span ID in headers from caller to callee."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/glossary/#trace-context-propagation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-003",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "medium",
+    "q": "Trace metrics show that the p99 latency of `web-store` has doubled. Which APM view shows, for one slow request, every service it touched and how long each step took?",
+    "options": [
+      "A `p99:trace.web.request` widget grouped by `resource`",
+      "The flame graph in the Trace View",
+      "The Service Map, inspected on `web-store`"
+    ],
+    "answer": 1,
+    "explanation": "The Flame Graph is the default Trace View visualization. It shows all spans of one trace on a timeline, so you can follow the request's execution path and see where the time was spent.",
+    "notes": [
+      "Wrong: the `trace.<SPAN_NAME>` distribution metric aggregates latency across many requests; it does not show one request's path.",
+      "Correct: the Flame Graph shows the execution path of one request and the time spent in each span.",
+      "Wrong: the Service Map draws aggregate dependencies between services, not the timing of a single request."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#trace-visualizations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-004",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "easy",
+    "q": "In the Trace View flame graph, which legend setting shows how much of the trace's time each service accounted for?",
+    "options": [
+      "Group by Service and display `% Exec Time`",
+      "Group by Host and display span count (`Spans`)",
+      "Select the `Errors` checkbox under Filter Spans"
+    ],
+    "answer": 0,
+    "explanation": "The flame graph legend groups spans by Service (the default), Base service, Host or Container, and can display either the percentage of trace execution time (% Exec Time) or the span count for each group.",
+    "notes": [
+      "Correct: % Exec Time grouped by Service shows each service's share of the trace's execution time.",
+      "Wrong: the Spans option shows how many spans each group has, not how much time it used.",
+      "Wrong: the Errors checkbox highlights error spans; it does not show time spent."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#trace-visualizations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-005",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "hard",
+    "q": "Span 1 lasts 100 ms. It has two child spans that run one after the other with no overlap: span 2 lasts 40 ms and span 3 lasts 30 ms. What is the execution time of span 1?",
+    "options": [
+      "100 ms",
+      "70 ms",
+      "30 ms"
+    ],
+    "answer": 2,
+    "explanation": "Execution time is the time a span is active and not waiting for a child span to complete. Span 1 waits on its children for 40 + 30 = 70 ms, so its own execution time is 100 - 70 = 30 ms.",
+    "notes": [
+      "Wrong: 100 ms is span 1's total duration, which includes time spent waiting on its children.",
+      "Wrong: 70 ms is the combined time of the child spans, not the parent's own active time.",
+      "Correct: 100 ms minus the 70 ms covered by child spans leaves 30 ms of execution time."
+    ],
+    "ref": "https://docs.datadoghq.com/glossary/#execution-time",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-006",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "medium",
+    "q": "On a service page, which top graph breaks down the time of each request by downstream service, and what data is it built on?",
+    "options": [
+      "The Latency Distribution view of the Latency graph, built on unsampled trace metrics",
+      "The Avg Time per Request graph, built on sampled trace data",
+      "The Avg Time per Request graph, built on unsampled data like the other top graphs"
+    ],
+    "answer": 1,
+    "explanation": "For services that call downstream services, a fourth graph, Avg Time per Request, breaks down the average execution time per request. It is built on sampled trace data, unlike the other top graphs, which use unsampled data.",
+    "notes": [
+      "Wrong: Latency Distribution shows how latencies are spread, not which downstream service the time went to.",
+      "Correct: Avg Time per Request shows time per downstream service and is built on sampled trace data.",
+      "Wrong: this is the one top graph that uses sampled trace data rather than unsampled data."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#avg-time-per-request",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-007",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "easy",
+    "q": "The `checkout` service shows a rising error rate. It calls several downstream services and a database. On its service page, how can an engineer see requests, errors and latency for only the calls `checkout` makes to one of those dependencies?",
+    "options": [
+      "Click that dependency's node in the dependency map",
+      "Switch the Errors graph dropdown to `Errors by Version`",
+      "Switch the Avg Time per Request graph to `% of Time Spent`"
+    ],
+    "answer": 0,
+    "explanation": "Clicking a dependency node in the service page's dependency map opens a side panel where request count, errors and latency are scoped to requests going from the service to that downstream dependency. Its table also shows which resources, such as database queries, are slow or failing.",
+    "notes": [
+      "Correct: the side panel for a dependency node scopes requests, errors and latency to calls from this service to that dependency.",
+      "Wrong: Errors by Version splits the service's own errors by its versions, not by downstream dependency.",
+      "Wrong: % of Time Spent only shows each downstream service's share of time; it has no request or error counts for that dependency."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#investigating-a-specific-service-dependency",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-008",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "easy",
+    "q": "A resource's p99 latency is 800 ms. What does that tell you?",
+    "options": [
+      "The single slowest request took 800 ms.",
+      "The average latency of the slowest 1% of requests is 800 ms.",
+      "99% of requests completed in 800 ms or less."
+    ],
+    "answer": 2,
+    "explanation": "A percentile gives the value below which that percentage of the data falls. A p99 of 800 ms means 99% of requests took 800 ms or less; only the slowest 1% took longer.",
+    "notes": [
+      "Wrong: the single slowest request is the maximum (p100), which can be much higher than p99.",
+      "Wrong: a percentile is a cut-off value, not an average of the tail.",
+      "Correct: 99% of the values fall at or below the p99 value."
+    ],
+    "ref": "https://docs.datadoghq.com/glossary/#percentile",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-009",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "hard",
+    "q": "An engineer adds a dashboard widget for the p99 latency of the `http.request` spans of `web-store`. Which query follows Datadog's current recommendation for latency?",
+    "options": [
+      "`avg:trace.http.request.duration{service:web-store}`",
+      "`p99:trace.http.request{service:web-store}`",
+      "`p99:trace.http.request.duration{service:web-store}`"
+    ],
+    "answer": 1,
+    "explanation": "The latency distribution metric `trace.<SPAN_NAME>` is a DISTRIBUTION and is recommended for all latency measurement, including percentiles. The `.duration` metrics are legacy GAUGE metrics kept for backward compatibility and do not support percentile aggregations.",
+    "notes": [
+      "Wrong: `.duration` is a legacy metric and this query returns an average, not a p99.",
+      "Correct: the distribution metric `trace.<SPAN_NAME>` supports percentile aggregations such as `p99`.",
+      "Wrong: the legacy `.duration` metric does not support percentile aggregations."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/metrics_namespace/#latency-distribution",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-010",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "hard",
+    "q": "After APM latency percentiles moved to DDSketch-based distribution metrics, a team noticed that their p99 values dropped slightly with no code change. What explains this?",
+    "options": [
+      "DDSketch gives relative-error guarantees, so estimates sit closer to the true percentile, most visibly at p99.",
+      "Percentiles are now calculated only from spans kept by retention filters, which leave out slow outliers.",
+      "The Agent now samples latency values before sending them, so fewer slow requests reach the percentile."
+    ],
+    "answer": 0,
+    "explanation": "DDSketch replaced rank-error guarantees with relative-error guarantees, so every percentile estimate is closer to the true value. Datadog notes the change is most noticeable as a reduction in p99 values.",
+    "notes": [
+      "Correct: relative-error guarantees bring estimates closer to the true value; p99 shows the biggest change.",
+      "Wrong: trace metrics are calculated from all traffic, not from spans indexed by retention filters.",
+      "Wrong: the difference comes from the sketch's accuracy, not from sampling latency values."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/ddsketch_trace_metrics/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-011",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "easy",
+    "q": "Datadog's Apdex guide explains why an Apdex score is useful alongside latency averages and percentiles. What reason does it give?",
+    "options": [
+      "Averages and percentiles are computed from sampled traces; Apdex uses 100% of traffic.",
+      "Averages and percentiles ignore failed requests; Apdex is the only APM signal that counts errors.",
+      "Averages and percentiles can mislead when there are extreme data points; Apdex counterbalances them."
+    ],
+    "answer": 2,
+    "explanation": "Apdex is an open standard that scores user satisfaction with response time on a 0 to 1 scale. Its role is to counterbalance response-time averages and percentiles, which can be misleading when there are extreme data points.",
+    "notes": [
+      "Wrong: latency averages and percentiles come from trace metrics, which are calculated on 100% of traffic regardless of ingestion sampling.",
+      "Wrong: APM already tracks errors in the Requests and Errors and Errors graphs; Apdex is not the only error signal.",
+      "Correct: the guide says Apdex counterbalances averages and percentiles, which extreme data points can make misleading."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/configure_an_apdex_for_your_traces_with_datadog_apm/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-012",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "medium",
+    "q": "A web service has an Apdex threshold T of 500 ms. A request completes successfully (HTTP 200) in 1.8 seconds. How does Apdex classify it?",
+    "options": [
+      "Satisfied",
+      "Tolerated",
+      "Frustrated"
+    ],
+    "answer": 1,
+    "explanation": "Tolerated requests have a response time equal to or above T and below or equal to 4T. With T = 500 ms, 4T is 2 seconds, so a successful 1.8-second request is tolerated.",
+    "notes": [
+      "Wrong: satisfied requires a response time below T (500 ms).",
+      "Correct: 1.8 s is between T (0.5 s) and 4T (2 s), so it is tolerated.",
+      "Wrong: frustrated starts above 4T (2 s) or when the request returns an error."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/configure_an_apdex_for_your_traces_with_datadog_apm/#definition",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-013",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "hard",
+    "q": "A web service uses an Apdex threshold of 200 ms. Over an hour it handles 1,000 requests with no errors: 600 finish under 200 ms, 300 take between 200 ms and 800 ms, and 100 take longer than 800 ms. What is the Apdex score?",
+    "options": [
+      "0.75",
+      "0.90",
+      "0.60"
+    ],
+    "answer": 0,
+    "explanation": "Apdex = (Satisfied + Tolerated / 2) / Total. Here 4T is 800 ms, so the score is (600 + 300 / 2) / 1,000 = 0.75.",
+    "notes": [
+      "Correct: (600 satisfied + 150 for the 300 tolerated) / 1,000 = 0.75.",
+      "Wrong: 0.90 counts tolerated requests as fully satisfied; they only count half.",
+      "Wrong: 0.60 leaves out tolerated requests; they count half, not zero."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/configure_an_apdex_for_your_traces_with_datadog_apm/#definition",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-014",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "medium",
+    "q": "A web service has an Apdex threshold T of 300 ms. A request returns in 50 ms, but with an error. How does it count in the Apdex score?",
+    "options": [
+      "Satisfied: it finished below T.",
+      "Tolerated: errors count as half a request.",
+      "Frustrated: errors count as frustrated."
+    ],
+    "answer": 2,
+    "explanation": "Frustrated requests are those with a response time above 4T or that return an error. A fast request that errors is still frustrated.",
+    "notes": [
+      "Wrong: being faster than T only makes a request satisfied if it does not return an error.",
+      "Wrong: tolerated is based on response time between T and 4T, not on errors.",
+      "Correct: any request that returns an error is classified as frustrated."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/configure_an_apdex_for_your_traces_with_datadog_apm/#definition",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-015",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "medium",
+    "q": "A developer wants to set an Apdex threshold for the `web-store` web service. How is this done?",
+    "options": [
+      "Any user sets one organization-wide threshold under Organization Settings, applied to every service.",
+      "An administrator sets it per service from the Latency graph's Apdex view (pencil icon).",
+      "Set `apm_config.apdex_threshold` in `datadog.yaml` on every host running the service."
+    ],
+    "answer": 1,
+    "explanation": "Apdex thresholds are set by administrators, per service. On the service page, click the Latency graph title, select Apdex, then use the pencil icon (visible only to administrators) to enter the threshold.",
+    "notes": [
+      "Wrong: the threshold is set per service, and only administrators can set it.",
+      "Correct: admins pick Apdex from the Latency graph title menu and edit the threshold with the pencil icon.",
+      "Wrong: Apdex is configured in the Datadog UI per service, not in the Agent configuration."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/configure_an_apdex_for_your_traces_with_datadog_apm/#set-your-apdex-for-your-traces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-016",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "easy",
+    "q": "A team wants an alert when the p99 latency of their database service moves away from its usual daily and weekly pattern, without choosing a fixed number. Which APM monitor setup fits?",
+    "options": [
+      "An APM Metrics monitor with an Anomaly alert on p99 latency",
+      "An APM Metrics monitor with a Threshold alert on Avg latency",
+      "A Trace Analytics monitor that counts traces"
+    ],
+    "answer": 0,
+    "explanation": "Anomaly detection flags when a metric behaves differently than it has in the past, taking trends and day-of-week and time-of-day patterns into account. Datadog's guide uses an APM anomaly alert on p99 latency for exactly this case.",
+    "notes": [
+      "Correct: an anomaly alert learns the expected pattern of p99 latency, so no fixed threshold is needed.",
+      "Wrong: a threshold alert needs a fixed number, and an average hides tail latency.",
+      "Wrong: a count of traces does not track p99 latency against its usual pattern."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/alert_anomalies_p99_database/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-017",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "medium",
+    "q": "A team instrumented with Datadog SDKs ingests only 10% of its traces to control cost. What happens to the request and error counts on its service page?",
+    "options": [
+      "They show about 10% of real traffic until the ingestion sampling rate is raised.",
+      "They are computed from indexed spans, so they reflect only retained traffic.",
+      "They still reflect all traffic; ingestion sampling does not affect trace metrics."
+    ],
+    "answer": 2,
+    "explanation": "Trace metrics (hits, errors, latency) are calculated from 100% of the application's traffic regardless of the trace ingestion sampling configuration. That is why they suit dashboards, monitors and SLOs.",
+    "notes": [
+      "Wrong: trace metrics are calculated from all traffic, so sampling does not shrink them.",
+      "Wrong: trace metrics do not come from spans indexed by retention filters.",
+      "Correct: trace metrics are computed on 100% of traffic whatever the ingestion sampling."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/metrics_namespace/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-018",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "medium",
+    "q": "Watchdog Root Cause Analysis links a new version of the `cart` service to a jump in p99 latency on `cart`'s checkout endpoint. How does the analysis label the latency jump?",
+    "options": [
+      "Root cause",
+      "Critical failure",
+      "Impact"
+    ],
+    "answer": 1,
+    "explanation": "Watchdog RCA never classifies degraded performance, such as higher latency or new errors, as the root cause. The version change is the root cause, and the first latency or error rate increase it causes is the critical failure.",
+    "notes": [
+      "Wrong: root causes are state changes such as a version change, traffic increase, AWS instance failure or full disk.",
+      "Correct: the first latency or error rate increase caused by the root cause is the critical failure.",
+      "Wrong: Impact lists other services affected indirectly, not the first symptom."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/rca/#components-of-a-watchdog-root-cause-analysis",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-019",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "medium",
+    "q": "An engineer inspects `web-store` on the Service Map to find where a latency problem started. According to Datadog, which services are generally more likely to be root causes?",
+    "options": [
+      "The services on the left of the map",
+      "The services on the right of the map",
+      "The services drawn with a dashed outline"
+    ],
+    "answer": 1,
+    "explanation": "When you inspect a service on the Service Map, the services on the left are generally closer to your customers, and the ones on the right are more likely root causes.",
+    "notes": [
+      "Wrong: services on the left are closer to customers, where symptoms are usually seen.",
+      "Correct: downstream services on the right are more likely root causes.",
+      "Wrong: a dashed outline marks inferred services in trace views; it says nothing about root cause."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/services_map/#inspection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-rat-020",
+    "topic": "APM Fundamentals",
+    "subtopic": "APM Rationale",
+    "difficulty": "medium",
+    "q": "A monitor alert fired at 14:00, and responders declared an incident from that alert at 14:30. The incident was resolved at 15:30. Which Incident Management Analytics measure covers the whole period from 14:00 to resolution?",
+    "options": [
+      "Time from Detect to Resolve",
+      "Time to Resolve",
+      "Time to Repair"
+    ],
+    "answer": 0,
+    "explanation": "When an incident is declared from a monitor alert, its detection time is when the alert fired (14:00). Time from Detect to Resolve runs from detection to resolution, so it includes the gap before declaration; Time to Resolve starts at declaration.",
+    "notes": [
+      "Correct: it runs from detection to resolution, including the 30 minutes before the incident was declared.",
+      "Wrong: Time to Resolve starts at declaration (14:30), not detection.",
+      "Wrong: Time to Repair runs from detection to the last customer impact, not to resolution."
+    ],
+    "ref": "https://docs.datadoghq.com/incident_response/incident_management/analytics/#measures",
+    "verified": "2026-11"
+  }
+]

@@ -1,0 +1,737 @@
+[
+  {
+    "id": "lm-expl-001",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "easy",
+    "q": "A team wants to see the average `@payment.amount` per merchant and also sort logs so the largest payments appear first. How should `@payment.amount` be declared?",
+    "options": [
+      "As a qualitative facet of type string",
+      "As a measure",
+      "As a log tag added by the Agent"
+    ],
+    "answer": 1,
+    "explanation": "Measures are quantitative facets used to aggregate values (such as average or sum), range filter, and sort logs by value.",
+    "notes": [
+      "Wrong: a string dimension supports filtering and top values, not averages or numeric sorting.",
+      "Correct: a measure (long integer or double) supports aggregations like avg and sorting logs by value.",
+      "Wrong: a tag is just a key:value label; it does not give numeric aggregation by itself."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#quantitative-facets",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-002",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "easy",
+    "q": "In the log side panel, an engineer clicks the attribute `@customer.tier`, whose value is `\"gold\"`. Which creation options are offered?",
+    "options": [
+      "Only creating a facet",
+      "Creating a facet or a measure",
+      "Only creating a measure"
+    ],
+    "answer": 0,
+    "explanation": "From the side panel, a field with a string value only offers facet creation; numerical values offer both facet and measure creation.",
+    "notes": [
+      "Correct: string-valued fields only allow facet creation.",
+      "Wrong: facet and measure are both offered only when the field has a numerical value.",
+      "Wrong: measures require numeric values, so a string field never offers measure-only creation."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#log-side-panel",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-003",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "On Wednesday an engineer creates a facet on `@order.region`. When she scopes the Log Explorer to Monday, the new facet shows no values, although Monday's logs contain `order.region` in their JSON. Why?",
+    "options": [
+      "The facet needs a pipeline reprocess job to be run on Monday's logs first.",
+      "Facets only appear for time ranges shorter than 24 hours.",
+      "A facet is populated only for logs that arrive after the facet is created."
+    ],
+    "answer": 2,
+    "explanation": "Once a facet is created, its content is populated for all new logs. Older indexed logs are not backfilled.",
+    "notes": [
+      "Wrong: the docs describe no backfill or reprocess step; facet content is populated only for logs that arrive after creation.",
+      "Wrong: no such time-range limit applies to facets.",
+      "Correct: facet content is populated for new logs only, so Monday's logs show no facet values."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#create-facets",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-004",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "hard",
+    "q": "A `duration` measure is defined in nanoseconds. `service:A` logs `duration` in milliseconds and `service:B` logs it in microseconds. The team wants `duration:>20ms` to work for both services. What should they do?",
+    "options": [
+      "Use an Arithmetic Processor to multiply `duration` by 1000000 for `service:A` and by 1000 for `service:B`.",
+      "Create two measures on `duration`, one using the millisecond unit for service A and one using the microsecond unit for service B.",
+      "Edit the measure's advanced options and assign a separate unit to each service so the query converts values automatically."
+    ],
+    "answer": 0,
+    "explanation": "A unit is a property of the measure, not of the field. The docs recommend scaling all values to the measure's unit (nanoseconds) with the Arithmetic Processor so one query works across services.",
+    "notes": [
+      "Correct: scaling A by 1000000 and B by 1000 puts everything in nanoseconds, matching the measure's unit.",
+      "Wrong: the unit is a property of the measure, not of the field, so the documented fix is to scale values into the measure's unit rather than declare per-service units.",
+      "Wrong: there is no per-service unit setting; the unit applies to the whole measure."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#units",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-005",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "easy",
+    "q": "Which unit families can be assigned to a log measure?",
+    "options": [
+      "Time and percentage",
+      "Size (bytes) and currency",
+      "Time and size (bytes)"
+    ],
+    "answer": 2,
+    "explanation": "Measures support units in time (nanosecond to week) or size (bit to exbibyte).",
+    "notes": [
+      "Wrong: percentage is not a measure unit family for logs.",
+      "Wrong: currency is not supported; only size and time are.",
+      "Correct: the BYTES and TIME unit families are the only ones listed."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#units",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-006",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "A team declares `@http.status_code` as a qualitative facet (dimension). Which facet type lets users run `@http.status_code:[500 TO 599]` as a range filter on it?",
+    "options": [
+      "String, the type that works in all cases",
+      "Integer",
+      "Boolean"
+    ],
+    "answer": 1,
+    "explanation": "Qualitative facets can have a string or numerical (integer) type. String works in all cases, but only the integer type adds range filtering, for example `http.status_code:[200 TO 299]`.",
+    "notes": [
+      "Wrong: string works for every dimension but does not enable range filtering.",
+      "Correct: an integer-type dimension enables range filtering on top of the usual facet capabilities.",
+      "Wrong: dimensions are typed as string or integer; boolean is not a documented facet type."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#types",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-007",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "No logs carrying the attribute `checkout.cart_id` have arrived yet, but a team wants its facet ready before the release. They click **+ Add** in the facet panel. What should they enter as the field name?",
+    "options": [
+      "`checkout.cart_id`",
+      "`@checkout.cart_id`",
+      "`#checkout.cart_id`"
+    ],
+    "answer": 1,
+    "explanation": "When creating a facet from the facet list, use the tag key name for tags and the attribute path with an `@` prefix for attributes. Any value can be entered even if no matching logs flow yet.",
+    "notes": [
+      "Wrong: the bare key name is the form for tags, not for attributes.",
+      "Correct: attributes are entered as their path with the `@` prefix.",
+      "Wrong: the `#` prefix references calculated fields, not attributes."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#facet-list",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-008",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "An SRE hides the `@kubernetes.pod_uid` facet from her facet panel using the cog icon. What do her teammates see?",
+    "options": [
+      "The facet disappears for everyone in the organization.",
+      "The facet is hidden for every teammate who belongs to the same Datadog team as her.",
+      "Nothing changes for them, unless she updates a saved view they use."
+    ],
+    "answer": 2,
+    "explanation": "Hiding facets is specific to your own troubleshooting context and does not affect teammates, unless you update a Saved View, because hidden facets are part of the saved view context.",
+    "notes": [
+      "Wrong: hiding is personal, not organization-wide.",
+      "Wrong: Datadog Teams membership plays no role in facet hiding.",
+      "Correct: only an updated saved view carries her hidden facets to others."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#hidden-facets-and-teammates",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-009",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "hard",
+    "q": "A user hides the `@db.statement` facet. Which statement about that hidden facet is accurate?",
+    "options": [
+      "It still works in a search query pasted from a Log Explorer link.",
+      "It stops working in any log monitor that groups by that facet.",
+      "It no longer appears in the facet search box of the facet panel."
+    ],
+    "answer": 0,
+    "explanation": "Hidden facets are removed from autocomplete and analytics dropdowns, but remain valid in search queries. They have no impact outside the Log Explorer and stay visible in the facet search, where they can be unhidden.",
+    "notes": [
+      "Correct: hidden facets are still valid for search queries, for example from a copied link.",
+      "Wrong: hiding has no impact outside the Log Explorer, such as monitors, Live Tail or dashboard widgets.",
+      "Wrong: hidden facets stay visible in facet search so you can unhide them."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#hide-facets",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-010",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "A platform team wants the `@kafka.topic` and `@kafka.partition` facets listed together under a `Kafka` heading in the facet list. How do they do it?",
+    "options": [
+      "Cog > Alias to..., then pick a standard facet named `Kafka` as the destination.",
+      "Cog > Edit facet > Advanced options, then set the Group field to `Kafka`.",
+      "Add a Remapper in the pipeline so both attributes are renamed under a `Kafka.` prefix."
+    ],
+    "answer": 1,
+    "explanation": "Grouping is done via the facet cog > Edit facet > Advanced options > Group field > Update. Groups only affect display in the facet list.",
+    "notes": [
+      "Wrong: Alias to... points a facet to a standard facet; it does not create a display group.",
+      "Correct: the Group field in Advanced options sets the facet's group.",
+      "Wrong: remapping changes the data at processing time and is not how facet groups are set."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#group-facets",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-011",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "In her facet list, a developer sees `@clientIP` marked as an aliased facet of the standard `@network.client.ip` facet. What does clicking **switch to alias** do?",
+    "options": [
+      "It deletes `@clientIP` for the whole organization.",
+      "It renames `@network.client.ip` to `@clientIP` in her view.",
+      "It hides the aliased facet and unhides the standard facet."
+    ],
+    "answer": 2,
+    "explanation": "The switch to alias menu item hides the aliased facet and unhides the standard one. If that changes a saved view, saving the view applies it to everyone using that view.",
+    "notes": [
+      "Wrong: switching does not delete anything; aliased facets stay valid.",
+      "Wrong: the direction is the opposite, and nothing is renamed.",
+      "Correct: you move to the standard facet; the aliased one is hidden."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#aliased-facets",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-012",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "A new user does not see an `Index` facet in the Log Explorer, while a colleague in another organization does. What explains the difference?",
+    "options": [
+      "It appears only with multiple indexes and/or active historical views.",
+      "It appears only for users whose role holds the `logs_modify_indexes` permission.",
+      "It must first be created by hand from the facet panel with the **+ Add** button."
+    ],
+    "answer": 0,
+    "explanation": "The index facet is specific: it appears only if the organization has multiple indexes and/or active historical views (rehydrations).",
+    "notes": [
+      "Correct: a single-index org without historical views has no Index facet.",
+      "Wrong: visibility depends on index setup, not on the index-editing permission.",
+      "Wrong: it is a built-in facet that appears automatically under those conditions."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#index-facet",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-013",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "hard",
+    "q": "An admin plans to delete the unused-looking `@tenant` facet. Before doing so, what risk do the docs call out?",
+    "options": [
+      "Logs that contain a `tenant` attribute will start being dropped at intake once the facet is deleted.",
+      "Indexes, monitors, dashboards or restriction queries that use the facet can break.",
+      "The `tenant` attribute will be stripped from every log already stored in your indexes."
+    ],
+    "answer": 1,
+    "explanation": "The docs warn that deleting a facet used in indexes, monitors, dashboards, restriction queries, or by other teams can break those configurations. Deletion is done from Showing xx of xx > search > pencil icon > Delete.",
+    "notes": [
+      "Wrong: facets do not control intake; logs keep flowing.",
+      "Correct: configurations that depend on the facet can break.",
+      "Wrong: deleting a facet does not rewrite the attributes stored in logs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#delete-a-facet",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-014",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "easy",
+    "q": "As a best practice, what is the maximum number of log facets Datadog recommends an organization use?",
+    "options": [
+      "500",
+      "1000",
+      "250"
+    ],
+    "answer": 1,
+    "explanation": "Datadog recommends using at most 1000 facets for optimal use of Log Management.",
+    "notes": [
+      "Wrong: 500 is not the documented figure.",
+      "Correct: the docs recommend no more than 1000 facets.",
+      "Wrong: 250 is not the documented figure."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#create-facets",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-015",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "easy",
+    "q": "An engineer wants to send teammates on Slack a link to the Log Explorer view she is looking at right now (query and visualization), without creating a saved view. Which option does this?",
+    "options": [
+      "Share View, from the Log Explorer export options",
+      "Share > Copy to clipboard in the log side panel",
+      "cURL command, from the Log Explorer export options"
+    ],
+    "answer": 0,
+    "explanation": "Share View, one of the Log Explorer export options, shares a link to the current view with teammates through email, Slack and other notification integrations.",
+    "notes": [
+      "Correct: Share View sends a link to the current view through email, Slack and more.",
+      "Wrong: Copy to clipboard in the side panel copies one log's JSON, not a link to the view.",
+      "Wrong: the cURL export gives an API command to build custom reports, not a link for teammates."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/export/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-016",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "hard",
+    "q": "The attribute `@queue.wait_ms` has no facet. Which of these tasks will NOT work reliably until a facet or measure is declared on it?",
+    "options": [
+      "Using `@queue.wait_ms:*` as the query of an index exclusion filter",
+      "Sorting the list view by a `@queue.wait_ms` column",
+      "Filtering Live Tail with the query `@queue.wait_ms:*`"
+    ],
+    "answer": 1,
+    "explanation": "Any attribute can be added as a list column, but sorting is only reliable on a declared facet. Facets are not needed for Live Tail search or for index exclusion filters.",
+    "notes": [
+      "Wrong: exclusion filters do not need facets.",
+      "Correct: sorting a non-faceted column does not produce reliable results.",
+      "Wrong: Live Tail search does not require facets."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#list-of-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-017",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "In the Log Explorer list view, what is the documented preferred way to ADD a column for a field such as `@http.url`?",
+    "options": [
+      "From the facet panel or the log side panel",
+      "From the column header dropdown in the first row of the table",
+      "From the Options button, under the Content Display setting"
+    ],
+    "answer": 0,
+    "explanation": "The facet panel or the log side panel is the preferred option to add a column. The table header row is the preferred way to sort, rearrange or remove columns.",
+    "notes": [
+      "Correct: the facet panel and the side panel are the documented way to add a column.",
+      "Wrong: the header row is preferred for sorting, rearranging and removing columns.",
+      "Wrong: Options controls Content Height and Content Display, not which fields are columns."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#list-of-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-018",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "easy",
+    "q": "What is the default sort order of the Log Explorer list of logs?",
+    "options": [
+      "By status, with error logs listed first",
+      "By service name, alphabetically from A to Z",
+      "By timestamp, most recent first"
+    ],
+    "answer": 2,
+    "explanation": "The default sort is by timestamp with the most recent logs on top; it is the fastest and recommended sort.",
+    "notes": [
+      "Wrong: status is not the default sort key.",
+      "Wrong: lexicographic facet sorting is optional, not the default.",
+      "Correct: newest logs appear on top by default."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#list-of-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-019",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "An analyst wants the rows of the Log Explorer list to be taller so more of each log's content is visible. Where is this controlled?",
+    "options": [
+      "The Options button (Content Height)",
+      "The cog icon next to the `message` facet in the facet panel",
+      "Organization Settings > Preferences"
+    ],
+    "answer": 0,
+    "explanation": "The Options button controls Content Height and Content Display per log in the table.",
+    "notes": [
+      "Correct: Content Height in Options controls how much of each log is shown per row.",
+      "Wrong: the facet cog hides, edits or aliases facets.",
+      "Wrong: Organization Settings > Preferences holds org-level toggles such as Natural Language Queries."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/visualize/#list-of-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-020",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "During an incident, an engineer filters on `status:error` and opens one error log. She now wants to see the log lines written just before and after it on the same host and service, including non-error lines. What should she click?",
+    "options": [
+      "The Metrics tab",
+      "View in context",
+      "Share Event"
+    ],
+    "answer": 1,
+    "explanation": "View in context rewrites the search to show log lines dated just before and after the selected log, even if they do not match the filter, using Hostname, Service, filename and container_id plus tags.",
+    "notes": [
+      "Wrong: the Metrics tab shows infrastructure metrics, not surrounding log lines.",
+      "Correct: View in context shows surrounding logs regardless of the current filter.",
+      "Wrong: Share Event sends the log to teammates through notification integrations."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/side_panel/#correlate-with-infrastructure-data",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-021",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "easy",
+    "q": "In the log side panel, what does the Metrics tab show?",
+    "options": [
+      "Log-based metrics generated from logs that match the current query",
+      "The host's metrics over the full retention period of the log's index",
+      "Infrastructure metrics from 30 minutes around the log"
+    ],
+    "answer": 2,
+    "explanation": "The Metrics tab gives access to underlying infrastructure metrics in a 30-minute window around the log.",
+    "notes": [
+      "Wrong: the tab shows infrastructure metrics, not generated log-based metrics.",
+      "Wrong: the window is 30 minutes around the log, not the index retention.",
+      "Correct: it shows infrastructure metrics for 30 minutes around the log's timestamp."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/side_panel/#correlate-with-infrastructure-data",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-022",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "A log has a trace ID, but its side panel says the associated trace is missing. Trace injection and Unified Service Tagging are set up correctly. What is the most likely explanation?",
+    "options": [
+      "Logs carrying a trace ID stay out of the index until the matching trace is received.",
+      "The service must also send its traces to the same log index that stores its logs.",
+      "The trace was sampled out; traces and logs are sampled independently."
+    ],
+    "answer": 2,
+    "explanation": "If the trace was not ingested or not retained due to sampling, the side panel shows it as missing. Traces and logs are sampled independently, so this does not indicate a configuration error.",
+    "notes": [
+      "Wrong: indexing does not wait for traces.",
+      "Wrong: traces are not stored in log indexes; the missing trace is explained by independent sampling.",
+      "Correct: independent sampling means a log can reference a trace that was sampled out."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/side_panel/#correlate-with-apm-data",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-023",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "easy",
+    "q": "How is the log side panel laid out?",
+    "options": [
+      "Context from tags on top; the log's content and attributes below",
+      "The log message on top, with host and container tags hidden behind a Context tab",
+      "Attributes on the left half of the panel, tags on the right half"
+    ],
+    "answer": 0,
+    "explanation": "The upper part of the side panel displays context information gathered from tags; the lower part displays the content, meaning the message and structured attributes from pipelines.",
+    "notes": [
+      "Correct: context on top, content below.",
+      "Wrong: context is shown in the upper part, not behind a tab.",
+      "Wrong: the layout is split top and bottom into context and content."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/side_panel/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-024",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "An engineer wants to paste the full raw JSON of a log into a support ticket. From the log side panel, what is the quickest way?",
+    "options": [
+      "Export > Download as CSV",
+      "Share > Copy to clipboard",
+      "Share > Share Event"
+    ],
+    "answer": 1,
+    "explanation": "In the side panel Share menu, Copy to clipboard (or `Ctrl+C` / `Cmd+C`) copies the log JSON. Share Event shares the log and its view through email, Slack and other integrations.",
+    "notes": [
+      "Wrong: CSV export is for lists of logs and sanitizes values; it is not a raw JSON copy.",
+      "Correct: Copy to clipboard copies the log JSON.",
+      "Wrong: Share Event sends the log to teammates through notification integrations."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/side_panel/#share-a-log",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-025",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "hard",
+    "q": "An engineer sets the Log Explorer to a fixed range (Oct 3, 10:00 to 11:00) and saves a new custom saved view. What happens to the time range?",
+    "options": [
+      "It is converted into a live (relative) time range when saved.",
+      "It is kept as the exact Oct 3 window for everyone who opens the view.",
+      "The save fails until a live time range such as Past 1 Hour is selected."
+    ],
+    "answer": 0,
+    "explanation": "Saved views are meant to track live time ranges such as past hour or past week; fixed time ranges are converted as such on save.",
+    "notes": [
+      "Correct: fixed ranges are converted to live ranges on save.",
+      "Wrong: saved views do not keep fixed windows.",
+      "Wrong: saving works; the range is converted, not rejected."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/saved_views/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-026",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "easy",
+    "q": "A developer updates her **default view** with a new set of columns and a different query. Who is affected?",
+    "options": [
+      "Only her; the default view is visible to her alone.",
+      "Everyone in her organization who has not starred another view.",
+      "Everyone in her Datadog team."
+    ],
+    "answer": 0,
+    "explanation": "The default view is only accessible and viewable to you, and updating it has no impact on your organization.",
+    "notes": [
+      "Correct: the default view is personal.",
+      "Wrong: the default view is never shared with the organization.",
+      "Wrong: team membership does not matter; the default view is per user."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/saved_views/#default-view",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-027",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "A user tries to rename the out-of-the-box `NGINX` saved view that came with the integration, but the option is disabled. Why?",
+    "options": [
+      "Only the creator of a saved view can rename it.",
+      "Integration saved views are read-only.",
+      "Saved views can only be renamed by Datadog Admin Role users."
+    ],
+    "answer": 1,
+    "explanation": "Integration saved views come out of the box with log integrations and are read-only; update, rename and delete are disabled for them.",
+    "notes": [
+      "Wrong: custom saved views are editable by any user except Read Only users, not only the creator.",
+      "Correct: integration saved views cannot be updated, renamed or deleted.",
+      "Wrong: Standard users can edit custom saved views; the restriction here is that the view comes from an integration."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/saved_views/#saved-views",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-028",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "easy",
+    "q": "What does starring a saved view do?",
+    "options": [
+      "It makes the view the default view for every user in the organization.",
+      "It locks the view so that no other user can update or delete it.",
+      "It pins the view to the top of the list and to the navigation menu."
+    ],
+    "answer": 2,
+    "explanation": "Starring turns a saved view into a favorite: it appears on top of your saved view list and is accessible directly from the navigation menu.",
+    "notes": [
+      "Wrong: starring does not change anyone's default view.",
+      "Wrong: starring does not lock editing.",
+      "Correct: starred views go to the top and appear in the navigation menu."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/saved_views/#saved-views",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-029",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "During an investigation an engineer defines the calculated field `#latency_gap`. A teammate opens the Log Explorer in his own browser session. What does he see?",
+    "options": [
+      "The field, since calculated fields are shared across the organization like custom saved views",
+      "The field, but filled only for logs ingested after it was created, like a new facet",
+      "No `#latency_gap` field, because calculated fields are user-scoped and temporary"
+    ],
+    "answer": 2,
+    "explanation": "Calculated fields are user-scoped (visible only to the creator) and temporary (they do not persist beyond the Log Explorer session).",
+    "notes": [
+      "Wrong: unlike custom saved views, calculated fields are visible only to the user who defined them.",
+      "Wrong: calculated fields work at query time and apply retroactively to indexed logs; they are also not visible to the teammate.",
+      "Correct: calculated fields are user-scoped and do not persist beyond the creator's Log Explorer session."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/calculated_fields/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-030",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "Yesterday's indexed logs include `@client_latency` and `@server_latency`. An analyst without pipeline permissions needs the gap between them for a one-off review of those logs. What is the best option?",
+    "options": [
+      "Add an Arithmetic Processor to the pipeline; it will recompute yesterday's logs.",
+      "Ask an admin to create a measure for the gap, then search yesterday's logs with it.",
+      "Define a calculated field `#gap = @client_latency - @server_latency`"
+    ],
+    "answer": 2,
+    "explanation": "Calculated fields work at query time and can be applied retroactively to already indexed logs, without pipeline permissions. Pipeline changes only affect logs ingested after the update.",
+    "notes": [
+      "Wrong: pipeline changes apply only to logs ingested after the change.",
+      "Wrong: no gap attribute exists in the logs to build a measure on, and facets are not retroactive.",
+      "Correct: a formula calculated field computes `@client_latency - @server_latency` at query time on indexed logs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/calculated_fields/#when-to-use-calculated-fields",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-031",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "easy",
+    "q": "How many calculated fields can a user define at the same time in the Log Explorer?",
+    "options": [
+      "Up to five",
+      "Up to ten",
+      "Up to three"
+    ],
+    "answer": 0,
+    "explanation": "You can define up to five calculated fields at a time.",
+    "notes": [
+      "Correct: the limit is five.",
+      "Wrong: ten is not the documented limit.",
+      "Wrong: three is not the documented limit; it is five."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/calculated_fields/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-032",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "In the Log Explorer, a Watchdog Insights card shows `docker_image:acme:3.1` with 70% of errors but only 8% of all logs. What kind of insight is this?",
+    "options": [
+      "A Log Anomaly Detection insight",
+      "An Error Outlier",
+      "A Watchdog logs monitor alert"
+    ],
+    "answer": 1,
+    "explanation": "Error outliers show faceted tags or attributes that are statistically overrepresented among errors matching the current query. The banner card shows the field and its share of errors versus overall logs.",
+    "notes": [
+      "Wrong: anomaly detection flags the emergence or increase of warning/error logs over time.",
+      "Correct: an overrepresented key:value pair among errors is an error outlier.",
+      "Wrong: a monitor alert is a notification, not a banner insight card."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/watchdog_insights/#error-outliers",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-033",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "hard",
+    "q": "Which Log Anomaly Detection insight is also surfaced in the Watchdog alerts feed and can trigger a Watchdog logs monitor?",
+    "options": [
+      "Any anomaly on a service tag, whatever its duration or the log status involved",
+      "A sudden increase of warning logs lasting 3 minutes",
+      "An error-log increase that is significant and lasts at least 10 minutes"
+    ],
+    "answer": 2,
+    "explanation": "Only severe anomalies reach the Watchdog alerts feed. A severe anomaly contains error logs, lasts at least 10 minutes, and shows a significant increase.",
+    "notes": [
+      "Wrong: having a `service` tag is not enough; severity criteria apply.",
+      "Wrong: warning-only logs lasting 3 minutes fail the error and 10-minute criteria.",
+      "Correct: error logs, at least 10 minutes, and a significant increase define a severe anomaly."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/watchdog_insights/#log-anomaly-detection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-034",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "An engineer clicks **Filter on Insight** on an error outlier card for `env:staging`. The view refreshes and the outlier card is gone. Why?",
+    "options": [
+      "Outlier cards are hidden for 15 minutes after a user filters on them.",
+      "The outlier became the baseline of the new scope.",
+      "Applying the filter deleted the insight for the whole organization."
+    ],
+    "answer": 1,
+    "explanation": "Filtering on a Watchdog Insight changes the scope you are looking at. A selected outlier is treated as the baseline, so it is no longer shown.",
+    "notes": [
+      "Wrong: there is no cooldown on outlier cards.",
+      "Correct: once scoped to `env:staging`, that value is the baseline, not an outlier.",
+      "Wrong: filtering only changes your scope; insights are not deleted."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/insights/#filter-on-insight-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-expl-035",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Explorer Functionality",
+    "difficulty": "medium",
+    "q": "An engineer switches the Log Explorer to Group into Patterns without changing any settings. How are the patterns built?",
+    "options": [
+      "Clustered on `message`, grouped by Status and Service, from 10,000 sampled logs",
+      "Clustered on `host`, grouped by Source, using every log in the selected time range",
+      "Clustered on `message`, grouped by Service only, from 1,000 sampled logs"
+    ],
+    "answer": 0,
+    "explanation": "By default, Log Patterns cluster logs with similar `message` values and group results by Status and Service. Pattern detection uses 10,000 log samples.",
+    "notes": [
+      "Correct: default clustering is on `message`, grouped by Status and Service, from 10,000 samples.",
+      "Wrong: the default clustering field is `message`, and detection is sample-based.",
+      "Wrong: grouping is by Status and Service, and the sample is 10,000 logs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/patterns/",
+    "verified": "2026-11"
+  }
+]

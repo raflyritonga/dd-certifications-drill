@@ -1,0 +1,317 @@
+[
+  {
+    "id": "ap-comm-001",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "easy",
+    "q": "A team runs a Phoenix web service written in Elixir and wants its spans in Datadog APM. Datadog has no official SDK for Elixir. Where should they look first?",
+    "options": [
+      "Community-contributed trace libraries on the Libraries page, such as `spandex`",
+      "The Elixir section of the Datadog SDK compatibility requirements page",
+      "An Elixir Datadog SDK that Single Step Instrumentation installs automatically on the host"
+    ],
+    "answer": 0,
+    "explanation": "For a language without official library support, the docs point to the list of community SDKs on the Libraries page. For Elixir that list includes `spandex`, written by a community author.",
+    "notes": [
+      "Correct: the Libraries page lists `spandex` (author Zach Daniel) as a community tracer for Elixir.",
+      "Wrong: the Compatibility Requirements page only covers official SDK languages; Elixir is not one of them.",
+      "Wrong: there is no official Elixir Datadog SDK for SSI to install; the docs send unsupported languages to the community list."
+    ],
+    "ref": "https://docs.datadoghq.com/extend/community/libraries/#apm--continuous-profiler-client-libraries",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-002",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "easy",
+    "q": "On the Datadog Libraries page, which of these trace libraries is Datadog-official, with Datadog as its author?",
+    "options": [
+      "`apm-client` for Java",
+      "`dd-trace-php` for PHP",
+      "`ddtrace-rb-method-wrapper` for Ruby"
+    ],
+    "answer": 1,
+    "explanation": "`dd-trace-php` is Datadog's PHP tracing library and is marked official with Datadog as author. The other two are community contributions by third-party authors.",
+    "notes": [
+      "Wrong: `apm-client` is a community Java library by Chas Honton; the official Java tracer is `dd-trace-java`.",
+      "Correct: `dd-trace-php` is listed as official, authored by Datadog.",
+      "Wrong: `ddtrace-rb-method-wrapper` is a community extension of Datadog's Ruby library, authored by Brandfolder, not Datadog."
+    ],
+    "ref": "https://docs.datadoghq.com/extend/community/libraries/#apm--continuous-profiler-client-libraries",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-003",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "easy",
+    "q": "Which official Datadog library is a command-line profiler for compiled languages such as Rust, C++ and C, collecting CPU and memory allocation data?",
+    "options": [
+      "`dd-trace-cpp`",
+      "`datadog-apm`",
+      "`ddprof`"
+    ],
+    "answer": 2,
+    "explanation": "The Libraries page lists `ddprof` (Rust/C++/C, author Datadog) as a command-line profiler for compiled languages that collects CPU and memory allocation data.",
+    "notes": [
+      "Wrong: `dd-trace-cpp` is the official C++ tracing library for spans and context propagation, not the command-line profiler.",
+      "Wrong: `datadog-apm` is an unofficial community Rust tracing crate by Pipefy.",
+      "Correct: `ddprof` is Datadog's command-line profiler for compiled languages."
+    ],
+    "ref": "https://docs.datadoghq.com/extend/community/libraries/#apm--continuous-profiler-client-libraries",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-004",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "easy",
+    "q": "A team instruments its services with OpenTelemetry and wants vendor neutrality plus Agent features like Fleet Automation and Live Processes. Which way of sending the data does Datadog recommend?",
+    "options": [
+      "The Datadog Agent with the embedded DDOT Collector",
+      "Direct OTLP ingestion to the Datadog intake, with no Agent or Collector",
+      "A self-managed upstream OpenTelemetry Collector with the Datadog Exporter"
+    ],
+    "answer": 0,
+    "explanation": "The OpenTelemetry overview labels the Datadog Agent with the DDOT (Datadog Distribution of OpenTelemetry) Collector as Option 1 (Recommended), combining OTel vendor neutrality with Agent features such as Fleet Automation and Live Processes.",
+    "notes": [
+      "Correct: DDOT is embedded in the Agent and is the recommended option.",
+      "Wrong: direct OTLP ingestion is meant for cases where running an Agent or Collector isn't feasible, such as serverless workloads, and it does not provide Agent features.",
+      "Wrong: the upstream Collector suits teams that want to manage their own Collector, but it lacks Agent-dependent features such as Live Processes."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-005",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "medium",
+    "q": "A Datadog SDK starts with no `DD_TRACE_AGENT_URL`, `DD_AGENT_HOST` or port settings. Where does it try to send traces?",
+    "options": [
+      "To `http://localhost:8125` first, then to the `/var/run/datadog/dsd.socket` Unix socket",
+      "The `/var/run/datadog/apm.socket` socket, falling back to `http://localhost:8126`",
+      "Directly to the Datadog intake for the site set in `DD_SITE`"
+    ],
+    "answer": 1,
+    "explanation": "By default the trace client tries the Unix domain socket `/var/run/datadog/apm.socket`; if it does not exist, traces go to `http://localhost:8126`. Use `DD_TRACE_AGENT_URL` for a different socket, host or port.",
+    "notes": [
+      "Wrong: 8125 and `dsd.socket` are where the client sends stats (DogStatsD), not traces.",
+      "Correct: APM socket first, then localhost port 8126.",
+      "Wrong: SDKs send traces to the Agent, which forwards them; `DD_SITE` is set on the Agent."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/#containers",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-006",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "medium",
+    "q": "An engineer writes a small exporter for a language that has no Datadog SDK and wants to call the tracing API directly. Where should the spans be submitted?",
+    "options": [
+      "`POST` to `https://trace.agent.datadoghq.com/v0.3/traces` with a Datadog API key",
+      "`PUT` to `http://localhost:8125/v0.3/traces` on the DogStatsD listener",
+      "`PUT` to `http://localhost:8126/v0.3/traces` on the local Datadog Agent"
+    ],
+    "answer": 2,
+    "explanation": "The tracing API is an Agent API rather than a server-side API: traces are submitted with `PUT http://localhost:8126/v0.3/traces` and the Agent forwards them to Datadog.",
+    "notes": [
+      "Wrong: the tracing API is not a server-side intake; spans go to the local Agent.",
+      "Wrong: 8125 is the DogStatsD metrics port, not the trace receiver.",
+      "Correct: the Agent's trace receiver on port 8126 accepts `PUT /v0.3/traces`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/send_traces_to_agent_by_api/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-007",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "medium",
+    "q": "A homegrown tracer for a language without a Datadog SDK sends spans to the Agent's tracing API. Besides string tags such as `http.method`, it must attach the numeric value `queue.depth` = 42 to a span. Where does the API's span model put it?",
+    "options": [
+      "In the `meta` object, whose values can be strings or numbers",
+      "As a top-level span field named `queue.depth`, next to `duration`",
+      "In the `metrics` object, whose values must be 64-bit floats"
+    ],
+    "answer": 2,
+    "explanation": "The span model has two key-value maps: `meta`, where keys and values must be strings, and `metrics`, where keys are strings and values are 64-bit floating point numbers. Numeric measurements like a queue depth belong in `metrics`.",
+    "notes": [
+      "Wrong: `meta` keys and values must both be strings, so it is not the place for a numeric value.",
+      "Wrong: the model has a fixed set of top-level fields (`duration`, `start`, `meta`, `metrics` and so on); custom keys go in `meta` or `metrics`.",
+      "Correct: `metrics` takes string keys with 64-bit floating point values."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/send_traces_to_agent_by_api/#model",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-008",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "medium",
+    "q": "With default settings and no sampling rules in the SDKs, how do the Datadog SDK and the Agent share head-based sampling?",
+    "options": [
+      "The Agent sends sampling rates to the SDKs, which apply them at the trace root",
+      "The SDKs send 100% of traces and the Agent drops traces until it reaches 10 traces per second",
+      "Each SDK keeps a fixed 10% of traces at the root, and the Agent only forwards them"
+    ],
+    "answer": 0,
+    "explanation": "By default the Agent continuously sends sampling rates to the SDKs to apply at the root of traces, adjusting them to reach a target of ten traces per second overall. Sampling rules set in an SDK override this Agent mechanism.",
+    "notes": [
+      "Correct: the Agent sets the rates and the SDK applies them at the trace root (ingestion reason `auto`).",
+      "Wrong: the keep/drop decision is made in the SDK at the trace root, using rates the Agent computes; the Agent does not itself cut traffic down to 10 traces per second.",
+      "Wrong: there is no fixed 10% default; 10 is the Agent's traces-per-second target, which it adjusts per service."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#in-the-agent",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-009",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "hard",
+    "q": "On one host, service A uses a Datadog SDK and service B uses an OpenTelemetry SDK that exports OTLP to the same Agent. Neither has sampling rules configured. An admin sets `DD_APM_TARGET_TPS=5` on the Agent. What changes?",
+    "options": [
+      "Both services are sampled toward a combined 5 traces per second",
+      "Only service A's sampling changes; the setting has no effect on the OpenTelemetry SDK",
+      "Only service B's sampling changes, because Datadog SDKs ignore Agent sampling targets"
+    ],
+    "answer": 1,
+    "explanation": "The Agent's traces-per-second target (`target_traces_per_second` / `DD_APM_TARGET_TPS`, default 10) only applies to Datadog SDKs. It has no effect on other SDKs such as OpenTelemetry SDKs.",
+    "notes": [
+      "Wrong: the docs state the target has no effect on OpenTelemetry SDKs.",
+      "Correct: only Datadog SDKs receive and apply Agent-computed sampling rates.",
+      "Wrong: it is the reverse; Datadog SDKs are exactly the ones that apply the Agent target."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#in-the-agent",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-010",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "hard",
+    "q": "A team adds Datadog's official Rust SDK (the `datadog-opentelemetry` crate) to an Axum service. What should they expect?",
+    "options": [
+      "Popular crates such as HTTP servers and database clients are auto-instrumented as soon as the SDK loads",
+      "No auto-instrumentation; spans and context propagation are done manually with the OpenTelemetry API",
+      "It only works when injected by Single Step Instrumentation, not when added as a crate"
+    ],
+    "answer": 1,
+    "explanation": "The Datadog Rust SDK is built on the OpenTelemetry API and SDK and does not provide automatic instrumentation. Spans, attributes, events and trace context propagation must all be done manually with the OpenTelemetry API.",
+    "notes": [
+      "Wrong: the Rust SDK explicitly provides no automatic instrumentation.",
+      "Correct: tracing in Rust is achieved by manual instrumentation with the OpenTelemetry API.",
+      "Wrong: the Rust setup page has you add the crate and configure it with environment variables; it does not depend on SSI."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/rust/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-011",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "medium",
+    "q": "A team instruments a Java service entirely with the OpenTelemetry SDK and sends data through DDOT. Which Datadog feature do they give up compared with using the Datadog SDK?",
+    "options": [
+      "Distributed tracing across services",
+      "Runtime metrics",
+      "Continuous Profiler"
+    ],
+    "answer": 2,
+    "explanation": "On the feature compatibility table, Continuous Profiler is available only with the Datadog SDK + DDOT setup. Distributed tracing and runtime metrics work in every setup, including OTel SDK + DDOT.",
+    "notes": [
+      "Wrong: distributed tracing is supported in all four setups.",
+      "Wrong: runtime metrics are supported with OTel SDKs too, sent over OTLP.",
+      "Correct: Continuous Profiler requires the Datadog SDK."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/compatibility/#feature-compatibility",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-012",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "medium",
+    "q": "A team follows Datadog's guide to trace a Bun application with the OpenTelemetry Node.js SDK, since no Datadog SDK supports Bun. Which OpenTelemetry support level applies?",
+    "options": [
+      "Datadog Supported Components",
+      "Community Supported Components",
+      "Custom Components"
+    ],
+    "answer": 2,
+    "explanation": "Instrumenting unsupported runtimes falls under Custom Components: Datadog gives guidance as a starting point but does not directly support the runtime or the OTel SDK's behavior in it. Runtime issues go to the OpenTelemetry community or the maintainers.",
+    "notes": [
+      "Wrong: Datadog Supported covers Datadog-owned pieces such as the Datadog Exporter and Datadog Connector.",
+      "Wrong: Community Supported covers OTel components included with the DDOT Collector by default.",
+      "Correct: unsupported-runtime instrumentation is a Custom Components case with guidance only."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/compatibility/#support-levels",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-013",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "medium",
+    "q": "An app instrumented with an OpenTelemetry SDK must export OTLP over HTTP to the Datadog Agent on the same host. What must be done on the Agent?",
+    "options": [
+      "Enable the `otlp_config` HTTP receiver, which listens on port 4318 by default",
+      "Nothing; the Agent accepts OTLP on its APM receiver port 8126 as soon as `apm_config` is enabled",
+      "Enable the OTLP HTTP receiver under `otlp_config` on port 4317, the default OTLP/HTTP port"
+    ],
+    "answer": 0,
+    "explanation": "OTLP ingestion in the Agent is off by default. Enable it with `otlp_config.receiver.protocols.http.endpoint` (or `DD_OTLP_CONFIG_RECEIVER_PROTOCOLS_HTTP_ENDPOINT`); the default ports are 4318 for HTTP and 4317 for gRPC.",
+    "notes": [
+      "Correct: turn on the `otlp_config` HTTP receiver; its default port is 4318.",
+      "Wrong: 8126 is the Datadog SDK trace receiver, and OTLP ingestion must be enabled separately.",
+      "Wrong: 4317 is the default OTLP/gRPC port, not HTTP."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/setup/otlp_ingest_in_the_agent/#enabling-otlp-ingestion-on-the-datadog-agent",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-014",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "hard",
+    "q": "A Java service already runs `dd-java-agent`. Developers want to write custom spans with vendor-neutral OpenTelemetry code. What do the docs recommend?",
+    "options": [
+      "Add the OpenTelemetry SDK alongside the Datadog SDK; the Agent removes duplicate spans",
+      "Depend only on the OpenTelemetry API and set `DD_TRACE_OTEL_ENABLED=true`",
+      "Replace `dd-java-agent` with a community Java tracer that understands OpenTelemetry"
+    ],
+    "answer": 1,
+    "explanation": "The OpenTelemetry API support page shows how to use OTel tracing APIs with a Datadog SDK to create custom spans and add tags. For Java you depend only on the OpenTelemetry API (not the OpenTelemetry SDK) and set `dd.trace.otel.enabled` or `DD_TRACE_OTEL_ENABLED` to `true`.",
+    "notes": [
+      "Wrong: for Java you depend only on the OpenTelemetry API, not the OpenTelemetry SDK; running a Datadog SDK and an OTel SDK in the same app leads to undefined behavior.",
+      "Correct: OTel API plus the Datadog SDK, enabled with `DD_TRACE_OTEL_ENABLED`.",
+      "Wrong: community tracers are for languages without an official SDK, and Java has `dd-trace-java`."
+    ],
+    "ref": "https://docs.datadoghq.com/opentelemetry/instrument/api_support/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-comm-015",
+    "topic": "APM Fundamentals",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "medium",
+    "q": "The Datadog Agent runs in its own container, and an instrumented app in a second container sends it traces over TCP. No traces arrive. Which Agent setting does the setup guide say to turn on first?",
+    "options": [
+      "`apm_non_local_traffic: true` in the `apm_config` section",
+      "`DD_TRACE_AGENT_URL` in the Agent container's environment",
+      "`apm_config.receiver_port` changed to 8125 in `datadog.yaml`"
+    ],
+    "answer": 0,
+    "explanation": "In containerized environments the Agent must accept traces from outside its own container: the first step is setting `apm_non_local_traffic: true` in the `apm_config` section of `datadog.yaml`.",
+    "notes": [
+      "Correct: non-local traffic lets the Agent's trace receiver accept spans from other containers.",
+      "Wrong: `DD_TRACE_AGENT_URL` is set on the application side to tell the SDK where the Agent is, not on the Agent.",
+      "Wrong: 8125 is the DogStatsD port; the trace receiver defaults to 8126."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/#containers",
+    "verified": "2026-11"
+  }
+]

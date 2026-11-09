@@ -1,0 +1,632 @@
+[
+  {
+    "id": "ap-mon-001",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "An on-call engineer wants a page whenever the p90 latency of the `web-store` service in `env:prod` stays above 800 ms. Which monitor setup fits best?",
+    "options": [
+      "A Watchdog monitor scoped to `service:web-store` with Alert Category `apm`",
+      "A Trace Analytics monitor counting traces whose `@duration` is above 800 ms",
+      "An APM Metrics monitor with a Threshold alert on p90 latency"
+    ],
+    "answer": 2,
+    "explanation": "APM Metrics monitors are scoped by primary tags, service and resource, and their Threshold alert can fire on p90 latency (as well as hits, errors, error rate, Apdex and other latency measures) crossing a fixed value.",
+    "notes": [
+      "Wrong: a Watchdog monitor notifies on Watchdog-detected anomalies; it has no fixed latency threshold.",
+      "Wrong: a trace count is not a latency percentile, and Trace Analytics monitors only see spans kept by custom retention filters.",
+      "Correct: an APM Metrics threshold alert on p90 latency for env, service and resource is exactly this use case."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/apm/#threshold-alert",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-002",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "The `checkout` service adds a custom span attribute `@customer.tier`. The team wants an alert when spans with `@customer.tier:gold` record more than 50 errors in 15 minutes. Which monitor should they create?",
+    "options": [
+      "A Trace Analytics monitor with the query `service:checkout status:error @customer.tier:gold`",
+      "An APM Metrics monitor on Errors per second, with `@customer.tier:gold` typed into the Resource field",
+      "A Watchdog monitor filtered on `@customer.tier:gold` with an error threshold of 50"
+    ],
+    "answer": 0,
+    "explanation": "Trace Analytics monitors use the same search syntax as the Trace Explorer on indexed spans, so any span attribute can be part of the query. APM Metrics monitors can only be scoped by primary tags, service and resource.",
+    "notes": [
+      "Correct: a Trace Analytics monitor uses Trace Explorer search syntax, so it can filter on any span attribute and alert when the count crosses 50.",
+      "Wrong: APM Metrics monitors are scoped only by primary tags, service and resource; a custom span attribute is not a resource.",
+      "Wrong: Watchdog monitors alert on Watchdog anomaly events and have no user-defined error count threshold."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/apm/#define-the-search-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-003",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "hard",
+    "q": "A team keeps only the default Intelligent retention filter. They build a Trace Analytics monitor for `service:billing @http.status_code:503`. Matching spans show up in the Trace Explorer, but the monitor never triggers. What is the most likely reason?",
+    "options": [
+      "Trace Analytics monitors only evaluate the 15-minute Live Search window, which had no matches",
+      "Trace Analytics monitors evaluate only spans kept by custom retention filters, not the Intelligent retention filter",
+      "Trace Analytics monitors cannot filter on `@http.status_code` because only trace metric tags are allowed"
+    ],
+    "answer": 1,
+    "explanation": "Analytics monitors only evaluate spans retained by custom retention filters, not by the Intelligent retention filter. The team needs a custom retention filter that indexes these spans.",
+    "notes": [
+      "Wrong: Trace Analytics monitors work on indexed spans, not on the Live Search window of ingested spans.",
+      "Correct: spans indexed only by the Intelligent retention filter are not evaluated by Trace Analytics monitors.",
+      "Wrong: the query uses Trace Explorer search syntax, so span attributes such as `@http.status_code` are allowed."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/apm/#define-the-search-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-004",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "In a Trace Analytics monitor for `service:login status:error`, an engineer selects the facet `@usr.id` (a facet, not a measure). What does the monitor compare to the threshold?",
+    "options": [
+      "The number of error traces that contain any `@usr.id` value",
+      "The unique count of `@usr.id` values among the matching spans",
+      "The sum of all `@usr.id` values across the matching spans"
+    ],
+    "answer": 1,
+    "explanation": "When a facet is selected, a Trace Analytics monitor alerts over the unique value count of that facet. Aggregations such as sum or percentiles apply only when a measure is selected.",
+    "notes": [
+      "Wrong: counting traces is the behavior when no facet or measure is selected.",
+      "Correct: selecting a facet makes the monitor evaluate its unique value count.",
+      "Wrong: sum and other aggregations are only offered when a measure is selected, not a facet."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/apm/#define-the-search-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-005",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "A Trace Analytics monitor on `service:api status:error` should send a separate notification for each endpoint that has too many errors. How should it be configured?",
+    "options": [
+      "Group by `@resource.name` and use Multi Alert",
+      "Group by `@resource.name` and use Simple Alert",
+      "Leave it ungrouped and add `{{resource.name}}` to the message"
+    ],
+    "answer": 0,
+    "explanation": "Multi Alert creates an alerting event for each group that meets the conditions, so grouping by `@resource.name` gives one alert per resource. Simple Alert sends a single alert even if several groups breach.",
+    "notes": [
+      "Correct: grouping by `@resource.name` with Multi Alert alerts separately for each resource.",
+      "Wrong: Simple Alert sends one alert when one or more groups breach, which reduces noise but is not per endpoint.",
+      "Wrong: without a group by, the monitor evaluates one aggregated value and sends one alert, so a variable in the message cannot split it per endpoint."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/apm/#define-the-search-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-006",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A Trace Analytics monitor counts spans for `service:ingest`, grouped by `@region`. The team wants to be notified if any region stops producing matching spans. Which condition does Datadog document for this?",
+    "options": [
+      "Trigger when the count is above `0` and enable auto resolve",
+      "Trigger when the count is below `0` with a 900-second evaluation delay",
+      "Trigger when the count is below `1`"
+    ],
+    "answer": 2,
+    "explanation": "To be notified when a group stops sending spans, set the condition to below `1`. It fires when no spans match the query for that group in the evaluation period.",
+    "notes": [
+      "Wrong: above `0` fires while matching spans are arriving, the opposite of the goal.",
+      "Wrong: a count can never be below `0`, so this condition never fires; the evaluation delay does not change that.",
+      "Correct: below `1` triggers when no spans match the query for a group during the evaluation period."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/apm/#no-data-and-below-alerts",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-007",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "hard",
+    "q": "An engineer wants an APM monitor that evaluates only the last 2 minutes of data. Which statement matches the documented custom time window limits?",
+    "options": [
+      "Both APM Metrics and Trace Analytics monitors require at least 5 minutes",
+      "Trace Analytics monitors allow 2 minutes; APM Metrics monitors start at 5 minutes",
+      "APM Metrics monitors allow 2 minutes; Trace Analytics monitors start at 5 minutes"
+    ],
+    "answer": 2,
+    "explanation": "APM Metrics alerts accept a custom window between 1 minute and 48 hours. Trace Analytics alerts accept a custom window between 5 minutes and 48 hours.",
+    "notes": [
+      "Wrong: the 5-minute minimum applies only to Trace Analytics monitors.",
+      "Wrong: this reverses the limits; Trace Analytics is the type with the 5-minute minimum.",
+      "Correct: APM Metrics custom windows start at 1 minute, Trace Analytics custom windows at 5 minutes, both up to 48 hours."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/apm/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-008",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "You follow Datadog's guide to alert on anomalous p99 latency of the `postgres-orders` database service. You want overall database performance, not individual queries. What do you set under Resource?",
+    "options": [
+      "The name of the slowest query",
+      "`*`",
+      "`postgres-orders`, the same value as the service"
+    ],
+    "answer": 1,
+    "explanation": "The guide picks the environment under Primary Tags and the database under Service, then leaves Resource as `*` to watch overall performance. Picking a resource would monitor a specific query.",
+    "notes": [
+      "Wrong: choosing a specific resource monitors one query, not the whole database.",
+      "Correct: leaving Resource as `*` covers all queries of the database service.",
+      "Wrong: the database name goes in the Service field; resources are the queries run against it."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/alert_anomalies_p99_database/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-009",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "Datadog's guide on anomalous p99 database latency sets the anomaly alert's Alert when field to 100% as a starting point. What does that setting mean?",
+    "options": [
+      "Every value in the selected duration must be anomalous before the alert triggers",
+      "The alert triggers on the very first anomalous point in the selected duration",
+      "The p99 latency must exceed the predicted baseline by 100% (double) before it triggers"
+    ],
+    "answer": 0,
+    "explanation": "Alert when 100% means all of the values for the selected duration have to be anomalous for the alert to trigger. Datadog calls this a best practice for starting with anomaly detection and tuning later.",
+    "notes": [
+      "Correct: 100% means all values in the duration must be outside the expected bounds.",
+      "Wrong: alerting on the first anomalous point would be a very low percentage, not 100%.",
+      "Wrong: the percentage is the share of anomalous values; how far from the prediction is set by deviations."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/alert_anomalies_p99_database/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-010",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "A batch worker's latency has no daily or weekly pattern. Which anomaly detection algorithm does Datadog recommend for metrics with no repeating seasonal pattern?",
+    "options": [
+      "`agile`",
+      "`robust`",
+      "`basic`"
+    ],
+    "answer": 2,
+    "explanation": "`basic` is meant for metrics with no repeating seasonal pattern. It uses a lagging rolling quantile, needs little data and adjusts quickly, but has no knowledge of seasonality or long trends.",
+    "notes": [
+      "Wrong: `agile` is for seasonal metrics that are expected to shift.",
+      "Wrong: `robust` is for seasonal metrics that are expected to be stable.",
+      "Correct: `basic` is the algorithm for metrics without seasonality."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/anomaly/#anomaly-detection-algorithms",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-011",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A service's request rate has a strong weekly pattern. After each planned release the baseline moves to a new level, and the team wants the anomaly monitor to adjust to that level quickly. Which algorithm fits best?",
+    "options": [
+      "`robust`, because its predictions stay steady through level shifts",
+      "`agile`, because it quickly adjusts to level shifts",
+      "`basic`, because it models the weekly seasonal pattern"
+    ],
+    "answer": 1,
+    "explanation": "`agile` is a robust SARIMA variant for seasonal metrics expected to shift; it uses the immediate past so it adapts quickly to level shifts. `robust` is slower to accept intended level shifts.",
+    "notes": [
+      "Wrong: `robust` keeps predictions constant and takes longer to respond to intended level shifts such as code changes.",
+      "Correct: `agile` handles seasonality and adjusts quickly to metric level shifts.",
+      "Wrong: `basic` has no knowledge of seasonal behavior, so it cannot model the weekly pattern."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/anomaly/#anomaly-detection-algorithms",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-012",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A new service went live 10 days ago. The team wants an anomaly monitor on its hits with `weekly` seasonality. What does Datadog document about the history this needs?",
+    "options": [
+      "Weekly seasonality needs at least two weeks of data",
+      "Weekly seasonality needs at least three weeks of data",
+      "Weekly seasonality needs at least six weeks of data"
+    ],
+    "answer": 1,
+    "explanation": "The algorithms need at least three times the seasonality period as history, so weekly seasonality needs at least three weeks of data. Seasonal algorithms may use up to six weeks of history.",
+    "notes": [
+      "Wrong: two weeks is only two weekly cycles; the rule is three times the seasonality.",
+      "Correct: three times the weekly period, so at least three weeks.",
+      "Wrong: six weeks is the most history the seasonal algorithms may use, not the minimum."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/anomaly/#seasonality",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-013",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "hard",
+    "q": "An anomaly monitor has an alert threshold of 50% and a 4-hour trigger window. What is the shortest recovery window Datadog accepts?",
+    "options": [
+      "61 minutes",
+      "120 minutes",
+      "121 minutes"
+    ],
+    "answer": 2,
+    "explanation": "The minimum recovery window is trigger window x (1 - threshold) + 1 minute: 4h x 0.5 + 1 min = 121 minutes. This prevents the monitor from meeting the alert and recovery conditions at the same time.",
+    "notes": [
+      "Wrong: 61 minutes would allow the alert and recovery conditions to be true at once.",
+      "Wrong: 120 minutes misses the extra minute in the formula.",
+      "Correct: 4h x (1 - 0.5) + 1 min = 121 minutes, up to a maximum of 4 hours."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/anomaly/#set-alert-conditions",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-014",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A new organization on a trial installs the Agent and spans start flowing. Which automatic APM error rate monitors does Datadog create?",
+    "options": [
+      "One per service entry point (`span.kind:server` or `span.kind:consumer`), with a 10% default error rate",
+      "One per resource, including outbound `span.kind:client` calls, with a default 5% error rate threshold",
+      "One per trace root span across all environments, with a default 1% error rate threshold"
+    ],
+    "answer": 0,
+    "explanation": "Automatic APM monitors are created for service entry points, identified by `span.kind:server` or `span.kind:consumer`. The error rate threshold monitors default to 10%, configurable, and automatic creation is only available during a trial.",
+    "notes": [
+      "Correct: entry points tagged `span.kind:server` or `span.kind:consumer`, 10% default error rate.",
+      "Wrong: client spans are outbound calls, not entry points, and the default is 10%, not 5%.",
+      "Wrong: monitors are per service entry point, not per trace root span, and the default is 10%."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/apm/#automatic-apm-monitors",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-015",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "A monitor on the custom business metric `checkout.orders.failed` should appear in the Service monitor panel of the `checkout` APM service page. What links it to the service?",
+    "options": [
+      "Using `service:checkout` as a monitor tag or in the query",
+      "Adding `team:checkout` as a monitor tag",
+      "Adding the monitor to a dashboard about checkout"
+    ],
+    "answer": 0,
+    "explanation": "A monitor is attached to an APM service if `service:<SERVICE_NAME>` is tagged in its metadata, included in its query, or if the query is grouped by service. The metric being monitored does not matter.",
+    "notes": [
+      "Correct: the `service` tag in the monitor tags or query (or grouping by service) attaches it to the service.",
+      "Wrong: the team tag sets ownership but does not attach the monitor to the APM service.",
+      "Wrong: dashboards do not link monitors to services; the `service` tag does."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#service-monitor",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-016",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "hard",
+    "q": "A non-muted APM monitor for `payments` has been in `ALERT` for an hour, yet the service's Service Health shows OK. The monitor only notifies `@slack-payments`. What explains this?",
+    "options": [
+      "Only monitors with a paging integration such as PagerDuty or Opsgenie count toward Service Health",
+      "Service Health only counts monitors that have been alerting for more than 2 days",
+      "Service Health only counts Watchdog monitors, not user-created APM monitors"
+    ],
+    "answer": 0,
+    "explanation": "A monitor makes Service Health Critical only if it is non-muted, has a paging integration (PagerDuty or Opsgenie), is in `ALERT` and triggered within the past 2 days. A Slack-only monitor does not qualify.",
+    "notes": [
+      "Correct: Service Health only considers monitors set up with a paging integration (PagerDuty or Opsgenie).",
+      "Wrong: the rule is triggered within the past 2 days, not alerting for longer than 2 days.",
+      "Wrong: Service Health combines monitors, incidents and Watchdog Insights; it is not limited to Watchdog."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#service-health",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-017",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "An internal admin endpoint gets about one request every 10 seconds. Its latency doubled, yet Watchdog raised no APM alert. What is the most likely reason?",
+    "options": [
+      "Watchdog only analyzes whole services, never individual endpoints",
+      "Watchdog only starts analyzing an endpoint once a Watchdog monitor exists",
+      "Watchdog requires at least 0.5 requests per second for an endpoint to be monitored"
+    ],
+    "answer": 2,
+    "explanation": "Watchdog filters out barely used endpoints to avoid anomalies on small traffic and needs at least 0.5 requests per second. One request every 10 seconds is 0.1 requests per second.",
+    "notes": [
+      "Wrong: Watchdog scans all services and resources.",
+      "Wrong: Watchdog scans all services and resources on its own; a Watchdog monitor only adds notifications for the alerts it finds.",
+      "Correct: 0.1 requests per second is below Watchdog's 0.5 requests per second minimum."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/alerts/#watchdog-alerts-coverage",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-018",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A service was instrumented with APM five days ago. How much history does Watchdog need before it starts finding anomalies on its APM metrics?",
+    "options": [
+      "24 hours",
+      "Two weeks",
+      "Six weeks"
+    ],
+    "answer": 1,
+    "explanation": "For metric anomalies, including APM, Watchdog needs at least two weeks of history. It improves as history grows and works best with six weeks.",
+    "notes": [
+      "Wrong: 24 hours is the minimum history for log anomalies.",
+      "Correct: APM metric anomalies need a minimum of two weeks of history.",
+      "Wrong: six weeks gives the best performance but is not the minimum."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/alerts/#watchdog-alerts-coverage",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-019",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "The SRE team wants a Slack notification whenever Watchdog detects an APM anomaly in `env:prod`. What should they create?",
+    "options": [
+      "A Watchdog monitor with Environment `prod` and Alert Category `apm`",
+      "An APM Metrics monitor with the Watchdog option enabled under Anomaly alert",
+      "Nothing; Watchdog posts to the service owner's Slack channel by itself"
+    ],
+    "answer": 0,
+    "explanation": "A Watchdog monitor (Monitors > New Monitor > Watchdog) can be scoped with the predefined selectors Environment, Alert Category and Team, then notify any handle such as Slack.",
+    "notes": [
+      "Correct: a Watchdog monitor scoped by environment and the `apm` alert category notifies on those anomalies.",
+      "Wrong: APM Metrics anomaly alerts have no Watchdog option; Watchdog notifications come from a Watchdog monitor.",
+      "Wrong: Watchdog detects anomalies without setup, but notifications need a monitor with a recipient."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/watchdog/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-020",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "Watchdog flags faulty deployments on the service page. How does Datadog document getting notified about them automatically?",
+    "options": [
+      "Create an APM Metrics monitor on error rate grouped by `version`",
+      "Create a Watchdog monitor with the Alert Category `deployment`",
+      "Create an Events monitor with `tags:deployment_analysis` in the query"
+    ],
+    "answer": 2,
+    "explanation": "Watchdog adds an event to the Event Explorer for each faulty deployment. An Events monitor whose query includes `tags:deployment_analysis` notifies on them; Datadog recommends a 60-minute recovery time to avoid re-alerting.",
+    "notes": [
+      "Wrong: an error rate monitor does not use Watchdog's comparison of new and previous versions.",
+      "Wrong: Watchdog alert categories are `apm`, `infrastructure` and `logs`; there is no `deployment` category.",
+      "Correct: faulty deployments are events tagged `deployment_analysis`, so an Events monitor catches them."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/faulty_deployment_detection/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-021",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "An error that was marked Resolved starts happening again after a deploy. Which Error Tracking monitor alerting condition covers this regression by default?",
+    "options": [
+      "Regression",
+      "New Issue",
+      "Neither; regressions need a Trace Analytics monitor on `@error.type`"
+    ],
+    "answer": 1,
+    "explanation": "Error Tracking monitors have two alerting conditions, New Issue and High Impact. New Issue alerts when an issue occurs for the first time or regresses; regressions are moved back to For Review, so New Issue monitors cover them by default.",
+    "notes": [
+      "Wrong: Error Tracking monitors offer only two alerting conditions, New Issue and High Impact; there is no separate Regression condition.",
+      "Correct: New Issue alerts when an issue occurs for the first time or regresses; regressions move back to For Review, which New Issue monitors watch.",
+      "Wrong: Error Tracking monitors handle regressions natively through the New Issue condition."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/monitors/#select-the-alerting-condition",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-022",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "Which Error Tracking issue status automatically mutes an issue from Error Tracking monitor notifications?",
+    "options": [
+      "For Review",
+      "Reviewed",
+      "Ignored"
+    ],
+    "answer": 2,
+    "explanation": "Marking an issue as Ignored automatically mutes it from monitor notifications. High Impact monitors still alert on issues that are For Review or Reviewed.",
+    "notes": [
+      "Wrong: For Review is the state both monitor types alert on.",
+      "Wrong: High Impact monitors still alert on Reviewed issues.",
+      "Correct: Ignored issues are automatically muted from monitor notifications."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/monitors/#muting-monitors",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-023",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "Product owners want an SLO stating that 99.9% of `checkout` requests succeed, with each request weighted equally so busy hours count more. Which SLO type fits this best?",
+    "options": [
+      "A Metric-based SLO using good and bad request counts",
+      "A Time Slice SLO with 5-minute slices on error rate",
+      "A Monitor-based SLO on an APM error rate monitor"
+    ],
+    "answer": 0,
+    "explanation": "Metric-based SLOs are count-based (good events over total events) and volume weighted. Datadog recommends them whenever possible; monitor-based and time slice SLOs measure uptime over time instead.",
+    "notes": [
+      "Correct: a metric-based SLO counts events, so its error budget reflects the number of bad requests.",
+      "Wrong: time slice SLOs are also time-based uptime SLOs.",
+      "Wrong: monitor-based SLOs are time-based, so a quiet hour weighs as much as a busy one."
+    ],
+    "ref": "https://docs.datadoghq.com/service_level_objectives/guide/slo_types_comparison/#best-practices-for-choosing-an-slo-type",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-024",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A monitor-based SLO uses an APM p99 latency monitor. Last week the monitor was in `WARN` for 3 hours and never in `ALERT`. How does the SLO count those 3 hours?",
+    "options": [
+      "As downtime",
+      "As uptime",
+      "As time removed from the calculation"
+    ],
+    "answer": 1,
+    "explanation": "Monitor-based SLOs need a binary good/bad split and treat `WARN` as `OK`, so those hours count as uptime.",
+    "notes": [
+      "Wrong: only `ALERT` counts as bad time; `WARN` is not severe enough.",
+      "Correct: monitor-based SLOs treat `WARN` as `OK`, which is uptime.",
+      "Wrong: `WARN` time is not removed; excluding time from an SLO requires an SLO status correction."
+    ],
+    "ref": "https://docs.datadoghq.com/service_level_objectives/monitor/#status-calculation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-025",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "A team wants an uptime-based latency SLO where a period counts as good whenever p95 latency is under 1 second. They do not want to maintain a separate monitor. Which SLO type and slice lengths fit?",
+    "options": [
+      "A Time Slice SLO with 1-minute or 5-minute slices",
+      "A Monitor-based SLO with 1-minute or 10-minute slices",
+      "A Metric-based SLO with 30-second or 1-minute slices"
+    ],
+    "answer": 0,
+    "explanation": "Time Slice SLOs define uptime as a condition on a metric, such as p95 latency under 1 second, with no monitor. Datadog cuts the timeseries into 1-minute or 5-minute slices.",
+    "notes": [
+      "Correct: Time Slice SLOs need no monitor and use 1- or 5-minute slices.",
+      "Wrong: monitor-based SLOs require a monitor and have no slice setting.",
+      "Wrong: metric-based SLOs are count-based (good over total events) and do not use time slices."
+    ],
+    "ref": "https://docs.datadoghq.com/service_level_objectives/time_slice/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-026",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "hard",
+    "q": "An SLO has a 99.9% target over 30 days and a current status of 99.95%. What remaining error budget does Datadog show?",
+    "options": [
+      "0.05%",
+      "0.1%",
+      "50%"
+    ],
+    "answer": 2,
+    "explanation": "Remaining error budget = 100 x (current status - target) / (100 - target) = 100 x 0.05 / 0.1 = 50%.",
+    "notes": [
+      "Wrong: 0.05% is the gap between status and target, not the share of budget left.",
+      "Wrong: 0.1% is the total error budget (100% minus the target), not the share of it that is left.",
+      "Correct: 100 x (99.95 - 99.9) / (100 - 99.9) = 50%."
+    ],
+    "ref": "https://docs.datadoghq.com/service_level_objectives/#configuration",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-027",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "For an SLO with a 99.9% target over 30 days, which fast-burn alert matches Datadog's recommended values?",
+    "options": [
+      "Burn rate 16.8, long window 1 hour, short window 5 minutes",
+      "Burn rate 14.4, long window 1 hour, short window 5 minutes",
+      "Burn rate 14.4, long window 1 hour, short window 30 minutes"
+    ],
+    "answer": 1,
+    "explanation": "For 30-day targets Datadog recommends 14.4 over a 1-hour long window and 5-minute short window (2% of budget). The short window is 1/12 of the long window by default.",
+    "notes": [
+      "Wrong: 16.8 with 1 hour and 5 minutes is the recommendation for 7-day targets.",
+      "Correct: 14.4, 1 hour long window, 5 minute short window for a 30-day target.",
+      "Wrong: the short window defaults to 1/12 of the long window, so 5 minutes for a 1-hour window."
+    ],
+    "ref": "https://docs.datadoghq.com/service_level_objectives/burn_rate/#examples",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-028",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "hard",
+    "q": "Which of these SLOs cannot have an error budget or burn rate alert?",
+    "options": [
+      "A monitor-based SLO built on a Synthetic API test",
+      "A monitor-based SLO built on an APM Metrics monitor",
+      "A Time Slice SLO on p99 latency of `trace.http.request`"
+    ],
+    "answer": 0,
+    "explanation": "Error budget and burn rate alerts are available for metric-based SLOs, time slice SLOs, and monitor-based SLOs made only of metric monitor types (Metric, Integration, APM Metric, Anomaly, Forecast, Outlier). Synthetic tests are not a metric monitor type.",
+    "notes": [
+      "Correct: monitor-based SLOs on Synthetic tests do not support SLO alerts.",
+      "Wrong: APM Metric monitors are metric monitor types, so this SLO supports SLO alerts.",
+      "Wrong: time slice SLOs support error budget and burn rate alerts."
+    ],
+    "ref": "https://docs.datadoghq.com/service_level_objectives/error_budget/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-029",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A monitor message should page `@pagerduty-api` only when the monitor goes from `ALERT` back to `OK`, not when it recovers from `WARN` or `NO DATA`. Which conditional block should wrap the handle?",
+    "options": [
+      "`{{#is_recovery}}`",
+      "`{{#is_no_data_recovery}}`",
+      "`{{#is_alert_recovery}}`"
+    ],
+    "answer": 2,
+    "explanation": "`{{#is_alert_recovery}}` matches only the `ALERT` to `OK` transition. `{{#is_recovery}}` matches recovery from `ALERT`, `WARNING`, `UNKNOWN` or `NO DATA`.",
+    "notes": [
+      "Wrong: `is_recovery` also fires on recovery from `WARNING`, `UNKNOWN` and `NO DATA`.",
+      "Wrong: `is_no_data_recovery` fires only on recovery from `NO DATA`.",
+      "Correct: `is_alert_recovery` is limited to the `ALERT` to `OK` transition."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/notify/variables/#conditional-variables",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-mon-030",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "A Trace Analytics monitor notification should include a link that opens the Trace Explorer scoped to the matching spans. Which variable adds it?",
+    "options": [
+      "`{{trace.link}}`",
+      "`{{span.link}}`",
+      "`{{log.link}}`"
+    ],
+    "answer": 1,
+    "explanation": "`{{span.link}}` adds a link to the Trace Explorer scoped on the spans matching the monitor query. `{{log.link}}`, `{{rum.link}}` and `{{issue.link}}` do the same for other explorers.",
+    "notes": [
+      "Wrong: Trace Analytics variables use the `span` prefix; there is no `trace.link` variable.",
+      "Correct: `{{span.link}}` links to the Trace Explorer for the matching spans.",
+      "Wrong: `{{log.link}}` links to the Log Explorer for log monitors."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/notify/variables/#explorer-link",
+    "verified": "2026-11"
+  }
+]

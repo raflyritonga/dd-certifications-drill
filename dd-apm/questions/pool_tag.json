@@ -1,0 +1,632 @@
+[
+  {
+    "id": "ap-tag-001",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "easy",
+    "q": "A platform team wants traces, metrics and logs from every service to be connected with one consistent set of tags. Which three reserved tags make up unified service tagging?",
+    "options": [
+      "`env`, `service` and `version`",
+      "`host`, `service` and `env`",
+      "`service`, `version` and `team`"
+    ],
+    "answer": 0,
+    "explanation": "Unified service tagging ties Datadog telemetry together with the three reserved tags `env`, `service` and `version`.",
+    "notes": [
+      "Correct: unified service tagging is built on exactly `env`, `service` and `version`.",
+      "Wrong: `host` is a reserved tag for correlating data, but it is not one of the three unified service tags.",
+      "Wrong: `team` is a reserved tag for ownership, not part of unified service tagging; `env` is missing."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-002",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "easy",
+    "q": "You are configuring unified service tagging on a Kubernetes Deployment. Which label key sets the `service` tag on the workload and its pods?",
+    "options": [
+      "`com.datadoghq.tags.service`",
+      "`ad.datadoghq.com/service`",
+      "`tags.datadoghq.com/service`"
+    ],
+    "answer": 2,
+    "explanation": "In Kubernetes, the standard labels `tags.datadoghq.com/env`, `tags.datadoghq.com/service` and `tags.datadoghq.com/version` are added to the parent workload and the pod template.",
+    "notes": [
+      "Wrong: `com.datadoghq.tags.service` is the Docker and ECS container label, not the Kubernetes label.",
+      "Wrong: the `ad.datadoghq.com/` prefix is used for Autodiscovery annotations, not unified service tags.",
+      "Correct: `tags.datadoghq.com/service` is the Kubernetes standard label for the service tag."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-003",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "A Deployment and its pod template both carry the `tags.datadoghq.com/env`, `service` and `version` labels. Container metrics are tagged correctly, but the application's SDK does not pick up these env, service and version values. The cluster does not use the Admission Controller. What is missing?",
+    "options": [
+      "The same three labels on the Datadog Agent DaemonSet, so the Agent passes them to the SDK",
+      "`DD_ENV`, `DD_SERVICE` and `DD_VERSION` set on the application container",
+      "Moving the labels off the pod template so that they exist only on the Deployment metadata"
+    ],
+    "answer": 1,
+    "explanation": "For APM-enabled applications, the labels cover infrastructure data but the SDK reads `DD_ENV`, `DD_SERVICE` and `DD_VERSION`. You can set them manually or with the downward API (`fieldRef` on `metadata.labels['tags.datadoghq.com/version']`); the Admission Controller would inject them automatically.",
+    "notes": [
+      "Wrong: the labels belong on the application workload, not on the Agent.",
+      "Correct: the SDK needs the DD_ environment variables; the downward API can copy them from the labels.",
+      "Wrong: full configuration requires the labels on both the parent workload and the pod template."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-004",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "A team labels its pods with the `tags.datadoghq.com/*` labels and uses the Datadog Cluster Agent's Admission Controller to mutate pods. What does the Admission Controller do for unified service tagging?",
+    "options": [
+      "It injects `DD_ENV`, `DD_SERVICE` and `DD_VERSION` into the pods to match the labels.",
+      "It generates the `tags.datadoghq.com/*` labels from the container image name and tag.",
+      "It copies the labels to the node as host tags so every pod on the node inherits them."
+    ],
+    "answer": 0,
+    "explanation": "If the Cluster Agent's Admission Controller mutates your pods, the three environment variables are injected automatically to match your labels, so you do not need to set them by hand.",
+    "notes": [
+      "Correct: the Admission Controller injects the three DD_ variables that match the labels.",
+      "Wrong: you still define the labels yourself; the Admission Controller does not create them from the image.",
+      "Wrong: it does not turn pod labels into host tags; doing so would mix tags from different pods."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-005",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "An NGINX container runs in Docker next to your traced services. NGINX is not instrumented with APM, but you want its metrics and logs tagged with `env`, `service` and `version`. What is the minimum configuration?",
+    "options": [
+      "Add `env`, `service` and `version` to `DD_TAGS` on the Datadog Agent container.",
+      "Install a Datadog SDK in the NGINX image and set both the environment variables and the labels.",
+      "Add the Docker labels `com.datadoghq.tags.env`, `com.datadoghq.tags.service` and `com.datadoghq.tags.version`."
+    ],
+    "answer": 2,
+    "explanation": "For services that do not need the Datadog environment variables, such as Redis, PostgreSQL, NGINX or applications not traced by APM, the partial configuration uses only the `com.datadoghq.tags.*` Docker labels.",
+    "notes": [
+      "Wrong: `DD_TAGS` on the Agent sets host-level tags that every container on the host inherits, not tags for NGINX alone.",
+      "Wrong: no SDK is needed; NGINX is not traced, so the partial (labels-only) configuration is enough.",
+      "Correct: the partial configuration for untraced containers is the three `com.datadoghq.tags.*` labels."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-006",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "A service runs on Amazon ECS Fargate with the Datadog Agent as a sidecar in the same task. Where should the `DD_ENV`, `DD_SERVICE` and `DD_VERSION` variables and the matching Docker labels be defined?",
+    "options": [
+      "On the Datadog Agent container, so the Agent applies them to the whole task",
+      "On the application container in the task definition",
+      "As AWS resource tags on the ECS cluster"
+    ],
+    "answer": 1,
+    "explanation": "On ECS Fargate the unified service tagging variables and labels must be added to the application container, not the Datadog Agent container.",
+    "notes": [
+      "Wrong: the docs say explicitly not to put these tags on the Agent container on Fargate.",
+      "Correct: set them in the application container's environment and `dockerLabels` in the task definition.",
+      "Wrong: AWS resource tags on the cluster do not configure the SDK's env, service and version."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-007",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "hard",
+    "q": "On ECS Fargate, a team ships logs with Fluent Bit through FireLens and has configured unified service tagging on its application containers. For which telemetry does unified service tagging work in this setup?",
+    "options": [
+      "Metrics and traces, but not log collection",
+      "Logs and traces, but not metrics or profiles",
+      "Metrics, traces and logs alike"
+    ],
+    "answer": 0,
+    "explanation": "On ECS Fargate using Fluent Bit or FireLens, unified service tagging is only available for metrics and traces, not log collection.",
+    "notes": [
+      "Correct: with Fluent Bit or FireLens on Fargate, log collection does not get unified service tags.",
+      "Wrong: metrics do get unified service tags; logs are the exception.",
+      "Wrong: the docs warn that logs collected through Fluent Bit or FireLens are not covered."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-008",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "hard",
+    "q": "A containerized service runs with Datadog Agent 7.60. The team never sets `DD_VERSION`. The image tag is `2.4.1`, and Git information is embedded in the build, with commit SHA `9f3c2ab7d41e`. Which `version` does Datadog set on this service's APM data?",
+    "options": [
+      "`2.4.1`",
+      "`9f3c2ab`",
+      "`2.4.1_9f3c2ab`"
+    ],
+    "answer": 2,
+    "explanation": "With automatic version tagging (Agent 7.52.0+), a value you set always wins. Otherwise Datadog uses `{image_tag}_{first_7_digits_of_git_commit_sha}`, and uses only the image tag or only the SHA when just one of them is available.",
+    "notes": [
+      "Wrong: the image tag alone is used only when no Git SHA is available.",
+      "Wrong: the 7-character SHA alone is used only when no image tag is available.",
+      "Correct: when both exist and no version is set, the value is the image tag plus the first 7 SHA characters."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#automatic-version-tagging-for-apm-data-in-containerized-environments",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-009",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "easy",
+    "q": "What is the maximum length of a Datadog tag in `<key>:<value>` format?",
+    "options": [
+      "128 characters for the value, with the key counted separately",
+      "200 characters, counting the key, the colon and the value",
+      "256 characters, counting the key, the colon and the value"
+    ],
+    "answer": 1,
+    "explanation": "Tags can be up to 200 characters long, and for `<key>:<value>` tags the key, the `:` and the value all count toward that limit.",
+    "notes": [
+      "Wrong: the limit covers the whole tag string, not the value alone, and it is not 128.",
+      "Correct: a tag can be up to 200 characters including key, colon and value.",
+      "Wrong: 256 is not the documented limit."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/#define-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-010",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "hard",
+    "q": "The `checkout` service runs with `DD_SERVICE=checkout` and `DD_VERSION=3.2.0`. Its spans tagged `service:checkout` carry `version:3.2.0`, but its database client spans, which an integration names `checkout-postgres`, have no `version` tag. Why?",
+    "options": [
+      "`DD_VERSION` only adds `version` to spans of the SDK's own service; spans named with another service do not get it.",
+      "`version` is set only on root spans, and child spans are expected to inherit it from the root span.",
+      "The Agent strips `version` from database spans, the same way it excludes host information from them."
+    ],
+    "answer": 0,
+    "explanation": "`DD_VERSION` adds `version` to all spans under the service that belongs to the SDK (generally `DD_SERVICE`). If the service creates spans with the name of an external service, those spans do not get `version`.",
+    "notes": [
+      "Correct: spans under a different service name, such as an integration override, are not tagged with the SDK's version.",
+      "Wrong: version is not limited to root spans; every span of the SDK's service gets it.",
+      "Wrong: only host information is excluded for database and cache spans, not `version`."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#non-containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-011",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "An OpenTelemetry-instrumented pod has these environment variables:\n`OTEL_SERVICE_NAME=cart`\n`OTEL_RESOURCE_ATTRIBUTES=service.name=basket,deployment.environment.name=prod`\nWhich `service` tag does the telemetry get in Datadog?",
+    "options": [
+      "`basket`",
+      "Both `cart` and `basket`",
+      "`cart`"
+    ],
+    "answer": 2,
+    "explanation": "`OTEL_SERVICE_NAME` takes precedence over the `service.name` attribute in `OTEL_RESOURCE_ATTRIBUTES`, and `service.name` maps to the Datadog `service` tag.",
+    "notes": [
+      "Wrong: the `service.name` resource attribute loses to `OTEL_SERVICE_NAME`.",
+      "Wrong: one value wins; the two variables are not merged into two service tags.",
+      "Correct: `OTEL_SERVICE_NAME` overrides `service.name`, so the service is `cart`."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-012",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "Every instance of a service runs with `DD_VERSION=1.4.0`, and nothing has been deployed in the past week. On the service page, the section that lists versions over the last 7 days does not appear. What is the most likely reason?",
+    "options": [
+      "`version` must first be configured as a second primary tag in APM Settings.",
+      "The version section appears only when more than one version reports during the selected time range.",
+      "The version section requires the Continuous Profiler to be enabled for the service."
+    ],
+    "answer": 1,
+    "explanation": "The version section appears only if more than one version is reporting during the time interval selected at the top of the page. With a single version there is nothing to compare.",
+    "notes": [
+      "Wrong: `version` is a unified service tag, not a primary tag; no APM Settings change is needed.",
+      "Correct: with only one active version in the range, the section is hidden.",
+      "Wrong: the profiler adds extra comparisons, but it is not required for the version section."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/deployment_tracking/#versions-deployed",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-013",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "easy",
+    "q": "On the Deployment comparison page, a version is compared with the immediately previous version by default. Over what period can you choose any two versions to compare instead?",
+    "options": [
+      "The past 30 days",
+      "The past 15 days",
+      "The past 7 days"
+    ],
+    "answer": 0,
+    "explanation": "The selected version is compared to the immediately previous version by default, but you can change it to compare any two versions within the past 30 days.",
+    "notes": [
+      "Correct: any two versions from the past 30 days can be compared.",
+      "Wrong: 15 days is the retention of indexed spans, not the comparison window.",
+      "Wrong: the window is longer than 7 days."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/deployment_tracking/#deployment-comparison",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-014",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "A monitor on `trace.http.request.errors` is scoped to `env:prod` and `resource_name:post_/pay`, and tagged `team:payments`. It does not appear in the monitor panel of the `checkout` service page. What makes the monitor show up there?",
+    "options": [
+      "Add `version` to the query so the monitor follows the service's current deployment.",
+      "Add `env:prod` as a monitor tag as well, in addition to keeping it in the query scope.",
+      "Include `service:checkout` in the monitor's tags or query, or group the query by service."
+    ],
+    "answer": 2,
+    "explanation": "Monitors are attached to an APM service if `service:<SERVICE_NAME>` is tagged in the monitor metadata, included in the monitor query, or if the query is grouped by service.",
+    "notes": [
+      "Wrong: `version` does not link a monitor to a service.",
+      "Wrong: `env` scopes the data but does not link the monitor to the service.",
+      "Correct: the `service` tag in metadata or query, or a group-by on service, attaches the monitor."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#service-monitor",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-015",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "easy",
+    "q": "A service sends traces without any environment configured on the SDK or the Agent. Which value does its mandatory APM primary tag get?",
+    "options": [
+      "`env:default`",
+      "`env:none`",
+      "`env:unknown`"
+    ],
+    "answer": 1,
+    "explanation": "`env` is the default and mandatory primary tag, and its default value for untagged data is `env:none`.",
+    "notes": [
+      "Wrong: `env:default` is not the value Datadog uses.",
+      "Correct: untagged APM data is scoped under `env:none`.",
+      "Wrong: `env:unknown` is not the documented default."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/setting_primary_tags_to_scope/#environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-016",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "A team wants an `availability-zone` dropdown next to the `env` dropdown on APM pages. Who can set this up, and where?",
+    "options": [
+      "An organization administrator, on the APM Settings page",
+      "Any user with APM write access, in the service's Software Catalog definition",
+      "The Agent operator, with `apm_config.primary_tags` in `datadog.yaml`"
+    ],
+    "answer": 0,
+    "explanation": "Additional primary tags are defined, changed or removed on the APM Settings page, and only organization administrators can access that page. Changes can take up to two hours to show in the UI.",
+    "notes": [
+      "Correct: the second primary tag is set in APM Settings, and only org administrators can access that page.",
+      "Wrong: Software Catalog definitions do not define APM primary tags.",
+      "Wrong: primary tags are chosen on the APM Settings page; the Agent only supplies the host or container tag values."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/setting_primary_tags_to_scope/#add-additional-primary-tags-in-datadog",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-017",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "hard",
+    "q": "An organization switches its second primary tag from `datacenter` to `cluster_name`. Several APM monitors are scoped by `datacenter`. What happens?",
+    "options": [
+      "Historical data is re-aggregated by `cluster_name`, and the monitors are rewritten to use it automatically.",
+      "Both tags stay active as primary tags for 30 days, then `datacenter` is removed.",
+      "Historical APM data aggregated by `datacenter` is no longer accessible, and the monitors scoped by it show No Data."
+    ],
+    "answer": 2,
+    "explanation": "If you change a previously set primary tag, historical APM data aggregated by the old tag is no longer accessible, and any APM monitors scoped to the old tag display a status of No Data.",
+    "notes": [
+      "Wrong: past data is not re-aggregated and monitors are not rewritten.",
+      "Wrong: there is no 30-day period where both tags stay active.",
+      "Correct: data aggregated by the old tag is lost to the UI, and monitors scoped by it go to No Data."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/setting_primary_tags_to_scope/#add-additional-primary-tags-in-datadog",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-018",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "Which of these tags can be selected as an additional APM primary tag?",
+    "options": [
+      "A `system` tag added to telemetry by a Tag Enrichment rule from Catalog metadata",
+      "A `datacenter` host tag set in the Agent configuration",
+      "A `tenant` span tag added in code with the SDK's `set_tag` method"
+    ],
+    "answer": 1,
+    "explanation": "Additional primary tags can be host or container tags; span-level tags added by the SDK cannot be used. Tag enrichment runs after primary tag resolution, so enriched tags cannot be primary tags either.",
+    "notes": [
+      "Wrong: tag enrichment is applied after primary tag resolution, so enriched tags cannot be primary tags.",
+      "Correct: host and container tags, such as a `datacenter` Agent host tag, can be primary tags.",
+      "Wrong: span-level tags added by the SDK cannot be used as primary tags."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/setting_primary_tags_to_scope/#add-additional-primary-tags-in-datadog",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-019",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "easy",
+    "q": "How many unique values does an additional APM primary tag support?",
+    "options": [
+      "Up to 100",
+      "Up to 1,000",
+      "Up to 30"
+    ],
+    "answer": 0,
+    "explanation": "Additional primary tags support up to 100 unique values per tag, in line with the APM data volume guidelines.",
+    "notes": [
+      "Correct: each additional primary tag supports up to 100 unique values.",
+      "Wrong: 1,000 is the guideline for unique resources per env, service and operation name.",
+      "Wrong: 30 is the guideline for unique versions per env and service."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/setting_primary_tags_to_scope/#add-additional-primary-tags-in-datadog",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-020",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "hard",
+    "q": "Your Agents run version 7.66 on Kubernetes, so container-based primary tags are on by default. You want to turn them off. What do you set before restarting the Agent?",
+    "options": [
+      "`DD_APM_CONTAINER_TAGS_ENABLED=false`",
+      "`DD_CHECKS_TAG_CARDINALITY=low`",
+      "`DD_APM_FEATURES=disable_cid_stats`"
+    ],
+    "answer": 2,
+    "explanation": "Container-based primary tags are on by default from Agent 7.65.0. To turn them off, set the `disable_cid_stats` APM feature (appended to `DD_APM_FEATURES` if it is already set) and restart the Agent.",
+    "notes": [
+      "Wrong: this variable is not the documented switch for container-based primary tags.",
+      "Wrong: tag cardinality controls container tags on check metrics, not APM primary tags.",
+      "Correct: `disable_cid_stats` in `DD_APM_FEATURES` turns off container-based primary tags."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/setting_primary_tags_to_scope/#disable-container-based-primary-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-021",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "To compare regions side by side, a team named its instances `web-store-us-1`, `web-store-eu-1` and `web-store-eu-2`. What does Datadog recommend instead?",
+    "options": [
+      "Keep these names and add `version:us-1` and similar values to tell the regions apart.",
+      "Use one `web-store` service and make the region an additional primary tag.",
+      "Keep these names but put `env:us-1` and similar values on each instance."
+    ],
+    "answer": 1,
+    "explanation": "Putting partitions or grouping variables in service names inflates the number of unique services and can cause delay or data loss. Datadog recommends implementing the region value as a primary tag.",
+    "notes": [
+      "Wrong: `version` tracks deployments; using it for regions breaks deployment tracking.",
+      "Correct: one service name, with the region as an additional primary tag, gives a dropdown to scope the data.",
+      "Wrong: `env` is for environments like prod or staging, and the service count stays inflated."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/#use-additional-primary-tags-instead-of-putting-metric-partitions-or-grouping-variables-into-service-names",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-022",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "On one host, the Agent's `datadog.yaml` has `env: prod-us`, while the application runs with `DD_ENV=production`. What does Datadog warn will happen?",
+    "options": [
+      "Trace metrics can be tagged with both environments.",
+      "The SDK value wins, and the Agent's `env` is ignored for APM data.",
+      "The Agent value wins, because host-level configuration has precedence."
+    ],
+    "answer": 0,
+    "explanation": "Do not set different `env` tags on the tracer and the Agent, because this may cause duplicate tagging on trace metrics. The Agent does not apply a precedence order between tag sources.",
+    "notes": [
+      "Correct: different env values on the SDK and the Agent lead to duplicate env tagging on trace metrics.",
+      "Wrong: there is no rule that the SDK value overrides the Agent value.",
+      "Wrong: the Agent does not enforce precedence between tag sources; it emits every value."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/setting_primary_tags_to_scope/#agent-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-023",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "Developers add a `customer_tier` span tag with custom instrumentation. They want a monitor on request counts grouped by `customer_tier`, but `trace.http.request.hits` cannot be grouped by it. What should they do?",
+    "options": [
+      "Create a facet on `customer_tier` so it becomes a dimension of trace metrics.",
+      "Wait up to two hours for the new tag to be added to trace metrics.",
+      "Generate a custom metric from spans, grouped by `customer_tier`."
+    ],
+    "answer": 2,
+    "explanation": "Trace metrics only carry tags such as `env`, `service`, `version`, `resource`, HTTP status, host tags and additional primary tags; other span tags are not available. Metrics generated from spans can use any span tag or attribute as a dimension.",
+    "notes": [
+      "Wrong: facets help with search and analytics, but they do not add tags to trace metrics.",
+      "Wrong: custom span tags never appear on trace metrics, no matter how long you wait.",
+      "Correct: a span-based custom metric (APM > Generate Metrics) can be grouped by `customer_tier`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/metrics_namespace/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-024",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "An engineer adds the host tag `CostCenter:Retail` to an Agent, so it appears as a span tag on that host's traces. The SDK also records a span attribute named `orderId`. How does Datadog handle the letter case of each?",
+    "options": [
+      "The span tag is normalized to lowercase (`costcenter:retail`); the span attribute stays case-sensitive.",
+      "The span tag keeps its case; the span attribute is normalized to lowercase (`orderid`).",
+      "Both are normalized to lowercase, because Datadog lowercases all span metadata."
+    ],
+    "answer": 0,
+    "explanation": "Span tags and metric tags are normalized to lowercase, so Datadog recommends avoiding camel case in tag keys. Span attributes and log attributes are case-sensitive and are not normalized.",
+    "notes": [
+      "Correct: tags are lowercased, while span attributes keep their original case.",
+      "Wrong: it is the other way round; tags are normalized and attributes are not.",
+      "Wrong: span attributes are explicitly not normalized; only tags are lowercased."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/#define-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-025",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "hard",
+    "q": "A Kubernetes pod runs two containers, `api` and `worker`, and each must report its own `service` tag. Which pod label sets the `service` tag for the `worker` container only?",
+    "options": [
+      "`tags.datadoghq.com/worker.service`",
+      "`tags.datadoghq.com/service.worker`",
+      "`com.datadoghq.tags.worker.service`"
+    ],
+    "answer": 0,
+    "explanation": "When a pod has multiple containers, unified service tagging labels can be set per container with the format `tags.datadoghq.com/<CONTAINER_NAME>.service` (and `.env`, `.version`). The container name comes before the tag name.",
+    "notes": [
+      "Correct: per-container standard labels use `tags.datadoghq.com/<CONTAINER_NAME>.service`.",
+      "Wrong: the container name goes before the tag name, not after it.",
+      "Wrong: the `com.datadoghq.tags.*` prefix is for Docker labels, not Kubernetes pod labels."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-026",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "An admin turns on the default Tag Enrichment rule for `team`. The service `billing` has `team:beta` in its Catalog Entity Metadata, but its telemetry already carries `team:alpha`. Which `team` tag does new `billing` telemetry have?",
+    "options": [
+      "`team:beta`, because Catalog metadata overrides tags set at the source",
+      "Both `team:alpha` and `team:beta`",
+      "`team:alpha` only"
+    ],
+    "answer": 2,
+    "explanation": "Default enrichment rules add `team` or `system` from Entity Metadata only when the service's telemetry does not already have a value for that tag.",
+    "notes": [
+      "Wrong: default rules never overwrite an existing value.",
+      "Wrong: appending values is an option of custom rules, not the default rule.",
+      "Correct: the existing `team:alpha` is kept because the tag already has a value."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/tag_enrichment/#default-tag-enrichment-rules",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-027",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "This morning an admin created a Tag Enrichment rule that adds `system:payments` to several services. A dashboard grouped by `system` over the last week shows the tag only on recent data. Why?",
+    "options": [
+      "Enrichment only adds tags to traces; dashboards read metrics, which are never enriched.",
+      "Rules apply only to telemetry ingested while the rule is active; past data is not updated.",
+      "Rules take up to 7 days to backfill historical data."
+    ],
+    "answer": 1,
+    "explanation": "Tag enrichment rules apply only to telemetry ingested while a rule is active, and past data is not updated. A new rule can take up to an hour to apply fully.",
+    "notes": [
+      "Wrong: enrichment applies to all telemetry except DSM, Events and Orchestration, so metrics are included.",
+      "Correct: enrichment is not retroactive.",
+      "Wrong: there is no backfill; the documented delay is up to an hour, and only for new data."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/tag_enrichment/#tag-enrichment-behavior",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-028",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "easy",
+    "q": "In the Trace Explorer, which query finds spans that call a PostgreSQL database through the peer attribute `peer.db.system`?",
+    "options": [
+      "`@peer.db.system:postgres`",
+      "`peer.db.system:postgres`",
+      "`tags:peer.db.system:postgres`"
+    ],
+    "answer": 0,
+    "explanation": "Peer attributes are span attributes, so you add `@` before the key. Span tags and reserved attributes such as `env` and `service` are queried without `@`.",
+    "notes": [
+      "Correct: span attributes are searched with the `@` prefix.",
+      "Wrong: without `@`, the query looks for a span tag, not the attribute.",
+      "Wrong: `tags:` is for tags in a non-standard format, not for span attributes."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/span_tags_attributes/#span-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-029",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "easy",
+    "q": "You open a span in the trace side panel and look for its `kube_deployment` and `pod_name` values. What are they, and where do you find them?",
+    "options": [
+      "Span attributes, on the Info tab",
+      "Reserved attributes, on the Overview tab",
+      "Span tags, on the Infrastructure tab"
+    ],
+    "answer": 2,
+    "explanation": "Span tags give context about the infrastructure, such as host and container tags like `kube_deployment` and `pod_name`, and are shown on the Infrastructure tab. Span attributes are the span's content, collected by instrumentation.",
+    "notes": [
+      "Wrong: span attributes such as `http.url` are the span's content from instrumentation, not container context.",
+      "Wrong: reserved attributes are fields such as `env`, `service` and `resource_name`; container metadata is not among them.",
+      "Correct: container and host context are span tags, shown on the Infrastructure tab."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/tracing_naming_convention/#span-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-tag-030",
+    "topic": "APM Fundamentals",
+    "subtopic": "Tagging",
+    "difficulty": "medium",
+    "q": "A containerized Agent is started with this environment variable:\n`DD_TAGS=\"owner:web platform\"`\nWhich host tags does it produce?",
+    "options": [
+      "One tag, `owner:web_platform`",
+      "Two tags, `owner:web` and `platform`",
+      "One tag, `owner:web platform`, with the space kept"
+    ],
+    "answer": 1,
+    "explanation": "The `DD_TAGS` environment variable uses whitespace to separate tags, and whitespace is not converted to underscores. To get spaces in a value, use YAML or integration annotations instead.",
+    "notes": [
+      "Wrong: whitespace becomes an underscore only in YAML files or integration annotations, not in `DD_TAGS`.",
+      "Correct: each space-separated token in `DD_TAGS` becomes a separate tag.",
+      "Wrong: tags cannot contain spaces, and `DD_TAGS` splits on whitespace."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/assigning_tags/#environment-variables",
+    "verified": "2026-11"
+  }
+]

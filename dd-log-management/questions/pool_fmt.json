@@ -1,0 +1,527 @@
+[
+  {
+    "id": "lm-fmt-001",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "easy",
+    "q": "Two services send logs through the Agent. The org has no custom pipelines and Auto-Processing is turned off. Service A writes JSON lines; service B writes plain-text lines such as `user=42 action=login took 30ms`. What do they look like in the Log Explorer?",
+    "options": [
+      "Both are parsed automatically, because the Agent converts every plain-text line into JSON key/value pairs before sending it.",
+      "A's JSON keys become attributes automatically; B's text stays in `message` until a parser extracts it.",
+      "Neither is parsed until a pipeline is created, because Datadog only parses logs that match a pipeline filter."
+    ],
+    "answer": 1,
+    "explanation": "Datadog automatically parses JSON-formatted logs. Other formats need a processor such as the Grok Parser in a pipeline to extract attributes from the text.",
+    "notes": [
+      "Wrong: the Agent does not turn plain text into structured attributes; the text stays in `message`.",
+      "Correct: JSON is parsed automatically; semi-structured text needs a parser (for example Grok with the `keyvalue` filter).",
+      "Wrong: JSON parsing does not need a pipeline; only the plain-text log needs a parser."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-002",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "An application emits this JSON log and sets no other severity field:\n\n{\"level\": \"WARN\", \"msg\": \"disk 85% full\"}\n\nWith the default preprocessing configuration, what status does the log get?",
+    "options": [
+      "`warning`, because `level` is one of the default status attributes in JSON preprocessing.",
+      "`info`, because only a key named exactly `status` is read as the log status by default.",
+      "No status until a Log Status Remapper processor is added for `level` in a pipeline."
+    ],
+    "answer": 0,
+    "explanation": "Preprocessing for JSON logs reads `status`, `severity`, `level` and `syslog.severity` as the official status. A value starting with `w` maps to warning.",
+    "notes": [
+      "Correct: `level` is in the default status attribute list, and `WARN` maps to warning.",
+      "Wrong: `severity`, `level` and `syslog.severity` are also read by default, not only `status`.",
+      "Wrong: a status remapper is only needed for keys outside the default list."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#preprocessing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-003",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "A team's JSON logs carry the real machine name in a custom key `node_name`, and they want it to become the log's `host`. Where do they configure this?",
+    "options": [
+      "Add a Remapper processor that remaps `node_name` to `host` at the top of their pipeline.",
+      "Create a standard attribute `host` with `node_name` in its remapping list.",
+      "Add `node_name` to the host attributes in Preprocessing for JSON logs."
+    ],
+    "answer": 2,
+    "explanation": "The docs state that preprocessing JSON logs is the only way to define one of your log attributes as `host`. Its default host attributes are `host`, `hostname` and `syslog.hostname`, and you can add `node_name` to that list.",
+    "notes": [
+      "Wrong: the Remapper processor cannot remap Datadog reserved attributes, and `host` in particular cannot be remapped.",
+      "Wrong: aliasing to standard attributes does not set the reserved `host` attribute; preprocessing does.",
+      "Correct: the docs say JSON preprocessing is the only way to define a log attribute as `host`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#preprocessing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-004",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "hard",
+    "q": "On Kubernetes, the Agent collects JSON logs from a pod whose logger adds `\"hostname\": \"payments-7f9c\"` to every line. These logs are missing the node's host-level tags. What explains this, and what does Datadog recommend?",
+    "options": [
+      "The Agent drops host tags from any log larger than 25 KB; reduce the log size.",
+      "The `hostname` key overrides the Agent's hostname for those logs; remove that key from the logs.",
+      "Host tags are only added to logs from the `file` input type; tail the container log file instead."
+    ],
+    "answer": 1,
+    "explanation": "If a JSON log ingested by the Agent on Kubernetes has a `host`, `hostname` or `syslog.hostname` key, that value overrides the Agent hostname, so the log does not get the correct host-level tags. Datadog recommends clearing these attributes.",
+    "notes": [
+      "Wrong: 25 KB is the recommended maximum log size; it has nothing to do with host tags.",
+      "Correct: `hostname` is a default host attribute in JSON preprocessing and overrides the Agent host value.",
+      "Wrong: container logs collected from stdout/stderr also get host and container tags."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#preprocessing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-005",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "easy",
+    "q": "Which JSON key is NOT read as the log date by default in Preprocessing for JSON logs?",
+    "options": [
+      "`eventTime`",
+      "`published_date`",
+      "`created_at`"
+    ],
+    "answer": 2,
+    "explanation": "The default date attributes are `@timestamp`, `timestamp`, `_timestamp`, `Timestamp`, `eventTime`, `date`, `published_date` and `syslog.timestamp`. Any other key needs a Log Date Remapper or must be added to the preprocessing list.",
+    "notes": [
+      "Wrong: `eventTime` is in the default date attribute list.",
+      "Wrong: `published_date` is in the default date attribute list.",
+      "Correct: `created_at` is not a default date attribute; remap it with a Log Date Remapper."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#preprocessing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-006",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "hard",
+    "q": "JSON logs send `timestamp` as UNIX epoch in seconds, for example `{\"timestamp\": 1762680000, ...}`, and the logs do not show their expected times. The team cannot change the application. Which fix follows Datadog's guidance?",
+    "options": [
+      "Remove `timestamp` from preprocessing, multiply it by 1000 with an Arithmetic Processor, then set a Log Date Remapper on the result.",
+      "Add a Grok Parser that reads `timestamp` with a `date()` matcher; a date parsed by Grok automatically becomes the official log date.",
+      "Add a Log Date Remapper on `timestamp`; the remapper detects that the value is in epoch seconds and converts it to milliseconds before using it."
+    ],
+    "answer": 0,
+    "explanation": "The recognized formats are ISO8601, UNIX milliseconds epoch and RFC3164. The troubleshooting guide removes `timestamp` from preprocessing, converts it with an Arithmetic Processor (x1000) and maps the result with a Log Date Remapper.",
+    "notes": [
+      "Correct: this is the documented sequence for JSON timestamps in an unsupported epoch unit.",
+      "Wrong: parsing a date with Grok does not set the official log date; a Log Date Remapper is still needed, and the value is still in seconds.",
+      "Wrong: the recognized epoch format is milliseconds; the remapper does not convert seconds."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/#unable-to-parse-timestamp-key-from-json-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-007",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "easy",
+    "q": "A batch job re-sends logs whose official date is 30 hours old. By default (no Preview enabled), what happens to these logs?",
+    "options": [
+      "They are accepted and indexed with the current intake time instead.",
+      "They are dropped at intake, because the limit is 18 hours in the past.",
+      "They are accepted and indexed normally, because the default limit is 7 days in the past."
+    ],
+    "answer": 1,
+    "explanation": "Only log events with a timestamp up to 18 hours in the past can be submitted; older ones are dropped at intake. Submitting up to 7 days in the past is a Preview feature.",
+    "notes": [
+      "Wrong: Datadog does not swap in the intake time for logs outside the window; they are rejected.",
+      "Correct: the default ingestion window is 18 hours in the past.",
+      "Wrong: 7 days is only available through a Preview registration."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/#limitations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-008",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "A server writes local time (UTC+1) with no offset, for example `2026-11-02 10:15:00 ERROR ...`, and the parsed logs appear one hour off in Datadog. A Grok Parser and Log Date Remapper already exist. What should be changed?",
+    "options": [
+      "Change the display time zone in the user's Preferences to UTC+1 so the times line up.",
+      "Add a Log Status Remapper before the Date Remapper so the date is re-evaluated.",
+      "Add a timezone to the date matcher: `%{date(\"yyyy-MM-dd HH:mm:ss\",\"UTC+1\"):date}`."
+    ],
+    "answer": 2,
+    "explanation": "By default Datadog parses timestamps as UTC, so local-time logs appear shifted. Add the timezone parameter to the `date()` matcher (for example `UTC+1`, `+01:00` or `Europe/Paris`) so the parsed value is converted to UTC.",
+    "notes": [
+      "Wrong: the display preference only changes how UTC is shown; the stored timestamp would still be wrong.",
+      "Wrong: a status remapper has no effect on the log date.",
+      "Correct: the `timezone` parameter of the date matcher fixes timestamps that are not in UTC."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/#missing-logs---timestamp-not-aligned-with-timezone",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-009",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "A Grok Parser extracts `%{date(\"dd/MMM/yyyy:HH:mm:ss Z\"):event_ts}` correctly, but the Log Explorer still shows the time the log was received. What is missing?",
+    "options": [
+      "A Log Date Remapper processor that uses `event_ts` as the official date.",
+      "A second Grok rule, because only the last rule in a parser can set the date.",
+      "The Grok Parser's `Extract from` advanced setting, set to `message`, so the date is read from the raw text."
+    ],
+    "answer": 0,
+    "explanation": "Parsing a date does not make it the official log date. A Log Date Remapper must come after the parser to set the extracted attribute as the timestamp.",
+    "notes": [
+      "Correct: the docs say to use the Log Date Remapper in a later processor.",
+      "Wrong: only one rule matches a log (the first that matches), and no rule sets the official date.",
+      "Wrong: `Extract from` only chooses which text attribute the parser reads (the default is `message`); it does not set the official date."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#parsing-dates",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-010",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "easy",
+    "q": "A JSON log has no `message` key but contains `\"msg\": \"payment authorized\"`. With default preprocessing, what does Datadog use as the log body indexed for full-text search?",
+    "options": [
+      "Nothing; the log body stays empty until a Log Message Remapper is added for the `msg` key.",
+      "The value of `msg`, because `message`, `msg` and `log` are default message attributes.",
+      "The whole JSON object, serialized as a string."
+    ],
+    "answer": 1,
+    "explanation": "Preprocessing for JSON logs reads `message`, `msg` or `log` as the official message, which is shown as the log body and indexed for full-text search.",
+    "notes": [
+      "Wrong: a message remapper is only needed for keys outside the default list.",
+      "Correct: `msg` is a default message attribute.",
+      "Wrong: when a default message key exists, its value becomes the message, not the whole JSON."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#preprocessing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-011",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "A log shipper sends JSON logs with `syslog.hostname`, `syslog.appname` and `syslog.severity`. With default preprocessing, which reserved attribute does `syslog.appname` populate?",
+    "options": [
+      "`service`",
+      "`source`",
+      "`host`"
+    ],
+    "answer": 0,
+    "explanation": "In the default JSON preprocessing, `service`, `syslog.appname` and `dd.service` are read as the log's service. `syslog.hostname` maps to host and `syslog.severity` to status.",
+    "notes": [
+      "Correct: `syslog.appname` is a default service attribute.",
+      "Wrong: the source comes from `ddsource`, not from `syslog.appname`.",
+      "Wrong: `syslog.hostname` is the syslog key that maps to `host`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#preprocessing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-012",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "A syslog-style line ends with an embedded JSON payload:\n\nSep 06 09:13:38 vagrant program[123]: server.1 {\"method\":\"GET\", \"status_code\":200}\n\nThe line as a whole is not JSON, so it is not parsed automatically. Which Grok element, placed at the end of the rule, turns the trailing JSON into attributes such as `method` and `status_code`?",
+    "options": [
+      "`%{data:payload}`, then add `payload` to Preprocessing for JSON logs",
+      "`%{data:json}`",
+      "`%{data::json}`"
+    ],
+    "answer": 2,
+    "explanation": "Grok rules use `%{MATCHER:EXTRACT:FILTER}`. The `json` filter on a `data` match parses a JSON object nested after a raw text prefix into attributes.",
+    "notes": [
+      "Wrong: preprocessing runs before pipelines and only maps keys of JSON logs to reserved attributes; it does not parse a string attribute.",
+      "Wrong: here `json` is in the extract position, so the text is stored as a string attribute named `json` and is not parsed.",
+      "Correct: `json` in the filter position parses the nested JSON object, as in the docs' Nested JSON example."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#nested-json",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-013",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "easy",
+    "q": "A custom forwarder sends JSON logs directly to Datadog. Which JSON attribute sets the log's `source`, so the matching integration pipeline can be installed?",
+    "options": [
+      "`sourcecategory`",
+      "`ddsource`",
+      "`ddtags`"
+    ],
+    "answer": 1,
+    "explanation": "If a JSON log includes `ddsource`, Datadog uses its value as the log's source. When the source matches an integration name, Datadog installs the matching parsers and facets.",
+    "notes": [
+      "Wrong: `sourcecategory` is an extra category for a source (for example `database`), not the source itself.",
+      "Correct: `ddsource` sets the source.",
+      "Wrong: `ddtags` carries tags such as `env:staging`, not the source."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#preprocessing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-014",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "An engineer flattens a large configuration object into each JSON log, giving about 3,000 attributes per event. Which documented limit does this break?",
+    "options": [
+      "Fewer than 2048 attributes per event",
+      "No more than 1000 attributes per event",
+      "No more than 256 attributes per event"
+    ],
+    "answer": 0,
+    "explanation": "Datadog's log limits say a log event converted to JSON should contain less than 2048 attributes. Logs that break the limits may be transformed or truncated.",
+    "notes": [
+      "Correct: the limit is less than 2048 attributes per log.",
+      "Wrong: 1000 is the maximum number of log entries in one HTTP API array, not attributes per log.",
+      "Wrong: 256 is the maximum length in characters of a tag."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/#limitations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-015",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "Per Datadog's log limits, how many successive nesting levels can a log's JSON attributes have?",
+    "options": [
+      "Fewer than 10",
+      "Fewer than 32",
+      "Fewer than 20"
+    ],
+    "answer": 2,
+    "explanation": "Attribute keys should be nested in less than 20 successive levels, with keys under 50 characters and faceted values under 1024 characters.",
+    "notes": [
+      "Wrong: 10 is the recommended maximum number of parsing rules per Grok parser.",
+      "Wrong: 32 is not a documented log limit.",
+      "Correct: nesting must stay below 20 successive levels."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/#limitations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-016",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "A custom script sends one 1.4 MB log to the HTTP logs intake (`/api/v2/logs`). What does the API do?",
+    "options": [
+      "It rejects the whole request with a `413 Payload too large` response.",
+      "It accepts the log, truncates it at 1 MB and returns 2xx.",
+      "It splits the log into two separate events of 900 KB and 500 KB."
+    ],
+    "answer": 1,
+    "explanation": "The maximum size for a single log is 1 MB. A larger log is accepted and truncated at 1 MB, and the API returns a 2xx. A 413 is returned only when the whole payload is above 5 MB uncompressed.",
+    "notes": [
+      "Wrong: 413 is for a batch above 5 MB uncompressed, not for a single 1.4 MB log.",
+      "Correct: oversized single logs are accepted and truncated at 1 MB.",
+      "Wrong: splitting at 900 KB is what the Datadog Agent does, not the HTTP API."
+    ],
+    "ref": "https://docs.datadoghq.com/api/latest/logs/#send-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-017",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "easy",
+    "q": "For best performance, what maximum size does Datadog recommend for an individual log?",
+    "options": [
+      "25 KB",
+      "1 MB",
+      "900 KB"
+    ],
+    "answer": 0,
+    "explanation": "The HTTPS API supports logs up to 1 MB, but Datadog recommends an individual log of no more than 25 KB (25,000 bytes).",
+    "notes": [
+      "Correct: the recommended maximum is 25 KB.",
+      "Wrong: 1 MB is the largest log the HTTPS API supports, not the recommended size.",
+      "Wrong: 900 KB is where the Agent splits a log, not the recommended size."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/#custom-log-forwarding",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-018",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "A Java app writes logs where every new event starts with a date, followed by indented stack-trace lines. The Agent config contains:\n\nlog_processing_rules:\n  - type: multi_line\n    name: new_log_start_with_date\n    pattern: \\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])\n\nWhat does this rule do?",
+    "options": [
+      "It sends only the lines that start with a date to Datadog and drops all the indented stack-trace lines.",
+      "It adds a `multiline` tag to each line so they can be grouped later in the Log Explorer.",
+      "It joins lines into one log until a new line that matches the date pattern starts the next log."
+    ],
+    "answer": 2,
+    "explanation": "A `multi_line` rule aggregates all lines into a single entry until the pattern is detected again. The pattern must match the beginning of a log.",
+    "notes": [
+      "Wrong: dropping non-matching lines is what `include_at_match` would do.",
+      "Wrong: the `multiline` tag comes from the separate `tag_multi_line_logs` setting; this rule aggregates lines at the Agent.",
+      "Correct: each date-prefixed line starts a new log, and the stack-trace lines are appended to it."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#manually-aggregate-multi-line-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-019",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "hard",
+    "q": "Auto multi-line detection runs with its default settings (datetime detection on). Which first line would NOT be detected as the start of a new log?",
+    "options": [
+      "`2024/05/16 19:46:15 worker started`",
+      "`12:30:20 worker started`",
+      "`Jun 14 15:16:01 worker started`"
+    ],
+    "answer": 1,
+    "explanation": "Auto multi-line detection looks for a datetime in the first 60 bytes of a line, and the format must have both a date and a time component. A time on its own, such as `12:30:20`, does not give enough context.",
+    "notes": [
+      "Wrong: `2024/05/16 19:46:15` has a date and a time, so it is detected.",
+      "Correct: `12:30:20` has no date component, so it is not detected as a datetime.",
+      "Wrong: `Jun 14 15:16:01` is a documented valid example with a date and a time."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/auto_multiline_detection/#supported-datetime-formats",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-020",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "hard",
+    "q": "After upgrading the Agent to 7.67+, a `mask_sequences` rule with the pattern `\"card\": \"\\d+\"` stops masking values in pretty-printed JSON logs. What is the most likely cause?",
+    "options": [
+      "JSON aggregation compacts the JSON before processing rules run, so there is no space after each colon any more.",
+      "Starting with Agent 7.67, `mask_sequences` rules only run when they are defined globally under `logs_config.processing_rules`.",
+      "The Agent now sends JSON logs straight to the intake without evaluating any `log_processing_rules` on them."
+    ],
+    "answer": 0,
+    "explanation": "From Agent 7.67, pretty-printed JSON is aggregated into a single compact line before `log_processing_rules` are evaluated. Patterns that expect a space after colons no longer match; update the pattern or disable JSON aggregation.",
+    "notes": [
+      "Correct: the docs warn that JSON aggregation runs first and removes the spaces.",
+      "Wrong: `mask_sequences` still works in per-source `log_processing_rules`.",
+      "Wrong: processing rules still apply to JSON logs; only the text they see has changed."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/auto_multiline_detection/#json-aggregation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-021",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "easy",
+    "q": "Why does Datadog recommend that Java applications log in JSON format?",
+    "options": [
+      "JSON logs are exempt from the 18-hour ingestion window, so delayed Java logs are still accepted.",
+      "JSON logs are not counted toward indexing, so Java applications with verbose logging cost less.",
+      "Each stack trace stays in one log event, and attributes are extracted without custom parsing rules."
+    ],
+    "answer": 2,
+    "explanation": "Plain-text Java stack traces are split across multiple lines and become several logs. Logging in JSON keeps the stack trace in one event and extracts attributes like severity, logger name and thread name without custom parsing.",
+    "notes": [
+      "Wrong: the timestamp window applies to all logs, whatever their format.",
+      "Wrong: format has no effect on indexing cost.",
+      "Correct: these are the reasons the Java log collection docs give for using JSON."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/java/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-022",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "A legacy app writes lines like `user: john id: 123 action: click`. Which Grok rule extracts all pairs as attributes?",
+    "options": [
+      "`rule %{data::csv(\"user,id,action\",\":\")}`",
+      "`rule %{data::keyvalue(\": \")}`",
+      "`rule %{data::keyvalue}`"
+    ],
+    "answer": 1,
+    "explanation": "The `keyvalue` filter uses `=` as its default separator. When keys and values are separated by `: `, pass that separator as the first parameter.",
+    "notes": [
+      "Wrong: `csv` splits on a single-character separator and would not separate the keys from their values.",
+      "Correct: `keyvalue(\": \")` sets the key/value separator to colon-space.",
+      "Wrong: with no parameter, `keyvalue` expects `key=value` and would not match these pairs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#key-value-or-logfmt",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-023",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "medium",
+    "q": "The Agent tails NGINX access logs in the standard NGINX log format with `source: web-edge`, and the logs are not parsed. What is the simplest fix?",
+    "options": [
+      "Set `source: nginx` so that Datadog installs the NGINX integration pipeline automatically.",
+      "Convert the access log to JSON with a `log_processing_rules` rule of type `json`.",
+      "Edit the NGINX integration pipeline so its filter also matches `source:web-edge`."
+    ],
+    "answer": 0,
+    "explanation": "When `source` matches an integration name, Datadog installs the matching integration pipeline and facets after the first log with that source arrives. A custom source name does not trigger this.",
+    "notes": [
+      "Correct: using the integration's source name gives you its ready-made parsing.",
+      "Wrong: there is no `json` processing rule type; the types are `exclude_at_match`, `include_at_match`, `mask_sequences`, `multi_line` and `exclude_truncated`.",
+      "Wrong: integration pipelines are read-only; you would have to clone one to edit it."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-024",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "hard",
+    "q": "A Log Status Remapper is set on the attribute `lvl`. A log arrives with `lvl: \"FATAL\"`. Which status does Datadog assign?",
+    "options": [
+      "`critical`",
+      "`error`",
+      "`emergency`"
+    ],
+    "answer": 2,
+    "explanation": "Status strings starting with `emerg` or `f` (case-insensitive) map to emerg (0). So `FATAL` becomes emergency, not critical or error.",
+    "notes": [
+      "Wrong: only strings starting with `c` map to critical (2).",
+      "Wrong: only strings starting with `err` map to error (3).",
+      "Correct: strings starting with `f` map to emerg (0)."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/log_status_remapper/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-fmt-025",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Logging Formats",
+    "difficulty": "easy",
+    "q": "A platform team wants to list all indexed logs that no pipeline has parsed into custom attributes. Which Log Explorer query do they use?",
+    "options": [
+      "`status:unparsed`",
+      "`datadog.pipelines:false`",
+      "`datadog.parsed:false`"
+    ],
+    "answer": 1,
+    "explanation": "The `datadog.pipelines:false` filter returns indexed logs with no custom attributes after pipeline processing. You can group them into Patterns to start building pipelines.",
+    "notes": [
+      "Wrong: `unparsed` is not a status value.",
+      "Correct: `datadog.pipelines:false` is the documented query for unparsed logs.",
+      "Wrong: there is no `datadog.parsed` attribute; the documented attribute is `datadog.pipelines`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/detect-unparsed-logs/#query-for-unparsed-logs",
+    "verified": "2026-11"
+  }
+]

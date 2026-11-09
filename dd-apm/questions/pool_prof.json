@@ -1,0 +1,422 @@
+[
+  {
+    "id": "ap-prof-001",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "easy",
+    "q": "An engineer wants to re-open the aggregated CPU flame graph of a service from an incident that happened two weeks ago, but it no longer loads. How long are flame graphs, call graphs and thread timelines retained by default?",
+    "options": [
+      "15 days",
+      "8 days",
+      "30 days"
+    ],
+    "answer": 1,
+    "explanation": "By default, Continuous Profiler keeps flame graphs, call graphs and thread timelines for 8 days, so a two-week-old flame graph has expired.",
+    "notes": [
+      "Wrong: 15 days is the default retention of indexed spans, not profiling data.",
+      "Correct: flame graphs, call graphs and thread timelines are kept for 8 days.",
+      "Wrong: 30 days is the retention of profile metrics, not flame graphs."
+    ],
+    "ref": "https://docs.datadoghq.com/data_security/data_retention_periods/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-002",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "medium",
+    "q": "After an incident, a team wants the flame graph that showed the regression to stay available for the post-mortem review in six months. What should they do?",
+    "options": [
+      "Add it to a notebook in a Profiling Flame Graph widget that uses a fixed Custom time range.",
+      "Create an APM retention filter on the service so that its profiles are retained for 15 months.",
+      "Raise the profile upload interval of the service so that each profile covers a longer time window."
+    ],
+    "answer": 0,
+    "explanation": "Flame graph data exported to a notebook is retained for one year when the widget uses a fixed Custom time range that is inside the 8-day retention window at creation time.",
+    "notes": [
+      "Correct: notebooks keep flame graph data for one year with a fixed Custom time range.",
+      "Wrong: retention filters apply to spans, not profiles, and no 15-month profile retention exists.",
+      "Wrong: changing the upload interval does not change how long profile data is retained."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/widgets/profiling_flame_graph/#set-time-preferences",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-003",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "easy",
+    "q": "A request handler is slow, but its CPU profile shows very little time in the handler because it mostly waits on a remote file share. Which profile type shows the time spent waiting as well as running?",
+    "options": [
+      "CPU",
+      "Allocations",
+      "Wall Time"
+    ],
+    "answer": 2,
+    "explanation": "Wall Time measures elapsed time in each method, including time on the CPU, waiting for I/O and anything else while the method runs. CPU only counts time actually running on the CPU.",
+    "notes": [
+      "Wrong: the CPU profile only counts on-CPU time, so waiting time is missing.",
+      "Wrong: Allocations counts heap allocations, not time.",
+      "Correct: Wall Time is elapsed time, including waiting for I/O."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profile_types/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-004",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "medium",
+    "q": "A Node.js service's memory grows steadily until the container is restarted. Which profile type best shows which functions hold memory that is never released?",
+    "options": [
+      "Wall Time",
+      "Heap Live Size",
+      "Allocated Memory"
+    ],
+    "answer": 1,
+    "explanation": "Heap Live Size shows heap memory allocated by each function that has not yet been garbage collected, which is the view used to find potential memory leaks.",
+    "notes": [
+      "Wrong: Wall Time measures elapsed time, not memory.",
+      "Correct: Heap Live Size shows memory still in use after garbage collection, which points to leaks.",
+      "Wrong: Allocated Memory includes allocations that were later freed, so it shows churn rather than retained memory."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profile_types/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-005",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "hard",
+    "q": "A Go service has the Block profile enabled. It suddenly hangs, with every request goroutine stuck waiting on a channel, but the Block profile shows nothing unusual. Why?",
+    "options": [
+      "The Block profile only records a blocking operation after it becomes unblocked, so it cannot show goroutines that are still stuck.",
+      "The Block profile only records mutex contention; waiting on channel operations appears in the Mutex profile instead.",
+      "The Block profile is a snapshot taken once per period, and the hang started after the last snapshot was uploaded."
+    ],
+    "answer": 0,
+    "explanation": "Go Block profiles capture blocking operations only after they unblock, so they cannot be used to debug applications that appear to be stuck.",
+    "notes": [
+      "Correct: blocking events are recorded only when they end, so still-stuck goroutines are invisible.",
+      "Wrong: the Block profile covers both mutexes and channel operations.",
+      "Wrong: the Goroutines profile is the snapshot; Block measures waiting time during the period."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profile_types/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-006",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "easy",
+    "q": "In a CPU flame graph, what does the width of a frame represent?",
+    "options": [
+      "How long the method ran relative to the frames to its left, which ran earlier",
+      "How many times the method was called during the profile",
+      "How much of the total CPU the method consumed, including the methods it called"
+    ],
+    "answer": 2,
+    "explanation": "The width of a frame shows how much of the total resource (here CPU) it consumed. The flame graph merges identical stacks and does not show the progression of time.",
+    "notes": [
+      "Wrong: frames are not ordered by time; the most resource-intensive methods are grouped on the leftmost side.",
+      "Wrong: width is the share of the resource consumed, not a call count.",
+      "Correct: width is the frame's share of total CPU, and the frames below it are its callees."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profile_visualizations/#flame-graph",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-007",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "medium",
+    "q": "In a CPU flame graph, `parse()` shows 309 ms of CPU time. The only frame directly below it is `String.length()`, at 112 ms. How much CPU self time did `parse()` use?",
+    "options": [
+      "309 ms",
+      "197 ms",
+      "421 ms"
+    ],
+    "answer": 1,
+    "explanation": "Self time is the time a method spent on CPU without calling another method: 309 ms minus the 112 ms spent in its callee gives 197 ms. It is the part of the `parse()` box with nothing below it.",
+    "notes": [
+      "Wrong: 309 ms is the total time, including the time spent in `String.length()`.",
+      "Correct: 309 ms - 112 ms = 197 ms spent directly in `parse()`.",
+      "Wrong: a callee's time is part of its caller's width, so it is not added on top."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/profiler/#read-the-profile",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-008",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "easy",
+    "q": "An engineer wants to isolate a method that spikes for a few seconds and see how the threads of one process interact. Which view should they open, and how?",
+    "options": [
+      "In APM > Profiles > Explorer, set Visualize as to Thread Timeline.",
+      "In APM > Profiles > Explorer, set Visualize as to Call Graph.",
+      "In the Trace Explorer, switch the visualization to Timeseries and group by thread."
+    ],
+    "answer": 0,
+    "explanation": "The timeline view helps isolate spiky methods and sort out complex interactions between threads. You open it from APM > Profiles > Explorer by setting Visualize as to Thread Timeline.",
+    "notes": [
+      "Correct: Visualize as > Thread Timeline in the Profile Explorer opens the timeline view.",
+      "Wrong: the call graph shows each method once as a node with call edges; it has no time axis or per-thread lanes.",
+      "Wrong: the Trace Explorer works with spans, not per-thread profiling data."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profile_visualizations/#timeline-view",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-009",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "medium",
+    "q": "A profile is switched from the flame graph to the call graph visualization. In the call graph, what does the thickness of an edge between two methods show?",
+    "options": [
+      "The self time of the calling method",
+      "How many separate stack traces contain the pair",
+      "The time spent calling the other method"
+    ],
+    "answer": 2,
+    "explanation": "The call graph shows each method once as a node. Edge thickness shows the time spent calling other methods, while node color and size show self time.",
+    "notes": [
+      "Wrong: self time is shown by the node's color and size, not by edges.",
+      "Wrong: edges are weighted by time, not by a count of stack traces.",
+      "Correct: edge thickness reflects the time spent in the calls between methods."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profile_visualizations/#call-graph",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-010",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "easy",
+    "q": "With default settings, how often does a profiled process upload a profile to Datadog?",
+    "options": [
+      "Every 10 seconds",
+      "Once a minute",
+      "Every 5 minutes"
+    ],
+    "answer": 1,
+    "explanation": "By default, profiles are uploaded once a minute. Depending on the language, each profile covers 15 to 60 seconds of profiling.",
+    "notes": [
+      "Wrong: uploads happen once a minute, and each profile covers 15 to 60 seconds, so not every 10 seconds.",
+      "Correct: profiles are uploaded once a minute by default.",
+      "Wrong: the default upload interval is once a minute, not every 5 minutes."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profile_visualizations/#single-profile",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-011",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "easy",
+    "q": "A team runs both Java and Python services under the same `env`. On the profile search page they want to see only profiles from JVM processes. Which default facet should they use?",
+    "options": [
+      "Runtime",
+      "Host",
+      "Version"
+    ],
+    "answer": 0,
+    "explanation": "The Runtime facet holds the type of runtime of the profiled process, such as `JVM` or `CPython`. The other default facets are Env, Service, Version and Host.",
+    "notes": [
+      "Correct: Runtime filters by the profiled process's runtime type, such as `JVM`.",
+      "Wrong: Host filters by the hostname the process runs on.",
+      "Wrong: Version filters by the code version, not the runtime."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profile_visualizations/#search-profiles",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-012",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "medium",
+    "q": "In the profile comparison view, one method in the flame graph is colored blue. What does that mean?",
+    "options": [
+      "The method takes less time in profile B than in profile A.",
+      "The method appears only in profile A.",
+      "The method appears only in profile B."
+    ],
+    "answer": 2,
+    "explanation": "In the comparison legend, blue marks methods that exist only in profile B and purple marks methods only in profile A. Red and green shades show more and less time in B.",
+    "notes": [
+      "Wrong: less time in profile B is shown with green shades.",
+      "Wrong: methods only in profile A are purple.",
+      "Correct: blue means the method appears only in profile B, which signals a structural code change."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/compare_profiles/#comparing-different-time-periods",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-013",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "medium",
+    "q": "While viewing a single slow profile, an engineer clicks Compare. What role does the profile they were viewing take in the comparison view?",
+    "options": [
+      "Profile A, the baseline that other profiles are measured against",
+      "Profile B, the comparison target",
+      "Both sides, until a second profile ID is entered"
+    ],
+    "answer": 1,
+    "explanation": "From a single profile view, Compare opens the comparison view with the selected profile as Profile B (the comparison target). You then choose Profile A, the baseline, as a time frame and tags or a specific profile ID.",
+    "notes": [
+      "Wrong: Profile A is the baseline you choose next.",
+      "Correct: the profile you were viewing becomes Profile B.",
+      "Wrong: the view does not put the same profile on both sides; you pick a baseline for A."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/compare_profiles/#comparing-a-profile-to-a-previous-time-period",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-014",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "hard",
+    "q": "An engineer compares an aggregated CPU profile from Monday's peak hour (B) with one from Sunday night (A). Almost every method is shaded deep red, and no methods appear only in A or only in B. What is the most likely explanation?",
+    "options": [
+      "The two periods had very different workloads, so B does more of the same work; comparisons are most meaningful at similar request volume.",
+      "A new version was deployed between the two periods, which changed the code paths across the whole service.",
+      "Profile A is past the 8-day retention period, so its methods are shown at zero time."
+    ],
+    "answer": 0,
+    "explanation": "Comparisons work best when the application had a similar workload (total requests) in both periods. Red only means more time in B, and with no blue or purple methods the code structure is unchanged, so higher traffic best explains it.",
+    "notes": [
+      "Correct: much higher traffic in B makes every method use more CPU; compare periods with similar workload.",
+      "Wrong: a structural code change would show methods only in A (purple) or only in B (blue).",
+      "Wrong: Sunday night is well inside the 8-day retention window, and red shading means more time in B, not missing data."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/compare_profiles/#comparison-scenarios",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-015",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "medium",
+    "q": "From a slow span's Profiles tab, an engineer clicks Open in Profiling. They suspect a background thread competed with the request, so they want data from all threads while the span was active. Which Focus On option should they choose?",
+    "options": [
+      "Span & Children",
+      "Span time period",
+      "Full profile"
+    ],
+    "answer": 1,
+    "explanation": "Span time period scopes the profiling data to all threads during the time the span was active.",
+    "notes": [
+      "Wrong: Span & Children covers only the span and its descendant spans in the same service.",
+      "Correct: Span time period includes every thread while the span was active.",
+      "Wrong: Full profile covers 60 seconds of the whole process, much more than the span's duration."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/connect_traces_and_profiles/#viewing-a-profile-from-a-trace",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-016",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "hard",
+    "q": "A Java service on Linux has tracing and the profiler enabled. Auto-instrumented spans show profiling data on their Profiles tab, but spans the team creates manually with the tracer API show none. What does the profiler require for manually created spans?",
+    "options": [
+      "Setting `DD_PROFILING_TIMELINE_ENABLED`, which turns on the link between traces and profiles",
+      "Switching from the Datadog profiler engine to Java Flight Recorder, which supports manual spans",
+      "Activating the span in a scope, for example with `tracer.activateSpan(span)`, while the work runs"
+    ],
+    "answer": 2,
+    "explanation": "For manually instrumented Java code, the Continuous Profiler requires the span to be activated in a scope (`try (Scope scope = tracer.activateSpan(span))`) so profiling samples can be linked to it.",
+    "notes": [
+      "Wrong: `DD_PROFILING_TIMELINE_ENABLED` is a Python and PHP prerequisite; Java links traces and profiles by default.",
+      "Wrong: Datadog recommends the Datadog profiler over JFR, and the engine is not the cause.",
+      "Correct: scope activation is mandatory for the profiler to link samples with a manual span."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/connect_traces_and_profiles/#prerequisites",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-017",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "medium",
+    "q": "During a canary rollout, traffic to `GET /checkout` keeps changing. The team wants to know whether each request now costs more CPU, not whether the endpoint uses more CPU in total. What should they select in endpoint profiling?",
+    "options": [
+      "`Per endpoint call`",
+      "`Per Minute by Endpoint`",
+      "`Span time period` in the Focus On selector"
+    ],
+    "answer": 0,
+    "explanation": "Per endpoint call shows average resource consumption per request, so you see behavior changes even as traffic shifts. Datadog suggests it for progressive rollout checks.",
+    "notes": [
+      "Correct: per-call values stay comparable when traffic volume changes.",
+      "Wrong: per-minute totals rise and fall with traffic, which is what the team wants to remove.",
+      "Wrong: Span time period scopes one span's profile to all threads; it does not average consumption per request."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/connect_traces_and_profiles/#track-average-resource-consumption-per-request",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-018",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "hard",
+    "q": "Automated Analysis shows a GC Pauses insight for a Java service. What condition triggers this insight?",
+    "options": [
+      "At least one garbage collection pause lasted longer than one second.",
+      "More than 20% of CPU time was related to GC activity or allocation overhead.",
+      "More than 10% of the time was spent in GC pauses."
+    ],
+    "answer": 2,
+    "explanation": "The Java GC Pauses insight triggers when more than 10% of time was spent in GC pauses. A single pause over one second triggers GC Pause Peak Duration, and more than 20% of CPU in GC triggers GC Overhead.",
+    "notes": [
+      "Wrong: a single pause over one second triggers GC Pause Peak Duration.",
+      "Wrong: more than 20% of CPU in GC or allocation overhead triggers GC Overhead.",
+      "Correct: GC Pauses triggers when more than 10% of time is spent in GC pauses."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/automated_analysis/#supported-insights",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-019",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "medium",
+    "q": "A team wants to use Datadog's guided Memory Leaks walkthrough on the Service Page. Which requirement must their profiled service meet?",
+    "options": [
+      "It must run on a host with Live Processes enabled, so process memory can be read without containers.",
+      "It must run in containers, and its profiles must be tagged with `container_id`.",
+      "It must have a custom retention filter that keeps all of its spans for 15 days."
+    ],
+    "answer": 1,
+    "explanation": "The walkthrough needs a containerized service with the Kubernetes or Container integration, Continuous Profiler enabled, and profiles tagged with `container_id` to link container memory metrics with profiling data.",
+    "notes": [
+      "Wrong: the walkthrough is for containerized services and relies on container memory metrics, not Live Processes.",
+      "Correct: a containerized service with `container_id` on its profiles is required.",
+      "Wrong: span retention filters have nothing to do with the memory leak walkthrough."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/guide/solve-memory-leaks/#requirements",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-prof-020",
+    "topic": "Insight Discovery",
+    "subtopic": "Profilers",
+    "difficulty": "medium",
+    "q": "A Java monolith sets a profiling context value per request with `scope.setContextValue(\"customer_name\", name)`. The team wants to filter CPU flame graphs by customer. What must they also configure?",
+    "options": [
+      "`DD_PROFILING_CONTEXT_ATTRIBUTES=customer_name`, to declare the context key used for filtering",
+      "`DD_TAGS=customer_name`, so that the key becomes a tag on every uploaded profile",
+      "The `WithCustomProfilerLabelKeys(\"customer_name\")` option when starting the profiler"
+    ],
+    "answer": 0,
+    "explanation": "In Java, the label keys used for filtering are declared with `profiling.context.attributes`, set as `DD_PROFILING_CONTEXT_ATTRIBUTES=customer_name` or `-Ddd.profiling.context.attributes=customer_name`. The value can then be chosen under the CPU time by dropdown.",
+    "notes": [
+      "Correct: `DD_PROFILING_CONTEXT_ATTRIBUTES` declares which context keys can be used to filter profiles.",
+      "Wrong: `DD_TAGS` adds static `key:value` tags to the whole profile, not per-request context.",
+      "Wrong: `WithCustomProfilerLabelKeys` is the Go profiler's option for label keys, not the Java setting."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/guide/isolate-outliers-in-monolithic-services/#isolate-your-own-business-logic",
+    "verified": "2026-11"
+  }
+]

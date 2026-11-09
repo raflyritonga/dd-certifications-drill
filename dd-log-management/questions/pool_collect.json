@@ -1,0 +1,1052 @@
+[
+  {
+    "id": "lm-coll-001",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "A team installs Agent v7 on a Linux host and adds `conf.d/myapp.d/conf.yaml` with a valid `logs:` section. They never edited `datadog.yaml`, and no logs arrive. What is the most likely cause?",
+    "options": [
+      "The Agent tails only official integration logs, so custom application files under `conf.d` are skipped.",
+      "Log collection is off by default; set `logs_enabled: true` in `datadog.yaml`.",
+      "Custom log sources must be declared directly in `datadog.yaml` under a top-level `logs:` key instead."
+    ],
+    "answer": 1,
+    "explanation": "Collecting logs is not enabled by default in the Agent. You must change `logs_enabled: false` to `logs_enabled: true` in `datadog.yaml` (and restart) before any `logs:` configuration is used.",
+    "notes": [
+      "Wrong: the Agent tails custom files, TCP/UDP, journald and Windows events, not only integration logs.",
+      "Correct: `logs_enabled` defaults to false, so the Logs Agent never starts until it is set to true.",
+      "Wrong: custom sources belong in `conf.d/<name>.d/conf.yaml`; `datadog.yaml` only turns log collection on."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/#activate-log-collection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-002",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "Which environment variable turns on log collection for a containerized Datadog Agent?",
+    "options": [
+      "`DD_LOGS_CONFIG_ENABLED=true`",
+      "`DD_LOG_COLLECTION=true`",
+      "`DD_LOGS_ENABLED=true`"
+    ],
+    "answer": 2,
+    "explanation": "`DD_LOGS_ENABLED=true` is the environment-variable equivalent of `logs_enabled: true` in `datadog.yaml`.",
+    "notes": [
+      "Wrong: not a documented variable; `DD_LOGS_CONFIG_*` variables map to keys under `logs_config`, and the switch is not one of them.",
+      "Wrong: not a Datadog Agent variable.",
+      "Correct: this is the documented variable to enable log collection."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/#activate-log-collection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-003",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "On a Linux host, which file do you edit to set `logs_enabled: true`?",
+    "options": [
+      "`/etc/datadog-agent/datadog.yaml`",
+      "`/opt/datadog-agent/etc/datadog.yaml`",
+      "`/etc/datadog-agent/conf.d/datadog.yaml`"
+    ],
+    "answer": 0,
+    "explanation": "On Linux the Agent's main configuration file is `/etc/datadog-agent/datadog.yaml`, and `logs_enabled` is set there.",
+    "notes": [
+      "Correct: this is the Linux location of the main Agent configuration file.",
+      "Wrong: `/opt/datadog-agent/etc/datadog.yaml` is the macOS location.",
+      "Wrong: `conf.d/` holds check and integration configs, not the main `datadog.yaml`."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/#main-configuration-file",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-004",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "On a Windows host, in which directory do you create the `<APP_NAME>.d\\conf.yaml` folder for a custom log source?",
+    "options": [
+      "`C:\\Program Files\\Datadog\\Datadog Agent\\conf.d`",
+      "`%ProgramData%\\Datadog\\logs\\conf.d`",
+      "`%ProgramData%\\Datadog\\conf.d`"
+    ],
+    "answer": 2,
+    "explanation": "The Agent configuration directory for checks and integrations on Windows is `%ProgramData%\\Datadog\\conf.d`. Custom log sources get their own `<name>.d` folder inside it.",
+    "notes": [
+      "Wrong: Program Files holds the Agent binaries, not its configuration.",
+      "Wrong: `C:\\ProgramData\\Datadog\\logs` is where the Agent writes its own log files; there is no `conf.d` there.",
+      "Correct: this is the documented Windows `conf.d` location."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/#agent-configuration-directory",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-005",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "An Agent listens on TCP port 10518 for logs sent by several network devices. The team wants each log to carry the IP address of the device that sent it. What should they configure?",
+    "options": [
+      "`sourcecategory: source_host` on the `tcp` source in its `conf.yaml`",
+      "`tag_event_id: true` on the `tcp` source in its `conf.yaml`",
+      "`use_sourcehost_tag: true` under `logs_config` in `datadog.yaml`"
+    ],
+    "answer": 2,
+    "explanation": "To capture the sender IP address of TCP/UDP logs, set `logs_config.use_sourcehost_tag: true` in `datadog.yaml`. The Agent then adds a `source_host` tag with the IP of the socket source host.",
+    "notes": [
+      "Wrong: `sourcecategory` only sets the category a `source` belongs to, such as `database`.",
+      "Wrong: `tag_event_id` adds the Windows Event ID and applies to Windows event sources only.",
+      "Correct: `use_sourcehost_tag` makes the Agent tag socket logs with `source_host`."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/?tab=tcpudp#custom-log-collection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-006",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "An application can only ship its logs over a TCP socket. Which `conf.yaml` settings make the Agent listen for them on port 10518?",
+    "options": [
+      "`type: file` with `path: tcp://0.0.0.0:10518`",
+      "`type: syslog` with `port: 10518`",
+      "`type: tcp` with `port: 10518`"
+    ],
+    "answer": 2,
+    "explanation": "For network sources, set `type: tcp` (or `udp`) and the `port` to listen on, plus `service` and `source`.",
+    "notes": [
+      "Wrong: `type: file` tails files on disk; `path` is not a socket address.",
+      "Wrong: `syslog` is not a valid `type`; valid values are `tcp`, `udp`, `file`, `windows_event`, `docker` and `journald`. The TCP listener accepts Syslog-formatted logs.",
+      "Correct: `type: tcp` with `port` makes the Agent listen on that TCP port."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/?tab=tcpudp#custom-log-collection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-007",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "hard",
+    "q": "An app appends lines to a file that the Agent tails. Every line reaches Datadog except the newest one, which shows up only after the app writes another line. What explains this?",
+    "options": [
+      "The Agent holds the newest line in memory until `batch_wait` reaches its 10-second maximum value.",
+      "The line has no trailing `\\n` or `\\r\\n` yet, so the Agent keeps waiting.",
+      "Because `start_position` defaults to `end`, the Agent always skips the current last line of every file."
+    ],
+    "answer": 1,
+    "explanation": "A log line must end with a newline character (`\\n` or `\\r\\n`); otherwise the Agent waits indefinitely and does not send it.",
+    "notes": [
+      "Wrong: `batch_wait` defaults to 5 seconds and does not depend on the next line being written.",
+      "Correct: an unterminated line stays pending until a newline arrives.",
+      "Wrong: `start_position: end` only decides where tailing starts; new lines after that point are all collected."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/?tab=tailfiles#custom-log-collection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-008",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "hard",
+    "q": "A file source uses `path: /var/log/app/*.log` together with `start_position: beginning`. What do the docs say about this combination?",
+    "options": [
+      "Each matching file is read from its first line, then tailed normally.",
+      "It works only when `exclude_paths` is also set.",
+      "The `beginning` position does not support paths with wildcards."
+    ],
+    "answer": 2,
+    "explanation": "For `type: file`, the `beginning` start position does not support paths with wildcards.",
+    "notes": [
+      "Wrong: that would be the behavior for a single non-wildcard path.",
+      "Wrong: `exclude_paths` only removes matched files; it does not enable `beginning`.",
+      "Correct: this is an explicit limitation in the start position rules."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/#start-position",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-009",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "hard",
+    "q": "A file has been tailed for a week. An engineer sets `start_position: beginning` and restarts the Agent to resend the whole file, but only new lines arrive. Which value forces the Agent to read from the start?",
+    "options": [
+      "`beginning` together with `force: true`",
+      "`forceBeginning`",
+      "`reset`"
+    ],
+    "answer": 1,
+    "explanation": "When an offset is stored, it takes precedence over `beginning` or `end`. `forceBeginning` (or `forceEnd`) makes the Agent use the given position even if an offset is stored.",
+    "notes": [
+      "Wrong: there is no `force` parameter; the force behavior is built into the value name.",
+      "Correct: `forceBeginning` ignores the stored offset.",
+      "Wrong: valid values are `beginning`, `end`, `forceBeginning` and `forceEnd`."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/#precedence",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-010",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "A Windows service writes its log file in UTF-16 little-endian, and the logs look garbled in Datadog. What should be added to the file source configuration?",
+    "options": [
+      "`encoding: utf-16-le`",
+      "`charset: utf-16`",
+      "`encoding: utf-8-bom`"
+    ],
+    "answer": 0,
+    "explanation": "For `type: file`, the `encoding` parameter tells the Agent how to read the file: `utf-16-le`, `utf-16-be` or `shift-jis`. By default the Agent reads files as UTF-8.",
+    "notes": [
+      "Correct: `utf-16-le` is the supported value for UTF-16 little-endian.",
+      "Wrong: the parameter is `encoding`, not `charset`.",
+      "Wrong: not a supported value; an unsupported value makes the Agent read the file as UTF-8."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#log-file-encodings",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-011",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "A source uses `path: /var/log/shop/*.log`. The team wants every matching file except `/var/log/shop/debug.log`. What should they add?",
+    "options": [
+      "`exclude_units:` with `debug.log`",
+      "`exclude_paths:` with `/var/log/shop/debug.log`",
+      "A `log_processing_rules` entry of type `exclude_file`"
+    ],
+    "answer": 1,
+    "explanation": "When `path` contains a wildcard, `exclude_paths` lists the matching files to exclude from collection (Agent 6.18+).",
+    "notes": [
+      "Wrong: `exclude_units` is for journald units.",
+      "Correct: `exclude_paths` removes specific files from a wildcard match.",
+      "Wrong: there is no `exclude_file` rule type; processing rules filter log content, not files."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#tail-directories-using-wildcards",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-012",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "A source uses `path: /var/log/myapp/*.log`. Which file does the Agent collect?",
+    "options": [
+      "`/var/log/myapp/api.log`",
+      "`/var/log/myapp/API.LOG`",
+      "`/var/log/myapp/api.conf`"
+    ],
+    "answer": 0,
+    "explanation": "`/var/log/myapp/*.log` matches all `.log` files in `/var/log/myapp/` and not other extensions such as `.conf`. The `path` and `exclude_paths` values are case sensitive, so `.LOG` does not match `.log`.",
+    "notes": [
+      "Correct: a `.log` file in the directory matches the pattern.",
+      "Wrong: `path` values are case sensitive, so `*.log` does not match `API.LOG`.",
+      "Wrong: the pattern only matches files ending in `.log`."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#tail-directories-using-wildcards",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-013",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "hard",
+    "q": "`agent status` shows: `Could not find any file matching pattern /opt/app/logs/*.log, check that all its subdirectories are executable`. The files exist. What is the recommended fix?",
+    "options": [
+      "Run the Agent service as root so it can bypass file and directory permissions on the host.",
+      "Set `start_position: forceBeginning` so the Agent rescans the whole directory on its next start.",
+      "Grant the Agent user read and execute on the log directories."
+    ],
+    "answer": 2,
+    "explanation": "This error means the Agent user cannot access the path. Give the Agent user read and execute permissions on the log file and its directories (for example `sudo chmod o+rx /path/to/logs`).",
+    "notes": [
+      "Wrong: the Agent does not run as root, and running it as root is not recommended.",
+      "Wrong: `start_position` controls where reading starts, not file access.",
+      "Correct: the Agent needs read and execute on directories to list and open the files."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#permission-issues-tailing-log-files",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-014",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "On Windows, which account must have read access to a log file for the Agent to tail it?",
+    "options": [
+      "`ddagentuser`",
+      "`dd-agent`",
+      "`LocalSystem` only"
+    ],
+    "answer": 0,
+    "explanation": "On Windows the Agent runs as `ddagentuser` by default, and that user needs read access to the log files.",
+    "notes": [
+      "Correct: `ddagentuser` is the default Agent user on Windows.",
+      "Wrong: `dd-agent` is a Linux account name, not the Windows Agent user.",
+      "Wrong: the docs require read access for `ddagentuser`, the default account the Agent runs as on Windows."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/?tab=tailfiles#custom-log-collection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-015",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "On a Linux host, the Agent reports `Permission denied` when writing its own log files under `/var/log/datadog/`. Which command, followed by an Agent restart, fixes this?",
+    "options": [
+      "`sudo chmod -R 777 /etc/datadog-agent/conf.d/`",
+      "`sudo chown -R dd-agent:dd-agent /var/log/datadog/`",
+      "`sudo chown -R root:datadog-agent /var/log/datadog/`"
+    ],
+    "answer": 1,
+    "explanation": "The Agent's log files and their directory must be owned by the `dd-agent` user. If not, change ownership with `chown -R dd-agent:dd-agent /var/log/datadog/` and restart the Agent.",
+    "notes": [
+      "Wrong: this changes the config directory, not the Agent's log directory, and 777 is unsafe.",
+      "Correct: this is the documented ownership fix.",
+      "Wrong: the directory and files must be owned by `dd-agent` (user and group), not root."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/troubleshooting/permissions/#agent-logging-permission-issues",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-016",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "Logs from a tailed file stop every night right after logrotate runs, until someone fixes the file permissions by hand. What does Datadog recommend?",
+    "options": [
+      "Set permissions to `644` in the log rotation configuration.",
+      "Set `start_position: forceEnd` so the Agent ignores rotation.",
+      "Move the file under `/var/log/datadog/` so the Agent owns it."
+    ],
+    "answer": 0,
+    "explanation": "If the rotation config recreates files with restrictive permissions, the Agent loses read access on the next rotation. Set `644` in the log rotation configuration so the Agent can read the files.",
+    "notes": [
+      "Correct: this keeps rotated files readable by the Agent user.",
+      "Wrong: the start position has nothing to do with file permissions.",
+      "Wrong: `/var/log/datadog/` is for the Agent's own logs, not application logs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#permission-issues-tailing-log-files",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-017",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "The Agent has a `type: journald` source, but no journal logs arrive and no error appears. What should you check first?",
+    "options": [
+      "That `encoding: utf-16-le` is set on the journald source in `conf.yaml`.",
+      "That the Agent user is in the `systemd-journal` group.",
+      "That `logs_config.use_sourcehost_tag` is set to `true` in `datadog.yaml`."
+    ],
+    "answer": 1,
+    "explanation": "Journal files are readable by the `systemd-journal` group, so the Agent user must be added to it. With wrong permissions journald sends an empty payload, so no explicit error appears.",
+    "notes": [
+      "Wrong: `encoding` only applies to `type: file`.",
+      "Correct: missing group membership silently produces empty payloads.",
+      "Wrong: `use_sourcehost_tag` adds the sender IP for TCP/UDP sources."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#permission-issue-and-journald",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-018",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "You want to collect the `Security` Windows event channel and have Datadog apply the matching integration pipeline. Which configuration is correct?",
+    "options": [
+      "`type: windows_event`, `path: Security`, `source: windows`",
+      "`type: file`, `channel_path: Security`, `source: eventlog`",
+      "`type: windows_event`, `channel_path: Security`, `source: Security`"
+    ],
+    "answer": 2,
+    "explanation": "Windows events use `type: windows_event` with `channel_path`. Set `source` to the same channel name to benefit from the automatic integration pipeline.",
+    "notes": [
+      "Wrong: Windows event sources use `channel_path`, not `path`, and the source should match the channel.",
+      "Wrong: `channel_path` only works with `type: windows_event`.",
+      "Correct: right type, right parameter, and `source` matches the channel name."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/?tab=windowsevents#custom-log-collection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-019",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "Why should a log source's `source` value match an integration name, such as `source: nginx`?",
+    "options": [
+      "Datadog then installs that integration's pipeline automatically.",
+      "The Agent uses it to discover the integration's log file path on the host without a `path` setting.",
+      "Datadog uses it to route the logs into a dedicated index created for that integration."
+    ],
+    "answer": 0,
+    "explanation": "`source` identifies the integration or technology. When it matches an integration name, Datadog automatically installs the corresponding parsers and facets.",
+    "notes": [
+      "Correct: a matching `source` triggers the integration pipeline.",
+      "Wrong: you must still set `path` yourself.",
+      "Wrong: index routing is done by index filters, not by the `source` value alone."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-020",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "A service is traced in APM as `checkout-api`. What should the `service` value be in its log collection configuration?",
+    "options": [
+      "`checkout`, because logs use a short name",
+      "`checkout-api`, the same name used in APM",
+      "Any value, because Datadog links logs and traces by host"
+    ],
+    "answer": 1,
+    "explanation": "If the service is instrumented with APM, the log `service` must be the same service name. That is what lets you move between logs and traces.",
+    "notes": [
+      "Wrong: a different name breaks the link between logs and traces.",
+      "Correct: the log `service` must match the APM service name.",
+      "Wrong: logs and traces are linked by `service` (and trace IDs), not just by host."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/#custom-log-collection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-021",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "Which three reserved tags make up unified service tagging?",
+    "options": [
+      "`env`, `service`, `version`",
+      "`host`, `service`, `source`",
+      "`env`, `team`, `version`"
+    ],
+    "answer": 0,
+    "explanation": "Unified service tagging ties traces, metrics and logs together with three reserved tags: `env`, `service` and `version`.",
+    "notes": [
+      "Correct: these are the three unified service tags.",
+      "Wrong: `host` and `source` are reserved tags but not part of unified service tagging.",
+      "Wrong: `team` is used for ownership, not unified service tagging."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-022",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "In Kubernetes, which pod template label sets the `service` tag on a container's logs through unified service tagging?",
+    "options": [
+      "`ad.datadoghq.com/service`",
+      "`tags.datadoghq.com/service`",
+      "`com.datadoghq.tags.service`"
+    ],
+    "answer": 1,
+    "explanation": "In Kubernetes, unified service tagging uses the labels `tags.datadoghq.com/env`, `tags.datadoghq.com/service` and `tags.datadoghq.com/version` on the workload and pod template.",
+    "notes": [
+      "Wrong: `ad.datadoghq.com/` is the prefix for Autodiscovery annotations.",
+      "Correct: this is the Kubernetes unified service tagging label.",
+      "Wrong: `com.datadoghq.tags.service` is the Docker label."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/?tab=kubernetes#containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-023",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "A Redis container on Docker is not traced by APM. The team wants to set its `service` tag through unified service tagging using only a container label. Which label should they use?",
+    "options": [
+      "`tags.datadoghq.com/service`",
+      "`com.datadoghq.ad.service`",
+      "`com.datadoghq.tags.service`"
+    ],
+    "answer": 2,
+    "explanation": "For services that don't need the Datadog environment variables (such as Redis or NGINX), use the Docker labels `com.datadoghq.tags.env`, `com.datadoghq.tags.service` and `com.datadoghq.tags.version`.",
+    "notes": [
+      "Wrong: that is the Kubernetes label.",
+      "Wrong: `com.datadoghq.ad.*` labels hold Autodiscovery templates, and there is no `service` one.",
+      "Correct: this is the Docker unified service tagging label."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/?tab=docker#containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-024",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "hard",
+    "q": "A containerized Agent is started with `DD_TAGS=\"team:core payments\"`. Which host tags does it produce?",
+    "options": [
+      "One tag: `team:core_payments`",
+      "Two tags: `team:core` and `payments`",
+      "One tag: `team:core payments`"
+    ],
+    "answer": 1,
+    "explanation": "`DD_TAGS` uses whitespace as the separator, and whitespace is not converted to underscores there. Each space-separated token becomes its own tag.",
+    "notes": [
+      "Wrong: whitespace is converted to underscores only in YAML files or integration annotations, not in `DD_TAGS`.",
+      "Correct: the space splits the value into two tags.",
+      "Wrong: `DD_TAGS` splits on whitespace, so the value is not kept as one tag."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/#define-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-025",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "Which Helm `datadog-values.yaml` settings enable log collection from all containers in a Kubernetes cluster?",
+    "options": [
+      "`datadog.logsEnabled: true` and `datadog.collectAll: true`",
+      "`agents.logs.enabled: true` and `agents.logs.containerCollectAll: true`",
+      "`datadog.logs.enabled: true` and `datadog.logs.containerCollectAll: true`"
+    ],
+    "answer": 2,
+    "explanation": "With Helm, set `datadog.logs.enabled: true` and `datadog.logs.containerCollectAll: true`, then upgrade the chart.",
+    "notes": [
+      "Wrong: these are not the chart's key names.",
+      "Wrong: log settings live under `datadog.logs`, not `agents.logs`.",
+      "Correct: these are the documented Helm keys."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/kubernetes/log/?tab=helm#log-collection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-026",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "A Helm install sets `datadog.logs.enabled: true` but leaves `containerCollectAll` at its default. Which containers' logs are collected?",
+    "options": [
+      "Only containers that have an Autodiscovery log configuration, such as a log annotation.",
+      "All containers on every node, because `containerCollectAll` defaults to `true` in the Helm chart.",
+      "Only containers in the `default` namespace, because other namespaces need their own Agent."
+    ],
+    "answer": 0,
+    "explanation": "`containerCollectAll` defaults to `false`. In that case you must specify Autodiscovery log configurations (annotations, the `DatadogInstrumentation` CRD or AD config files) to enable collection.",
+    "notes": [
+      "Correct: with the default, only containers with a log config are collected.",
+      "Wrong: the default is `false`.",
+      "Wrong: namespaces play no role in this default."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/kubernetes/log/#filtering",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-027",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "A pod has a container named `web` that runs the image `acme/storefront:2.1`. Which annotation key configures log collection for it?",
+    "options": [
+      "`ad.datadoghq.com/storefront.logs`",
+      "`ad.datadoghq.com/web.logs`",
+      "`ad.datadoghq.com/acme-storefront.logs`"
+    ],
+    "answer": 1,
+    "explanation": "Autodiscovery annotations identify containers by name, not image: `<CONTAINER_NAME>` is matched to `.spec.containers[i].name`.",
+    "notes": [
+      "Wrong: this uses the image name, which annotations do not match on.",
+      "Correct: the key uses the container name `web`.",
+      "Wrong: the key is not built from the image path."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/kubernetes/log/#autodiscovery-annotations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-028",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "Where do you put the `ad.datadoghq.com/<container>.logs` annotation for pods created by a Deployment?",
+    "options": [
+      "In the Deployment object's own top-level `metadata.annotations`",
+      "In the annotations of the Datadog Agent DaemonSet pod template",
+      "In `spec.template.metadata.annotations`"
+    ],
+    "answer": 2,
+    "explanation": "When pods are defined indirectly (Deployments, ReplicaSets, replication controllers), add the annotations to the pod template under `.spec.template.metadata`.",
+    "notes": [
+      "Wrong: annotations on the Deployment object are not copied to its pods.",
+      "Wrong: the annotation goes on the application pods, not on the Agent.",
+      "Correct: the pod template is where pod annotations belong."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/kubernetes/log/#autodiscovery-annotations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-029",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "Container Collect All is enabled. A container has no log annotations and no unified service tagging labels. It runs `gcr.io/owner/billing-worker:latest`. Which `source` and `service` do its logs get?",
+    "options": [
+      "`billing-worker` for both",
+      "`kubernetes` for source and `billing-worker` for service",
+      "`gcr.io/owner/billing-worker` for both"
+    ],
+    "answer": 0,
+    "explanation": "With Container Collect All, the Agent sets `source` and `service` (and `short_image`) to the container's short image name.",
+    "notes": [
+      "Correct: both default to the short image name.",
+      "Wrong: the source is not set to a generic `kubernetes` value.",
+      "Wrong: the short image name drops the registry, owner and tag."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/kubernetes/log/#tagging",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-030",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "hard",
+    "q": "A pod annotation uses `\"type\":\"file\"` with `\"path\":\"/var/log/app/app.log\"`. The app writes that file inside its own container, but no logs arrive. What is missing?",
+    "options": [
+      "`start_position: beginning` in the annotation, because files inside containers are always read from the end.",
+      "A shared volume for that directory in both the app and Agent containers.",
+      "`DD_LOGS_CONFIG_DOCKER_CONTAINER_USE_FILE=true` set as an environment variable on the application container."
+    ],
+    "answer": 1,
+    "explanation": "File paths in a file annotation are relative to the Agent container. The directory must be mounted into both the app and Agent containers (for example with a shared `hostPath` volume).",
+    "notes": [
+      "Wrong: the start position is not why the Agent can't see the file.",
+      "Correct: without a shared mount, the Agent can't see the file.",
+      "Wrong: that setting controls how the Agent reads container stdout logs, and it is set on the Agent, not the app."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/kubernetes/log/#from-a-container-local-log-file",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-031",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "hard",
+    "q": "After a `\"type\":\"file\"` log annotation is added to a container, its stdout logs stop appearing in Datadog. What explains this, and what is the fix?",
+    "options": [
+      "File annotations turn off automatic stdout/stderr collection; add a second, non-file entry.",
+      "The Agent can tail only one log source per pod, so the file-writing process must move into a separate pod.",
+      "File annotations only work with `containerCollectAll: false`, so Container Collect All must be turned off in the Agent."
+    ],
+    "answer": 0,
+    "explanation": "When a file annotation is used, `stdout` and `stderr` logs are not collected automatically. Enable both explicitly, for example with an extra `{\"source\":\"container\",\"service\":\"example-service\"}` entry.",
+    "notes": [
+      "Correct: both entries must be listed in the same annotation.",
+      "Wrong: an annotation can hold several log configs for the same container.",
+      "Wrong: there is no such requirement."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/kubernetes/log/#recommended-configurations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-032",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "When running the Agent as a Docker container, which environment variable enables log collection for all containers?",
+    "options": [
+      "`DD_CONTAINER_INCLUDE_LOGS=true`",
+      "`DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true`",
+      "`DD_DOCKER_LOGS_ALL=true`"
+    ],
+    "answer": 1,
+    "explanation": "`DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true` adds a log configuration that enables collection for all containers. It is used together with `DD_LOGS_ENABLED=true`.",
+    "notes": [
+      "Wrong: `DD_CONTAINER_INCLUDE_LOGS` is an allowlist of regex patterns, not a boolean.",
+      "Correct: this is the collect-all variable.",
+      "Wrong: not a documented variable."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/docker/log/?tab=containerinstallation#installation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-033",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "The Docker install command for the Agent includes `-e DD_CONTAINER_EXCLUDE=\"name:datadog-agent\"`. What does it do?",
+    "options": [
+      "It stops the Agent from collecting its own logs and metrics.",
+      "It hides the Agent container from the Docker socket so other tools cannot inspect it.",
+      "It stops other containers from sending logs to the Agent's TCP listener port."
+    ],
+    "answer": 0,
+    "explanation": "This parameter prevents the Datadog Agent from collecting and sending its own logs and metrics. Remove it if you want the Agent's own logs. The value supports regular expressions.",
+    "notes": [
+      "Correct: it excludes the Agent's own container.",
+      "Wrong: it is an Agent filter and does not change what Docker exposes.",
+      "Wrong: it filters discovered containers and has nothing to do with network listeners."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/docker/log/?tab=containerinstallation#installation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-034",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "In `docker-compose.yaml`, which label sets `source: nginx` and `service: webapp` on an NGINX container's logs?",
+    "options": [
+      "`com.datadoghq.tags.logs: '[{\"source\":\"nginx\"}]'`",
+      "`ad.datadoghq.com/nginx.logs: '[{\"source\":\"nginx\",\"service\":\"webapp\"}]'`",
+      "`com.datadoghq.ad.logs: '[{\"source\":\"nginx\",\"service\":\"webapp\"}]'`"
+    ],
+    "answer": 2,
+    "explanation": "For Docker, Autodiscovery reads the `com.datadoghq.ad.logs` label, which holds a JSON list of log configs.",
+    "notes": [
+      "Wrong: `com.datadoghq.tags.*` labels are for unified service tagging, and there is no `logs` key.",
+      "Wrong: `ad.datadoghq.com/<container>.logs` is a Kubernetes pod annotation.",
+      "Correct: this is the Docker Autodiscovery logs label."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/docker/log/#log-integrations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-035",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "With Agent v7.19 or later and no transport settings, how does the Agent send logs to Datadog?",
+    "options": [
+      "Over compressed HTTPS on port 443",
+      "Over TLS-encrypted TCP on port 10516",
+      "Over plain UDP on port 10518"
+    ],
+    "answer": 0,
+    "explanation": "Since Agent v6.19/v7.19 the default transport is compressed HTTPS, and the Agent uses port 443 by default.",
+    "notes": [
+      "Correct: compressed HTTPS on 443 is the default.",
+      "Wrong: TCP on 10516 was the default for older Agents and is now a legacy fallback.",
+      "Wrong: 10518 is only an example port for a local TCP/UDP listener."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/log_transport/#default-agent-behavior",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-036",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "What is the default value of the Agent's `logs_config.compression_level` for HTTPS log transport?",
+    "options": [
+      "`1`",
+      "`6`",
+      "`9`"
+    ],
+    "answer": 1,
+    "explanation": "`compression_level` (or `DD_LOGS_CONFIG_COMPRESSION_LEVEL`) accepts 0 (no compression) to 9 (maximum compression, higher resource use). The default is 6.",
+    "notes": [
+      "Wrong: 1 is a valid value but not the default.",
+      "Correct: the default is 6.",
+      "Wrong: 9 is the maximum, not the default."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/log_transport/?tab=https#log-compression",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-037",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "hard",
+    "q": "A low-volume host switched from TCP to HTTPS, and its logs now show up about 5 seconds later than before. Which setting reduces this delay?",
+    "options": [
+      "`logs_config.compression_level: 0`",
+      "`logs_config.force_use_tcp: false`",
+      "`logs_config.batch_wait: 2`"
+    ],
+    "answer": 2,
+    "explanation": "Over HTTPS the Agent waits up to 5 seconds to fill each batch, which adds latency when few logs are produced. `batch_wait` (or `DD_LOGS_CONFIG_BATCH_WAIT`) sets that maximum wait as an integer from 1 to 10 seconds.",
+    "notes": [
+      "Wrong: compression affects CPU and bandwidth, not how long the Agent waits to fill a batch.",
+      "Wrong: `force_use_tcp: false` does not enforce anything and does not change the HTTPS batch wait time.",
+      "Correct: lowering `batch_wait` shortens the time spent filling a batch."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/log_transport/?tab=https#configure-the-batch-wait-time",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-038",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "hard",
+    "q": "An Agent v7 on the US1 site starts with log collection enabled while a firewall blocks outbound port 443. The port opens an hour later. Which transport does the Agent use for logs?",
+    "options": [
+      "It re-runs the HTTPS test every 5 minutes and switches to HTTPS as soon as port 443 is open.",
+      "It buffers all logs on disk and waits, because v7 Agents never send logs over anything but HTTPS.",
+      "TCP, until the Agent is restarted."
+    ],
+    "answer": 2,
+    "explanation": "The Agent runs its HTTPS connectivity test only at startup. If the test fails, it falls back to TCP, and this doesn't change until the next restart.",
+    "notes": [
+      "Wrong: there is no periodic re-test.",
+      "Wrong: the documented fallback is TCP.",
+      "Correct: the HTTPS test runs only at startup, so the Agent stays on TCP until it is restarted (or a transport is enforced)."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/log_transport/#default-agent-behavior",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-039",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "What is the Datadog Forwarder?",
+    "options": [
+      "An AWS Lambda function that ships AWS logs to Datadog",
+      "A lightweight version of the Agent installed on EC2 that reads CloudWatch log groups",
+      "A preset Amazon Data Firehose delivery stream that Datadog manages in your account"
+    ],
+    "answer": 0,
+    "explanation": "The Datadog Forwarder is an AWS Lambda function that forwards CloudWatch and S3 logs (and SNS and Kinesis events) to Datadog.",
+    "notes": [
+      "Correct: it is a Lambda function triggered by your log sources.",
+      "Wrong: the Forwarder is not an Agent; EC2 logs are collected with the Agent.",
+      "Wrong: Firehose is a separate, AWS-managed option."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/forwarder/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-040",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "Your AWS logs are in `us-east-1` and `eu-west-1`. The Forwarder is installed only in `us-east-1`. What else do you need for the `eu-west-1` logs?",
+    "options": [
+      "Nothing, because a single Forwarder can subscribe to log groups in every region of the account.",
+      "A second Forwarder in `eu-west-1`, added on the Log Collection tab.",
+      "Cross-region replication for the `eu-west-1` log groups into `us-east-1`, where the Forwarder runs."
+    ],
+    "answer": 1,
+    "explanation": "Repeat the installation in each region you operate in. For automatic triggers, add every regional Forwarder's ARN on the AWS integration Log Collection tab, because auto-subscription does not work across regions.",
+    "notes": [
+      "Wrong: triggers cannot be created across regions.",
+      "Correct: you need one Forwarder per region.",
+      "Wrong: the documented approach is to install a Forwarder in each region you operate in, not to move logs between regions."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/send-aws-services-logs-with-the-datadog-lambda-function/#automatically-set-up-triggers",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-041",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "What does Datadog recommend for the Kinesis/Firehose buffer size when using the Datadog destination of Amazon Data Firehose, and what intake limit is it based on?",
+    "options": [
+      "1 MiB buffer; 1,000 events per batch",
+      "2 MiB buffer; 65,536 events per batch",
+      "5 MiB buffer; 65,536 events per batch"
+    ],
+    "answer": 1,
+    "explanation": "Datadog has an intake limit of 65,536 events per batch and recommends a 2 MiB buffer size. If you exceed the limit, some logs may be dropped.",
+    "notes": [
+      "Wrong: 1MB and 1,000 logs are the Agent's HTTPS batch limits.",
+      "Correct: these are the documented Firehose limit and recommendation.",
+      "Wrong: the right limit with the wrong buffer size."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/send-aws-services-logs-with-the-datadog-kinesis-firehose-destination/#setup",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-042",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "A team cannot add a Firehose subscription filter to a CloudWatch log group. The group already has a Datadog Forwarder subscription and a subscription for another tool. Why?",
+    "options": [
+      "CloudWatch subscription filters only work with a Kinesis Data Stream as the destination, never with Direct PUT.",
+      "The Firehose stream must be created in a different AWS account from the one that owns the log group.",
+      "A log group allows only two subscriptions."
+    ],
+    "answer": 2,
+    "explanation": "Each CloudWatch Log group can only have two subscriptions. The subscription destination must also be in the same account as the log group.",
+    "notes": [
+      "Wrong: you can subscribe directly to a Firehose stream with an Amazon Data Firehose subscription filter.",
+      "Wrong: it is the reverse; the destination must be in the same account.",
+      "Correct: the two-subscription limit is reached."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/send-aws-services-logs-with-the-datadog-kinesis-firehose-destination/#send-aws-logs-to-your-firehose-stream",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-043",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "hard",
+    "q": "Logs from `/aws/lambda/orders-fn` reach Datadog through Amazon Data Firehose with `source:lambda`. The team wants every log on this stream to have `source:nodejs`, without contacting Datadog Support. What should they do?",
+    "options": [
+      "Rename the CloudWatch log group to `/aws/nodejs/orders-fn` so source detection picks `nodejs`.",
+      "Set `source: nodejs` in the stream's Parameters (Common Attributes).",
+      "Add a top-level `ddsource: nodejs` field to each JSON log body written by the function."
+    ],
+    "answer": 1,
+    "explanation": "Values set in the Firehose stream's Parameters (Common Attributes) apply to all logs on that stream and take priority over auto-detected values. Parsing `ddsource` from the log body is off by default and must be enabled by Support.",
+    "notes": [
+      "Wrong: a name that matches no known AWS service pattern becomes the source as is, so this would not give `nodejs`.",
+      "Correct: Common Attributes override the detected source.",
+      "Wrong: body parsing of `ddsource` needs Support to enable it."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/send-aws-services-logs-with-the-datadog-kinesis-firehose-destination/#overriding-source-service-and-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-044",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "Where in Datadog do you start Azure automated log forwarding?",
+    "options": [
+      "Integrations > Azure > Configure Log Forwarding",
+      "Logs > Configuration > Azure Forwarder",
+      "Organization Settings > Log Forwarding > Azure"
+    ],
+    "answer": 0,
+    "explanation": "In Datadog, go to Integrations > Azure and click Configure Log Forwarding. You can deploy a new setup or update an existing one, then run the provided command in Azure Cloud Shell. An ARM template is the alternative.",
+    "notes": [
+      "Correct: this is the documented entry point.",
+      "Wrong: there is no Azure Forwarder page under Logs > Configuration.",
+      "Wrong: Organization Settings is not where Azure log forwarding is set up."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/azure-automated-log-forwarding/#configure-log-forwarding",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-045",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "What is the recommended way to forward Google Cloud logs to Datadog?",
+    "options": [
+      "A log sink to a Pub/Sub topic with a Push subscription that sends each message straight to the Datadog intake",
+      "A Datadog Agent on a dedicated Compute Engine VM that polls the Cloud Logging API for all projects",
+      "A log sink to Pub/Sub, pulled by a Dataflow job using the Datadog template"
+    ],
+    "answer": 2,
+    "explanation": "Logs are forwarded by Google Cloud Dataflow using the Datadog Dataflow template on a Pull subscription. This adds batching and compression, the most network-efficient way to forward logs. Push subscriptions are being deprecated.",
+    "notes": [
+      "Wrong: Push is legacy and has no batching or compression.",
+      "Wrong: the Agent collects application logs on GCE/GKE, but it is not the way to forward Cloud Logging.",
+      "Correct: sink, Pub/Sub Pull and the Dataflow template is the recommended flow."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/google-cloud-log-forwarding/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-046",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "After changing the logs configuration on a systemd-based Linux host, which command applies the change?",
+    "options": [
+      "`sudo datadog-agent reload`",
+      "`sudo service datadog restart-logs`",
+      "`sudo systemctl restart datadog-agent`"
+    ],
+    "answer": 2,
+    "explanation": "Config changes take effect only after an Agent restart. On systemd Linux hosts the command is `sudo systemctl restart datadog-agent`.",
+    "notes": [
+      "Wrong: `reload` is not in the Agent's documented subcommands; the docs restart the Agent service.",
+      "Wrong: not a documented Agent service command.",
+      "Correct: this restarts the Agent service."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/supported_platforms/linux/#commands",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-047",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "hard",
+    "q": "Two files, `conf.d/app.d/a.yaml` and `conf.d/app.d/b.yaml`, both define a log source for `/var/log/app.log`. What does the Agent do?",
+    "options": [
+      "It loads both files and sends every log line twice, once per configuration file.",
+      "It uses only `a.yaml`.",
+      "It uses only `b.yaml`, because the last configuration file loaded overrides earlier ones."
+    ],
+    "answer": 1,
+    "explanation": "To prevent duplicate logs, the Agent does not accept several YAML files that point to the same log source. It reads the files in alphabetical order and uses the first one.",
+    "notes": [
+      "Wrong: duplicates are what this rule prevents.",
+      "Correct: alphabetical order, first file wins.",
+      "Wrong: the first file wins, not the last."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/configuration/agent-configuration-files/#check-configuration-files",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-048",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "A team replays archived application logs whose timestamps are two days old. The logs never show up in the Log Explorer. Why?",
+    "options": [
+      "The Agent rejects any log whose timestamp is earlier than the Agent's own start time.",
+      "Logs older than one day skip indexing and are sent straight to the configured archives.",
+      "Only logs with a timestamp up to 18 hours in the past can be submitted."
+    ],
+    "answer": 2,
+    "explanation": "Only log events with a timestamp up to 18 hours in the past can be submitted (submitting logs up to 7 days old is in Preview). Events outside that time range may not be indexed.",
+    "notes": [
+      "Wrong: the Agent does not compare log timestamps with its start time.",
+      "Wrong: archives receive logs after ingestion and processing; old logs are not rerouted there.",
+      "Correct: two-day-old timestamps fall outside the 18-hour limit."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/#limitations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-049",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "easy",
+    "q": "On a host running NGINX, where do you add the `logs:` block to collect NGINX access and error logs?",
+    "options": [
+      "`conf.d/nginx.d/conf.yaml`",
+      "`datadog.yaml`, under an `nginx:` key",
+      "`/etc/nginx/nginx.conf`, under `datadog_logs`"
+    ],
+    "answer": 0,
+    "explanation": "Integration log collection is configured in the integration's own config file in `conf.d`, such as `nginx.d/conf.yaml`, with `logs_enabled: true` set in `datadog.yaml`.",
+    "notes": [
+      "Correct: the integration's `conf.yaml` holds its `logs:` section.",
+      "Wrong: `datadog.yaml` only enables log collection globally.",
+      "Wrong: the NGINX config sets the log format, not Datadog collection."
+    ],
+    "ref": "https://docs.datadoghq.com/integrations/nginx/#log-collection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-coll-050",
+    "topic": "Log Collection",
+    "subtopic": "Enabling Log Collection",
+    "difficulty": "medium",
+    "q": "Container Collect All is on in Kubernetes. A pod has an app container and a noisy `istio-proxy` sidecar. How do you stop collecting logs from the sidecar only?",
+    "options": [
+      "Annotate the pod with `ad.datadoghq.com/istio-proxy.logs_exclude: \"true\"`.",
+      "Annotate the pod with `ad.datadoghq.com/exclude: \"true\"` so the Agent skips the sidecar.",
+      "Label the pod with `tags.datadoghq.com/istio-proxy.logs: \"false\"` in the pod template."
+    ],
+    "answer": 0,
+    "explanation": "`ad.datadoghq.com/<CONTAINER_NAME>.logs_exclude` excludes log collection from that one container in the pod. `ad.datadoghq.com/exclude` excludes the whole pod.",
+    "notes": [
+      "Correct: container-level log exclusion leaves the app container collected.",
+      "Wrong: this excludes the entire pod, including the app container.",
+      "Wrong: `tags.datadoghq.com/*` labels set unified service tags and do not filter logs."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/guide/container-discovery-management/#pod-exclude-configuration",
+    "verified": "2026-11"
+  }
+]

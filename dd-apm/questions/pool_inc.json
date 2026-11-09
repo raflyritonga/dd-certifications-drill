@@ -1,0 +1,527 @@
+[
+  {
+    "id": "ap-inc-001",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "easy",
+    "q": "During an incident, an engineer opens the service page of `checkout`. Watchdog has detected an anomaly in the Latency graph. How does the page show this, and where are the details?",
+    "options": [
+      "A red border appears around the graph; clicking it opens the Watchdog Alert explorer",
+      "An overlay appears on the graph; clicking the Watchdog icon opens a side panel",
+      "A Watchdog monitor is added to the Service monitor panel in `ALERT` state"
+    ],
+    "answer": 1,
+    "explanation": "Watchdog runs automatic anomaly detection on the Requests, Latency and Error graphs of the service page. When it finds an anomaly, an overlay appears on the graph, and clicking the Watchdog icon gives more details in a side panel.",
+    "notes": [
+      "Wrong: the anomaly is shown as an overlay on the graph, not a red border, and the details open in a side panel.",
+      "Correct: an overlay marks the anomaly, and the Watchdog icon opens a side panel with details.",
+      "Wrong: Watchdog does not create a monitor; the Service monitor panel lists monitors and Synthetic tests linked to the service."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#out-of-the-box-graphs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-002",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "A trace has 400 spans and a few of them failed. In the flame graph, how can the engineer make the spans in an error state stand out?",
+    "options": [
+      "Select the Errors checkbox under Filter Spans",
+      "Set the legend grouping to Errors instead of Service",
+      "Switch the legend from % Exec Time to Spans"
+    ],
+    "answer": 0,
+    "explanation": "If spans in the trace have errors, selecting the Errors checkbox under Filter Spans highlights them in the flame graph. The legend only controls color grouping and the metric shown per group.",
+    "notes": [
+      "Correct: the Errors checkbox under Filter Spans highlights error spans.",
+      "Wrong: the legend groups by Service, Base service, Host or Container; there is no Errors grouping.",
+      "Wrong: this changes the legend from execution time to span count per group; it does not highlight errors."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#trace-visualizations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-003",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "The service page of `payments` shows its Service health as Critical, although no incident is active. Which of these would cause the Critical status on its own?",
+    "options": [
+      "Watchdog reports an ongoing log anomaly alert for the service",
+      "A non-muted monitor with no paging integration has been in `ALERT` for an hour",
+      "Watchdog has flagged an ongoing faulty deployment of the service"
+    ],
+    "answer": 2,
+    "explanation": "Service health is Critical when a non-muted monitor with a PagerDuty or Opsgenie integration is in `ALERT` and triggered within the past 2 days, an incident is active, a faulty deployment is ongoing, or an APM latency/error rate Watchdog alert is ongoing.",
+    "notes": [
+      "Wrong: an ongoing log anomaly alert sets the status to Warning, not Critical.",
+      "Wrong: the monitor condition only counts monitors with a paging integration (PagerDuty or Opsgenie).",
+      "Correct: an ongoing faulty deployment is one of the Critical conditions."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#service-health",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-004",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "hard",
+    "q": "An engineer filters the Trace Explorer list on error spans and selects Group into Issues. Some error spans do not show up under any issue. How can the engineer see every individual error span again, including those?",
+    "options": [
+      "Click `See all errors` in the details panel of one of the issues",
+      "Switch back to the `Errors` grouping of the list",
+      "Remove `status:error` from the query so the issue list covers every span"
+    ],
+    "answer": 1,
+    "explanation": "Group into Issues shows Error Tracking issues instead of individual error spans. Switching back to the `Errors` grouping lists individual errors again, including non-fingerprinted errors that have no associated issue.",
+    "notes": [
+      "Wrong: `See all errors` only lists the error spans grouped under that one issue.",
+      "Correct: the `Errors` grouping shows individual errors, including errors without an associated issue.",
+      "Wrong: Group into Issues applies to a query filtered on error spans; removing the filter does not add errors that have no issue."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/visualize/#list-view",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-005",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "RUM and APM are connected. During a slowdown, a frontend engineer wants the RUM Explorer to list only the resources that have an associated backend trace. Which query should they use?",
+    "options": [
+      "`@_dd.trace_id:*`",
+      "`@trace_id:*`",
+      "`@resource.type:trace`"
+    ],
+    "answer": 0,
+    "explanation": "In the RUM Explorer you can query for resources with traces by using `@_dd.trace_id:*`. Selecting such a session shows a request duration breakdown, a flame graph and a View Trace in APM link.",
+    "notes": [
+      "Correct: `@_dd.trace_id:*` returns RUM resources that carry a trace ID.",
+      "Wrong: the RUM attribute that holds the trace ID is `_dd.trace_id`, not `trace_id`.",
+      "Wrong: `resource.type` describes the kind of resource (such as XHR or Fetch); `trace` is not a resource type."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/other_telemetry/rum/#rum-explorer-to-traces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-006",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "In the trace panel, the Logs section is empty when `trace_id` is selected, but shows many logs when `host` is selected. What is the most likely cause?",
+    "options": [
+      "The host did not send logs during the trace's time frame",
+      "The trace was dropped by ingestion sampling before storage",
+      "The logs carry no standard `trace_id` attribute"
+    ],
+    "answer": 2,
+    "explanation": "The `host` option shows logs from the trace's host in its time frame, so logs are arriving. An empty `trace_id` option means the logs lack a standard `trace_id` attribute: the trace ID must be injected into the logs and remapped to the reserved `trace_id` attribute.",
+    "notes": [
+      "Wrong: the `host` option shows logs from that host in the trace's time frame, so logs exist.",
+      "Wrong: the engineer is looking at the trace, so it was stored.",
+      "Correct: the `trace_id` option needs a standard `trace_id` attribute, so the ID must be injected and remapped."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/correlated-logs-not-showing-up-in-the-trace-id-panel/#trace-id-option",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-007",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "hard",
+    "q": "A team ships raw text logs without a Datadog log integration and parses them with its own Grok rule. The trace IDs are in the log lines, but the logs never appear in the trace panel. What must the pipeline do?",
+    "options": [
+      "Extract the IDs as numbers, then add a Log Date Remapper so the logs match the trace's time frame",
+      "Extract the trace and span IDs as strings, then add a Trace remapper on the extracted attribute",
+      "Extract the IDs into any attribute, then set the log `source` to `apm`"
+    ],
+    "answer": 1,
+    "explanation": "For raw logs without an integration pipeline, the custom parsing rule must extract the trace and span IDs as strings. A Trace remapper on the extracted attribute then makes it the official trace ID of the log.",
+    "notes": [
+      "Wrong: the IDs must be parsed as strings, and a date remapper does not link logs to traces.",
+      "Correct: parse the IDs as strings and remap the trace ID with a Trace remapper.",
+      "Wrong: `source` should name the language for integration pipelines; `apm` is not a source that links logs to traces."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/correlated-logs-not-showing-up-in-the-trace-id-panel/#trace-id-option",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-008",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "easy",
+    "q": "A Python service runs with `ddtrace-run` and logs with the standard `logging` library using a custom text format. Which log record attributes must the format string include so logs can be correlated with traces?",
+    "options": [
+      "`dd.trace_id` and `dd.span_id`, along with `dd.env`, `dd.service` and `dd.version`",
+      "`trace.id` and `span.id`, along with `service.name`, `service.version` and `deployment.environment`",
+      "`x-datadog-trace-id` and `x-datadog-parent-id`"
+    ],
+    "answer": 0,
+    "explanation": "The log format must include the `dd.env`, `dd.service`, `dd.version`, `dd.trace_id` and `dd.span_id` attributes of the log record. `ddtrace-run` or `import ddtrace.auto` adds them to each record.",
+    "notes": [
+      "Correct: these are the attributes ddtrace adds to the log record.",
+      "Wrong: these are not the attribute names ddtrace adds to Python log records.",
+      "Wrong: these are HTTP propagation headers, not log record attributes."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/python/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-009",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "A legacy Java service uses a Datadog Java tracer older than 0.74.0 and writes JSON logs with Logback. Trace IDs are missing from its logs. What turns on automatic injection?",
+    "options": [
+      "`DD_TRACE_DEBUG=true` or the `-Ddd.trace.debug=true` system property",
+      "`DD_LOGS_ENABLED=true` on the application container",
+      "`DD_LOGS_INJECTION=true` or `-Ddd.logs.injection=true`"
+    ],
+    "answer": 2,
+    "explanation": "From Java tracer 0.74.0, trace correlation IDs are injected into JSON logs automatically. Older versions need the `dd.logs.injection=true` system property or the `DD_LOGS_INJECTION=true` environment variable.",
+    "notes": [
+      "Wrong: this turns on tracer debug mode, not log injection.",
+      "Wrong: `DD_LOGS_ENABLED` turns on log collection in the Agent; it does not inject trace IDs.",
+      "Correct: this is the setting for automatic injection on tracers older than 0.74.0."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/java/#automatic-injection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-010",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "An error span from a checkout service shows `Missing error message and stack trace` instead of exception details. The code catches the exception in a try/catch block and returns an error response. Why are the details missing?",
+    "options": [
+      "Ingestion sampling dropped the child span that held the exception and its stack trace",
+      "Handled exceptions do not populate `error.message`, `error.type` and `error.stack`",
+      "Tracer debug mode (`DD_TRACE_DEBUG`) is turned off for the service"
+    ],
+    "answer": 1,
+    "explanation": "When an exception is handled in a try/catch block, the `error.message`, `error.type` and `error.stack` span tags are not populated. Use custom instrumentation to set these error tags.",
+    "notes": [
+      "Wrong: the message comes from the error span itself, not from a dropped child span.",
+      "Correct: handled exceptions leave the detailed error tags empty unless set with custom instrumentation.",
+      "Wrong: debug mode only adds tracer logs; it does not fill error tags on spans."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/#services",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-011",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "hard",
+    "q": "A PHP app uses Monolog v3 and writes JSON logs. A processor stores the IDs under `extra.dd.trace_id` and `extra.dd.span_id`. The logs reach Datadog but are not linked to traces. What should the team do?",
+    "options": [
+      "Add `extra.dd.trace_id` to the Trace Id Attributes field in Preprocessing for JSON logs",
+      "Create a facet on `extra.dd.trace_id` so the Log Explorer can search it",
+      "Set `DD_TRACE_128_BIT_TRACEID_GENERATION_ENABLED=false` so the ID fits the `trace_id` attribute"
+    ],
+    "answer": 0,
+    "explanation": "When the trace ID is nested under `extra.dd.trace_id` in JSON logs, add that path to the Trace Id Attributes field in Preprocessing for JSON logs. The reserved attribute remapper then uses it as the log's trace ID.",
+    "notes": [
+      "Correct: the JSON preprocessing must know the attribute path that holds the trace ID.",
+      "Wrong: a facet only makes the attribute searchable; it does not make it the log's trace ID.",
+      "Wrong: the problem is the attribute path, not the size of the trace ID."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/php/#manual-injection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-012",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "easy",
+    "q": "An engineer suspects that a slow span ran on an overloaded host. Which tab under the selected span shows the host's CPU, Memory and I/O graphs with a marker for when the trace occurred?",
+    "options": [
+      "Span Links",
+      "Security",
+      "Infrastructure"
+    ],
+    "answer": 2,
+    "explanation": "The Infrastructure tab shows host-level or container-level tags and critical metric graphs (CPU, Memory, I/O) with an overlay of when the trace occurred.",
+    "notes": [
+      "Wrong: Span Links shows causally related spans, not host metrics.",
+      "Wrong: Security shows attack attempts against the services in the trace.",
+      "Correct: Infrastructure shows host or container metrics around the trace time."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#more-information",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-013",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "Requests to a downstream pod got slower, but no span shows a code error. The engineer wants TCP retransmits and round-trip time for the calls in the trace. Where do they find this, and what must be enabled?",
+    "options": [
+      "The Processes tab, after enabling process collection",
+      "The Network tab, after enabling Cloud Network Monitoring",
+      "The Logs tab, after enabling trace ID injection in the logs"
+    ],
+    "answer": 1,
+    "explanation": "The Network tab shows the network dependencies of the service making the request, with volume, TCP retransmits and TCP round-trip time. It needs Cloud Network Monitoring.",
+    "notes": [
+      "Wrong: the Processes tab shows process CPU and RSS memory, not TCP metrics.",
+      "Correct: the Network tab shows TCP retransmits and round-trip time once Cloud Network Monitoring is set up.",
+      "Wrong: the Logs tab shows related logs, not network metrics."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#more-information",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-014",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "easy",
+    "q": "The error rate of `checkout` jumped. Which Trace Explorer query finds its error spans that returned an HTTP 5xx status code?",
+    "options": [
+      "`service:checkout status:error @http.status_code:[500 TO 599]`",
+      "`service:checkout @status:error @http.status_code:5xx`",
+      "`service:checkout status:error http.status_code:[500 TO 599]`"
+    ],
+    "answer": 0,
+    "explanation": "`service` and `status` are reserved attributes and need no `@`, while `http.status_code` is a span attribute that needs `@`. A numeric range uses the `[min TO max]` syntax.",
+    "notes": [
+      "Correct: reserved attributes without `@`, the span attribute with `@`, and a numeric range.",
+      "Wrong: `status` takes no `@`, and `5xx` is not a valid numeric range.",
+      "Wrong: `http.status_code` is a span attribute and must be written `@http.status_code`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/query_syntax/#attribute-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-015",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "During an error spike, Watchdog finds that `availability_zone:us-east-1c` is over-represented in the error spans of the current Trace Explorer query. Where does this outlier appear in the facets sidebar?",
+    "options": [
+      "As a new facet group named `watchdog.outliers` at the bottom of the list",
+      "Only in the Watchdog Alert explorer, not in the Trace Explorer",
+      "In a dedicated \"OUTLIERS\" section at the top of the facets list"
+    ],
+    "answer": 2,
+    "explanation": "In the Trace Explorer, Watchdog outlier tags are promoted to a dedicated \"OUTLIERS\" section at the top of the facets sidebar. They also appear as search suggestions, and the Analyze button next to the RED metrics is highlighted.",
+    "notes": [
+      "Wrong: outliers are promoted to the top of the facets, not added as a facet group at the bottom.",
+      "Wrong: APM outliers are integrated into the Trace Explorer through Tag Analysis.",
+      "Correct: outlier tags are shown in an OUTLIERS section at the top of the facets."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#analyzing-anomalies-with-integrated-insights",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-016",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "hard",
+    "q": "On the service page's Watchdog Insights carousel, an error outlier card shows `version:v2.7` as over-represented. The engineer clicks Filter on Insight. The page now shows only entries for `version:v2.7`, but the outlier card is gone. Why?",
+    "options": [
+      "Filtering on an insight also mutes it for the rest of the session",
+      "The filtered scope became the baseline, so it is no longer an outlier",
+      "The outlier link expired because the underlying spans left retention"
+    ],
+    "answer": 1,
+    "explanation": "Filtering on a Watchdog Insight changes the scope you are looking at. The selected outlier is then treated as the baseline, so it is no longer shown.",
+    "notes": [
+      "Wrong: Filter on Insight does not mute anything; the card disappears because the scope changed.",
+      "Correct: after filtering, the selected outlier is treated as the baseline and is no longer shown.",
+      "Wrong: link expiry applies to shared outlier links, and the matching entries are still listed."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/insights/#filter-on-insight-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-017",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "On a dashboard timeseries of request latency, an engineer clicks the point at the top of a spike and chooses the APM Traces link. Which time range does the trace side panel use?",
+    "options": [
+      "The time bucket of the clicked data point",
+      "The full time range of the widget",
+      "The last 15 minutes, because it opens Live Search"
+    ],
+    "answer": 0,
+    "explanation": "Context links embed a filter and a time range. For timeseries and heatmap widgets, the time range is the time bucket of the clicked data point; other widgets use the full widget time range.",
+    "notes": [
+      "Correct: timeseries context links use the clicked point's time bucket.",
+      "Wrong: the full widget time range is used for other widget types, not timeseries.",
+      "Wrong: the link keeps the time of the clicked point; it does not switch to Live Search."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/guide/context-links/#default-context-links",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-018",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "easy",
+    "q": "After an outage, the incident lead wants to start a postmortem notebook with a ready-made structure, then add APM graphs to it. What is the quickest start?",
+    "options": [
+      "Clone the service's out-of-the-box APM dashboard and convert it to a notebook",
+      "Tag a blank notebook with the Postmortem type so the sections are added",
+      "Create the notebook from the postmortem template in the Template Gallery"
+    ],
+    "answer": 2,
+    "explanation": "The notebook Template Gallery has ready-to-use templates, including an Incident Response postmortem, an Incident Report and an SLO Specification. Graphs can then be added with slash commands.",
+    "notes": [
+      "Wrong: dashboards are not converted into notebooks, and a dashboard has no postmortem structure.",
+      "Wrong: type tags such as Postmortem only help with searching; they do not add content.",
+      "Correct: the Template Gallery offers an Incident Response postmortem template."
+    ],
+    "ref": "https://docs.datadoghq.com/notebooks/#notebook-templates",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-019",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "A postmortem notebook contains a graph of error spans during the incident. The team wants the graph to still show this view after the span data passes its retention limit. What should they do?",
+    "options": [
+      "Keep the graph linked to the notebook's global time, such as `Past 1 hour`",
+      "Set the graph to a fixed time range that covers the incident",
+      "Switch the notebook to Viewing mode so its data is frozen"
+    ],
+    "answer": 1,
+    "explanation": "Notebooks automatically snapshot graphs with fixed time ranges to preserve the view before data retention limits apply. Switching a graph to a global time range such as `Past 1 hour` removes the snapshot.",
+    "notes": [
+      "Wrong: a global time range like `Past 1 hour` removes the snapshot and moves away from the incident.",
+      "Correct: graphs with a fixed time range are snapshotted automatically.",
+      "Wrong: Viewing mode only prevents edits; it does not preserve data."
+    ],
+    "ref": "https://docs.datadoghq.com/notebooks/#graph-snapshots",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-020",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "easy",
+    "q": "A Browser RUM app is initialized with `allowedTracingUrls: [\"https://api.example.com\"]`. Which request gets the tracing headers and is linked to a backend trace?",
+    "options": [
+      "`https://api.example.com/v1/cart`",
+      "`https://cdn.example.com/static/app.js`",
+      "`https://example.com/api/v1/cart`"
+    ],
+    "answer": 0,
+    "explanation": "A string in `allowedTracingUrls` matches any URL that starts with that value. Only requests whose URL starts with `https://api.example.com` get the tracing headers.",
+    "notes": [
+      "Correct: this URL starts with the configured string.",
+      "Wrong: this URL does not start with `https://api.example.com`.",
+      "Wrong: the host differs, so the URL does not start with the configured value."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/other_telemetry/rum/#setup-rum",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-021",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "After connecting RUM and APM, browser calls from `https://shop.example.com` to `https://api.example.com` start failing with CORS errors. What must the API server do?",
+    "options": [
+      "Set `traceContextInjection` to `all` so the browser always sends a sampling decision with each request",
+      "Remove `service` from the RUM SDK initialization so that the SDK stops adding tracing headers",
+      "Allow the tracing headers in `Access-Control-Allow-Headers` and accept preflight `OPTIONS` requests"
+    ],
+    "answer": 2,
+    "explanation": "The tracing headers added by the RUM SDK are not CORS-safelisted. The server must allow them with `Access-Control-Allow-Headers` and accept the preflight (OPTIONS) requests that browsers send to cross-site URLs.",
+    "notes": [
+      "Wrong: `traceContextInjection` controls sampling decisions, not CORS.",
+      "Wrong: the `service` field is required to connect RUM to traces.",
+      "Correct: the server must allow the non-safelisted headers and accept preflight requests."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/other_telemetry/rum/#how-rum-resources-are-linked-to-traces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-022",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "An engineer wants to see only the traces generated by Synthetic browser tests against the checkout flow. Which Trace Explorer filter isolates them?",
+    "options": [
+      "`ingestion_reason:synthetics`",
+      "`ingestion_reason:synthetics-browser`",
+      "`ingestion_reason:browser_synthetics`"
+    ],
+    "answer": 1,
+    "explanation": "Browser tests send `x-datadog-origin: synthetics-browser`, and their traces are tagged `ingestion_reason:synthetics-browser`. API tests use `x-datadog-origin: synthetics` and are tagged `ingestion_reason:synthetics`.",
+    "notes": [
+      "Wrong: this tag is used for traces from Synthetic API tests.",
+      "Correct: traces from Synthetic browser tests are tagged `ingestion_reason:synthetics-browser`.",
+      "Wrong: the tag value is `synthetics-browser`, not `browser_synthetics`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/other_telemetry/synthetics/#how-are-traces-linked-to-tests",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-023",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "easy",
+    "q": "On the service page of `web-store`, an engineer opens the Traces tab. Which filters are already applied to the list?",
+    "options": [
+      "Service, environment and operation name",
+      "Service, version and the resource with the most errors",
+      "Service, host and `status:error`"
+    ],
+    "answer": 0,
+    "explanation": "The Traces tab lists traces for the service, already filtered on service, environment and operation name. You can then drill down with facets such as status, resource and error type.",
+    "notes": [
+      "Correct: the tab is pre-filtered on service, environment and operation name.",
+      "Wrong: version and resource are not pre-applied; resource is a facet you can add.",
+      "Wrong: host and `status:error` are not pre-applied; status is a facet you can add."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#traces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-024",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "medium",
+    "q": "Traces from a Node.js service are missing. With `DD_TRACE_DEBUG=true`, its logs show many `Response from the Agent: OK` entries. Where should the team look next?",
+    "options": [
+      "At how `dd-trace` is initialized, because the tracer is not instrumenting the app",
+      "At the network path to the Agent, because the Agent cannot be reached",
+      "At the Agent itself, because the tracer is sending traces properly"
+    ],
+    "answer": 2,
+    "explanation": "`Response from the Agent: OK` means the trace was sent to the Agent properly, so the tracer works and the problem may be with the Agent itself. `Error from the Agent` points to a network or Agent error, and neither entry means the tracer is not instrumenting the app.",
+    "notes": [
+      "Wrong: that is the case when neither `Response from the Agent` nor `Error from the Agent` entries appear.",
+      "Wrong: an unreachable Agent produces `Error from the Agent` entries.",
+      "Correct: `Response from the Agent: OK` shows the tracer works, so check the Agent with the Agent troubleshooting guide."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/tracer_debug_logs/#enable-debug-mode",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-inc-025",
+    "topic": "Troubleshooting Application using APM",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "hard",
+    "q": "A .NET service runs on a Linux VM (no Kubernetes library injection). To debug missing traces, the team sets `DD_TRACE_DEBUG=true` and restarts it, but no tracer log files appear. What is the most likely cause?",
+    "options": [
+      "On Linux, the .NET tracer writes debug logs only to the system journal, not to files",
+      "The directory `/var/log/datadog/dotnet/` was not created before enabling debug mode",
+      "On .NET, debug logs are written only when `DD_TRACE_STARTUP_LOGS=true` is also set"
+    ],
+    "answer": 1,
+    "explanation": "On Linux, the .NET tracer writes logs to `/var/log/datadog/dotnet/` by default, and the directory must be created before enabling debug mode. `DD_TRACE_LOG_DIRECTORY` changes the path.",
+    "notes": [
+      "Wrong: on Linux the tracer writes log files to `/var/log/datadog/dotnet/` by default.",
+      "Correct: on Linux you must create the logs directory before enabling debug mode.",
+      "Wrong: `DD_TRACE_DEBUG` alone enables debug mode; startup logs are a separate feature."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/troubleshooting/tracer_debug_logs/#enable-debug-mode",
+    "verified": "2026-11"
+  }
+]

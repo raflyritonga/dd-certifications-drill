@@ -1,0 +1,527 @@
+[
+  {
+    "id": "lm-attr-001",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "easy",
+    "q": "Which set lists only Datadog reserved log attributes?",
+    "options": [
+      "`host`, `source`, `status`, `service`, `trace_id`, `message`",
+      "`host`, `env`, `version`, `service`, `duration`, `message`",
+      "`hostname`, `source`, `level`, `service`, `span`, `msg`"
+    ],
+    "answer": 0,
+    "explanation": "The reserved attributes automatically ingested with logs are `host`, `source`, `status`, `service`, `trace_id` and `message`. They get special handling in the UI and are searched without the `@` prefix.",
+    "notes": [
+      "Correct: these six are the reserved attributes listed on the Attributes and Aliasing page.",
+      "Wrong: `env` and `version` are unified service tags, and `duration` is a standard attribute, not a reserved one.",
+      "Wrong: `hostname`, `level` and `msg` are source keys that JSON preprocessing maps onto the reserved `host`, `status` and `message`; `span` is not a reserved attribute."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-002",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "easy",
+    "q": "In which unit should a value be stored in the standard `duration` attribute?",
+    "options": [
+      "Milliseconds",
+      "Seconds",
+      "Nanoseconds"
+    ],
+    "answer": 2,
+    "explanation": "The standard `duration` attribute holds a duration of any kind in nanoseconds, such as HTTP response time or database query time. Datadog recommends remapping any durations in your logs to it.",
+    "notes": [
+      "Wrong: milliseconds is a common app logging unit, but `duration` is defined in nanoseconds.",
+      "Wrong: seconds is not the unit of the standard attribute.",
+      "Correct: the default standard attribute list defines `duration` in nanoseconds."
+    ],
+    "ref": "https://docs.datadoghq.com/standard-attributes/?product=log+management&search=duration",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-003",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "Apache logs carry the client IP in `clientIP`, and a custom service logs it as `remote_address`. The SRE team wants one facet to see which client IPs are hit hardest across both sources, without asking either team to change its code. What should they do?",
+    "options": [
+      "Add a `client_ip` tag to both sources in the Agent configuration and facet on the tag.",
+      "Alias `clientIP` and `remote_address` to the standard `network.client.ip` attribute.",
+      "Create one facet per attribute and combine them with an `OR` in every saved view."
+    ],
+    "answer": 1,
+    "explanation": "Aliasing non-compliant attributes to a standard attribute gives a single standard facet built from multiple log sources. It implements the naming convention without changing a team's technical stack.",
+    "notes": [
+      "Wrong: a static Agent tag cannot carry each log's per-request IP value.",
+      "Correct: aliasing both attributes to `network.client.ip` produces one standard Network Client IP facet across sources.",
+      "Wrong: duplicate facets are exactly what the naming convention avoids; they split analytics and dashboards."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#attribute-types-and-aliasing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-004",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "A Grok parser in a custom pipeline extracts a `latency_ns` attribute from the raw message. Can `latency_ns` be used as the source of an alias to the standard `duration` attribute?",
+    "options": [
+      "No. Aliasing runs before pipelines, so only attributes present in the original JSON can be aliased.",
+      "No. Only attributes created by JSON preprocessing can be alias sources.",
+      "Yes. Aliasing happens after pipeline processing, so extracted attributes can be alias sources."
+    ],
+    "answer": 2,
+    "explanation": "Aliasing happens after logs are processed by pipelines. Any extracted or processed attribute can therefore be used as a source for aliasing.",
+    "notes": [
+      "Wrong: the order is the reverse; aliasing runs after pipelines.",
+      "Wrong: JSON preprocessing only maps well-known keys onto reserved attributes; it does not limit which attributes can be alias sources.",
+      "Correct: the docs state that any extracted or processed attribute can be an aliasing source."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#aliasing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-005",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "`client_addr` is aliased to the standard `network.client.ip` attribute. A log arrives with `client_addr: 10.0.0.5` and already has `network.client.ip: 172.16.0.9`. What happens?",
+    "options": [
+      "Aliasing overrides `network.client.ip` with `10.0.0.5`.",
+      "Aliasing is skipped and `network.client.ip` keeps `172.16.0.9`.",
+      "`network.client.ip` becomes an array holding both values."
+    ],
+    "answer": 0,
+    "explanation": "When a log already carries the destination attribute, aliasing overrides the value of that log. This is the opposite of the Attribute Remapper default, which does not override an existing target.",
+    "notes": [
+      "Correct: the docs state that aliasing overrides an existing destination value.",
+      "Wrong: aliasing is skipped only when the value cannot be cast to the enforced type.",
+      "Wrong: aliasing does not merge values into an array."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#aliasing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-006",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "hard",
+    "q": "An admin's org already has `customer` as a custom standard attribute. They now try to add `customer.tier` as a second standard attribute. What is the problem?",
+    "options": [
+      "Custom standard attributes must use the `usr` prefix, so both must be renamed.",
+      "One standard attribute cannot be the child of another, so both cannot exist at once.",
+      "Standard attribute paths cannot contain a dot unless they are in the default list."
+    ],
+    "answer": 1,
+    "explanation": "To respect the JSON structure of logs, one standard attribute cannot be the child of another. The docs use `user` and `user.name` as the example of a pair that cannot both be standard attributes.",
+    "notes": [
+      "Wrong: `usr` is the prefix of the default user attributes, not a rule for custom standard attributes.",
+      "Correct: `customer.tier` would be a child of `customer`, which breaks the JSON-structure rule.",
+      "Wrong: custom paths can be nested; the docs give `network.client.ip` as an example path."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#aliasing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-007",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "On Monday an admin adds `src_ip` to the remapping list of the `network.client.ip` standard attribute. On Tuesday an engineer filters on `network.client.ip` for last Friday's logs. Which of those logs are included?",
+    "options": [
+      "All of them; the change is applied retroactively to indexed logs.",
+      "All of them, once a background reindex finishes within 24 hours.",
+      "Only those that already carried `network.client.ip` when ingested."
+    ],
+    "answer": 2,
+    "explanation": "Updates or additions to standard attributes are only applied to newly ingested logs. Logs ingested before the change keep only their original attributes.",
+    "notes": [
+      "Wrong: standard attribute changes are not backfilled onto logs that are already indexed.",
+      "Wrong: there is no reindex job; already-ingested logs are never updated by a standard attribute change.",
+      "Correct: updates or additions to standard attributes apply only to newly ingested logs, so Friday's `src_ip` logs were not aliased."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#aliasing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-008",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "easy",
+    "q": "When an admin creates a new standard attribute, what is the **Type** field (`string`, `integer`, `double`, `boolean`) used for?",
+    "options": [
+      "To cast the attributes in the remapping list to that type.",
+      "To pick whether the attribute becomes a facet or a measure.",
+      "To set the unit used when the attribute is displayed."
+    ],
+    "answer": 0,
+    "explanation": "The Type of a standard attribute is used to cast elements of the remapping list. Datadog enforces this type when aliasing.",
+    "notes": [
+      "Correct: the docs say the type is used to cast elements of the remapping list.",
+      "Wrong: facet or measure is chosen when you create the facet, not by the standard attribute type.",
+      "Wrong: units are a property of a measure, not of the standard attribute type."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#create-a-new-standard-attribute",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-009",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "A custom app writes its application name in `app_name`. The team wants it used as the log's official `service`. Which processor should they add to the pipeline?",
+    "options": [
+      "An Attribute Remapper with `app_name` as source and `service` as target.",
+      "A Service Remapper that uses `app_name`.",
+      "A Category Processor that writes `app_name` into `service`."
+    ],
+    "answer": 1,
+    "explanation": "The generic Attribute Remapper cannot remap reserved attributes. `service` requires the dedicated Service Remapper.",
+    "notes": [
+      "Wrong: the Attribute Remapper page lists `service` as a reserved attribute it cannot remap.",
+      "Correct: the Service Remapper assigns one or more attributes as the official service.",
+      "Wrong: a Category Processor adds a new attribute based on search queries; it does not set the official service."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/remapper/#reserved-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-010",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "A pipeline has an Attribute Remapper from `user_ip` to `network.client.ip`, created with default settings. A dashboard filtered on `@user_ip` now shows no new data. Why?",
+    "options": [
+      "The remapper only copies values for logs that have a `user_ip` facet.",
+      "Remapped attributes become tags, so `@user_ip` must be searched as `user_ip:`.",
+      "By default the remapper removes the source attribute after remapping."
+    ],
+    "answer": 2,
+    "explanation": "`preserve_source` defaults to `false`, so the remapped source element is removed. To keep `user_ip`, enable the option to keep (preserve) the source attribute.",
+    "notes": [
+      "Wrong: processing does not need facets.",
+      "Wrong: `target_type` defaults to `attribute`; nothing becomes a tag unless configured.",
+      "Correct: with the default `preserve_source: false`, `user_ip` is dropped once remapped."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/remapper/#api",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-011",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "hard",
+    "q": "An Attribute Remapper is defined as:\n\n\"sources\": [\"remote_addr\"],\n\"target\": \"network.client.ip\",\n\"override_on_conflict\": false\n\nA log arrives that already has both `remote_addr` and `network.client.ip`. What is the value of `network.client.ip` after the remapper?",
+    "options": [
+      "It keeps its existing value.",
+      "It takes the value of `remote_addr`.",
+      "The log is dropped from the pipeline as a conflict."
+    ],
+    "answer": 0,
+    "explanation": "`override_on_conflict` controls whether the target is overridden when it is already set. With `false` (the default), the existing target value stays.",
+    "notes": [
+      "Correct: with `override_on_conflict: false` an already-set target is not overwritten.",
+      "Wrong: that would require `override_on_conflict: true`.",
+      "Wrong: a conflict does not drop the log; the remapper simply leaves the existing target value in place."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/remapper/#api",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-012",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "An Attribute Remapper remaps `code` to `http.status_code` and casts the value to Integer. One log has `\"code\": \"N/A\"`. What does `http.status_code` hold for that log after the remapper?",
+    "options": [
+      "`0`, the default value for a failed integer cast",
+      "`\"N/A\"`, keeping its original string type",
+      "Nothing; the target is not written when the cast fails"
+    ],
+    "answer": 1,
+    "explanation": "If the target is an attribute, the remapper can try to cast the value to a new type. If the cast fails, the original value and type are preserved.",
+    "notes": [
+      "Wrong: a failed cast is not replaced with a default number.",
+      "Correct: the docs say that if the cast fails, the original value and type are preserved.",
+      "Wrong: the remapping still happens; only the type conversion is abandoned."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/remapper/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-013",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "Each log has a `team` attribute in its JSON. The team wants it searchable as a tag (`team:payments`) rather than an attribute (`@team:payments`). What should they configure?",
+    "options": [
+      "A Log Message Remapper that uses `team` as its source attribute.",
+      "A new standard attribute `team` of type `string` on the Standard Attributes page.",
+      "An Attribute Remapper with source `team` and its target type set to tag."
+    ],
+    "answer": 2,
+    "explanation": "The Attribute Remapper remaps any source attributes or tags to a target attribute or tag. Setting the target type to `tag` turns the attribute value into a tag.",
+    "notes": [
+      "Wrong: the Log Message Remapper sets the official log message, not tags.",
+      "Wrong: a standard attribute is still an attribute and is searched with `@`.",
+      "Correct: `target_type: tag` makes the remapper write a tag."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/remapper/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-014",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "easy",
+    "q": "Which Log Explorer query correctly finds `checkout` service logs whose client IP is `10.1.2.3`?",
+    "options": [
+      "`service:checkout @network.client.ip:10.1.2.3`",
+      "`@service:checkout network.client.ip:10.1.2.3`",
+      "`service:checkout network.client.ip:10.1.2.3`"
+    ],
+    "answer": 0,
+    "explanation": "Reserved attributes such as `service` are searched without the `@` prefix. Other attributes, including standard ones like `network.client.ip`, need `@`.",
+    "notes": [
+      "Correct: reserved `service` has no `@`; the standard attribute `network.client.ip` uses `@`.",
+      "Wrong: the prefixes are swapped; `service` needs none and `network.client.ip` needs `@`.",
+      "Wrong: without `@`, `network.client.ip` is not searched as an attribute."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#attributes-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-015",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "easy",
+    "q": "A Java service logs its stack trace in a field called `exception_trace`. To get Datadog's dedicated stack trace display in the log panel, which attribute should that field be remapped to?",
+    "options": [
+      "`error.kind`",
+      "`error.stack`",
+      "`logger.stack`"
+    ],
+    "answer": 1,
+    "explanation": "`error.stack` holds the actual stack trace and is one of the attributes with dedicated UI display. `error.kind` holds the error type and `error.message` the error message.",
+    "notes": [
+      "Wrong: `error.kind` is the type or kind of error, such as `Exception`.",
+      "Correct: `error.stack` is the standard attribute for the stack trace itself.",
+      "Wrong: there is no `logger.stack`; the `logger` attributes cover the logger name, thread, method and version."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/#attributes-for-stack-traces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-016",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "easy",
+    "q": "A team starts sending web access logs that already use `http.status_code` and `network.client.ip`. Do they need to create facets on these attributes before using them in the facet panel?",
+    "options": [
+      "Yes. Every facet must be created by hand before any value appears.",
+      "Yes, but only once the logs are rehydrated into a historical view.",
+      "Usually not. Most of these facets are available out of the box."
+    ],
+    "answer": 2,
+    "explanation": "Facets on reserved attributes and most standard attributes are available out of the box. This is one reason to use standard attribute names in your logs.",
+    "notes": [
+      "Wrong: common facets such as `Host` and `Service`, plus most standard ones, already exist.",
+      "Wrong: rehydration has nothing to do with facet creation; facets populate from newly indexed logs.",
+      "Correct: the facets page says facets on reserved attributes and most standard attributes are available by default."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#out-of-the-box-facets",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-017",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "In the Log Explorer facet panel, an engineer sees an aliased facet `clientIP` that is aliased to the standard `Network Client IP` facet. What does Datadog recommend?",
+    "options": [
+      "Use the switch to alias menu item so the standard facet is shown instead.",
+      "Delete the `clientIP` facet so queries are redirected automatically.",
+      "Keep using `clientIP`, since aliased facets get data from all teams."
+    ],
+    "answer": 0,
+    "explanation": "Aliased facets still work but are considered deprecated. The switch to alias action hides the aliased facet and unhides the standard one, which is more likely to hold content from other teams too.",
+    "notes": [
+      "Correct: switch to alias hides the aliased facet and unhides the standard facet.",
+      "Wrong: deleting a facet can break indexes, monitors and dashboards that use it, and is not the recommended path.",
+      "Wrong: it is the standard facet, not the aliased one, that gathers content from diverse sources."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#aliased-facets",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-018",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "hard",
+    "q": "Three teams each created their own facet for request latency: `@exec_time`, `@req_latency` and `@elapsed`. The org already has a standard `Duration` facet. Which aliasing approach does Datadog recommend for this situation?",
+    "options": [
+      "Alias each team's attribute to `Duration` from the log side panel.",
+      "Use **Alias to...** in each existing facet's menu and pick `Duration`.",
+      "Create a new shared latency facet and rebuild dashboards on it."
+    ],
+    "answer": 1,
+    "explanation": "Aliasing facet to facet is the best option when multiple teams already created multiple facets for similar content. Aliasing attribute to facet is meant for onboarding logs from new sources.",
+    "notes": [
+      "Wrong: aliasing attribute to facet from the side panel is the recommended option when onboarding logs from new sources that have no facet yet.",
+      "Correct: aliasing facet to facet is the best option when multiple teams already created multiple facets for similar content.",
+      "Wrong: another facet adds to the sprawl; aliasing realigns teams onto the standard facet without rebuilding."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#aliasing-facet-to-facet",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-019",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "A service logs response time in milliseconds in `resp_ms`. Before remapping it to the standard `duration` attribute, the team scales it with an Arithmetic Processor. Which multiplier should they use?",
+    "options": [
+      "`*1000`",
+      "`*0.001`",
+      "`*1000000`"
+    ],
+    "answer": 2,
+    "explanation": "`duration` is stored in nanoseconds, and one millisecond is 1,000,000 nanoseconds. The facets docs use a `*1000000` multiplier for millisecond logs and `*1000` for microsecond logs.",
+    "notes": [
+      "Wrong: `*1000` converts microseconds to nanoseconds, not milliseconds.",
+      "Wrong: `*0.001` would turn milliseconds into seconds.",
+      "Correct: milliseconds times 1,000,000 gives nanoseconds."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#units",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-020",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "easy",
+    "q": "Which attribute name follows Datadog's default standard naming for the ID of the user who made a request?",
+    "options": [
+      "`usr.id`",
+      "`user.id`",
+      "`customer.id`"
+    ],
+    "answer": 0,
+    "explanation": "All default user-related standard attributes are prefixed by `usr`, such as `usr.id`, `usr.name` and `usr.email`.",
+    "notes": [
+      "Correct: `usr.id` is the default standard user identifier.",
+      "Wrong: `user` is a common choice but the standard prefix is `usr`.",
+      "Wrong: `customer` is not a standard attribute prefix."
+    ],
+    "ref": "https://docs.datadoghq.com/standard-attributes/?product=log+management&search=usr",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-021",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "Logs contain `usr.name: \"Alice\"`. An engineer searches `@usr.name:alice` and gets no results. What explains this?",
+    "options": [
+      "`usr.name` has no facet, and attributes without a facet cannot be searched.",
+      "Attribute searches are case sensitive.",
+      "Standard attributes are searched without the `@` prefix."
+    ],
+    "answer": 1,
+    "explanation": "Attribute searches are case sensitive, so `alice` does not match `Alice`. Use full-text search, or a `lowercase` filter in the Grok parser, to get case-insensitive results.",
+    "notes": [
+      "Wrong: a facet is not required to search on attributes.",
+      "Correct: `alice` does not match `Alice` in an attribute search.",
+      "Wrong: only reserved attributes skip `@`; standard attributes such as `usr.name` still need it."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#reserved-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-022",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "hard",
+    "q": "`bytes_out` is aliased to a standard attribute of type `integer`. A log arrives with `bytes_out: \"unknown\"`. What does Datadog do with it?",
+    "options": [
+      "Sets the standard attribute to `0`.",
+      "Stores `\"unknown\"` as a string in the standard attribute.",
+      "Skips the aliasing for that log."
+    ],
+    "answer": 2,
+    "explanation": "Datadog enforces the type of an aliased attribute. If the value cannot be cast, the aliasing is skipped.",
+    "notes": [
+      "Wrong: no default value is substituted.",
+      "Wrong: the type is enforced, so a string is not written into an integer standard attribute.",
+      "Correct: when the cast is not possible, aliasing is skipped."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#aliasing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-023",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "hard",
+    "q": "Both `clientIP` and `remote_ip` are aliased to `network.client.ip`. One log carries `clientIP: 10.0.0.1` and `remote_ip: 10.0.0.2`. What ends up in `network.client.ip`?",
+    "options": [
+      "Only one of the two source values.",
+      "Both values, as an array.",
+      "Neither; aliasing is skipped when sources conflict."
+    ],
+    "answer": 0,
+    "explanation": "For a standard attribute with several aliased attributes, if a log carries more than one of them, only one of these source attributes is aliased.",
+    "notes": [
+      "Correct: the docs say only one of the source attributes is aliased.",
+      "Wrong: aliasing does not merge values into an array.",
+      "Wrong: aliasing is skipped only when the type cast fails, not when sources overlap."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#aliasing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-024",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "medium",
+    "q": "An admin tries to put the standard attribute `http.status_code` into the remapping list of another standard attribute, `http.response_code`. Why does this not work?",
+    "options": [
+      "Remapping lists only accept attributes of type `string`.",
+      "Standard attributes cannot be aliased.",
+      "Attributes in the `http` domain can only be changed by the URL Parser."
+    ],
+    "answer": 1,
+    "explanation": "Standard attributes cannot be aliased, and attributes can only be aliased to standard attributes. Only non-standard attributes belong in a remapping list.",
+    "notes": [
+      "Wrong: the remapping list is cast to the standard attribute's type; it is not limited to strings.",
+      "Correct: an attribute that is itself standard cannot be an alias source.",
+      "Wrong: the URL Parser only produces `http.url_details`; it does not own the `http` domain."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#aliasing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-attr-025",
+    "topic": "Log Collection",
+    "subtopic": "Standard Attributes",
+    "difficulty": "easy",
+    "q": "After a URL Parser runs on `http.url`, under which standard prefix are the URL's host, path, port, scheme and query parameters stored?",
+    "options": [
+      "`http.useragent_details`",
+      "`network.destination`",
+      "`http.url_details`"
+    ],
+    "answer": 2,
+    "explanation": "URL details attributes are prefixed by `http.url_details` and are generated by the URL parser, for example `http.url_details.path` and `http.url_details.queryString`.",
+    "notes": [
+      "Wrong: `http.useragent_details` holds OS, browser and device data from the User-Agent Parser.",
+      "Wrong: `network.destination` holds the destination IP and port of a connection.",
+      "Correct: the URL Parser writes `http.url_details.host`, `.path`, `.port`, `.scheme` and `.queryString`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#default-standard-attribute-list",
+    "verified": "2026-11"
+  }
+]

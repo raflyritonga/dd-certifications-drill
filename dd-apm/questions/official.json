@@ -1,0 +1,485 @@
+[
+  {
+    "id": "ap-official-01",
+    "topic": "Official practice set",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "",
+    "q": "The Live Search view will display all ingested traces for how long?",
+    "options": [
+      "15 minutes",
+      "24 hours",
+      "15 days"
+    ],
+    "answer": 0,
+    "explanation": "Live Search shows every ingested span, without sampling, for a rolling window of the last 15 minutes. Once the time selector goes past 15 minutes, you search only spans indexed by retention filters, which are kept for 15 days.",
+    "notes": [
+      "Correct: Live Search covers all ingested spans for a rolling 15-minute window.",
+      "Wrong: there is no 24-hour live window; after 15 minutes only indexed spans can be searched.",
+      "Wrong: 15 days is how long indexed spans (kept by retention filters) are retained, not the Live Search window."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#live-search-for-15-minutes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-02",
+    "topic": "Official practice set",
+    "subtopic": "Tagging",
+    "difficulty": "",
+    "q": "Which tags are NOT available with tracing application metrics?",
+    "options": [
+      "env, service, version",
+      "custom tags",
+      "second primary tag"
+    ],
+    "answer": 1,
+    "explanation": "Trace metrics can only be tagged with `env`, `service`, `version`, `resource`, `http.status_code`, `http.status_class`, `rpc.grpc.status_code` and Datadog Agent tags, including host and additional primary tags. The docs state that other tags set on spans are not available as tags on trace metrics, so custom span tags are the ones missing.",
+    "notes": [
+      "Wrong: `env`, `service` and `version` are standard trace metric tags.",
+      "Correct: custom tags set on spans are not carried onto trace metrics.",
+      "Wrong: a second (additional) primary tag is available on trace metrics."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/metrics_namespace/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-03",
+    "topic": "Official practice set",
+    "subtopic": "Tracing Architectures",
+    "difficulty": "",
+    "q": "What is the MINIMUM information contained on every span?",
+    "options": [
+      "name, duration, and environment",
+      "type, duration, and start time",
+      "name, duration, and start time"
+    ],
+    "answer": 2,
+    "explanation": "A span is a logical unit of work for a given period, so at minimum it carries a span name, a start time and a duration. In the span model used to send traces to the Agent, these are the `name`, `start` (nanoseconds since epoch) and `duration` (nanoseconds) fields; environment is a tag, not a core span field.",
+    "notes": [
+      "Wrong: environment comes from the `env` tag (for example `DD_ENV`), not from a core span field.",
+      "Wrong: `type` only classifies the request (`web`, `db`, `cache`, `custom`); the span name, not the type, identifies the operation.",
+      "Correct: every span has a name, a start time and a duration."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/send_traces_to_agent_by_api/#model",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-04",
+    "topic": "Official practice set",
+    "subtopic": "APM Rationale",
+    "difficulty": "",
+    "q": "What is the PRIMARY challenge to monitoring the performance of typical distributed application environments?",
+    "options": [
+      "Services are written in many languages and run on many platforms.",
+      "Services are encrypted by several types of encryption.",
+      "Services take a very long time to respond to requests."
+    ],
+    "answer": 0,
+    "explanation": "A distributed application is made of many services written in different languages and running on different platforms, so one request crosses many runtimes. That is why Datadog ships an SDK per language (Java, Python, Ruby, Go, Node.js, PHP, C++, .NET, Rust) and propagates trace context between services to stitch one trace together.",
+    "notes": [
+      "Correct: heterogeneous languages and platforms are the core difficulty of tracing a request end to end.",
+      "Wrong: encryption is not what makes performance monitoring hard; APM traces requests regardless.",
+      "Wrong: slow responses are a symptom APM helps find, not the structural challenge of monitoring distributed systems."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/compatibility/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-05",
+    "topic": "Official practice set",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "",
+    "q": "Which of the following options BEST describes the percentile distribution metrics that are available for distribution metrics in APM?",
+    "options": [
+      "p50, p75, p90, p95, and p99",
+      "p01, p05, p10, and p25",
+      "any arbitrary percentile"
+    ],
+    "answer": 0,
+    "explanation": "Distribution metrics are stored as DDSketches, and enabling percentile aggregations provides `p50`, `p75`, `p90`, `p95` and `p99`. Current docs: you can also add any user-defined percentile with up to two decimal places (such as `p99.99`), so option C is partly true today; the key reflects the standard set.",
+    "notes": [
+      "Correct: the standard percentile aggregations are `p50`, `p75`, `p90`, `p95` and `p99`.",
+      "Wrong: low percentiles such as `p01`-`p25` are not the standard set Datadog provides.",
+      "Wrong: per the key, the standard set is fixed, though current docs also let you add custom percentiles with up to two decimals."
+    ],
+    "ref": "https://docs.datadoghq.com/metrics/distributions/#enabling-advanced-query-functionality",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-06",
+    "topic": "Official practice set",
+    "subtopic": "Retention Periods for APM Data",
+    "difficulty": "",
+    "q": "The default APM pricing plan includes 1 million indexed spans per month, retained for how long?",
+    "options": [
+      "7 days",
+      "15 days",
+      "30 days"
+    ],
+    "answer": 1,
+    "explanation": "Every APM host includes 1 million Indexed Spans (and 150 GB of Ingested Spans) per month, and Datadog's billing examples use the default 15-day Indexed Span retention. Current docs: the allotment is per APM host, the data retention page lists indexed spans as 15 or 30 days depending on plan, and spans kept by the Intelligent Retention Filter are retained 30 days without counting toward usage.",
+    "notes": [
+      "Wrong: 7 days is not an indexed span retention option.",
+      "Correct: indexed spans are retained 15 days by default.",
+      "Wrong: 30 days needs a different plan (or applies to Intelligent Retention Filter spans), not the default."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/billing/apm_tracing_profiler/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-07",
+    "topic": "Official practice set",
+    "subtopic": "Profile Collection",
+    "difficulty": "",
+    "q": "The Datadog Continuous Profiler can always be enabled with which method?",
+    "options": [
+      "in-code configuration",
+      "environment variable",
+      "both environment variable and in-code configuration"
+    ],
+    "answer": 0,
+    "explanation": "Datadog keys in-code configuration because some profilers cannot be turned on by an environment variable alone: the Go profiler, for example, is started by calling `profiler.Start(...)` in application code. Current docs: `DD_PROFILING_ENABLED` now enables the profiler for most SDKs (including Go apps built with Orchestrion), while Java, .NET and PHP are enabled through JVM flags, environment variables or the PHP installer (`--enable-profiling`) and INI settings rather than application code, so neither method is strictly universal.",
+    "notes": [
+      "Correct: per the key, in-code configuration works even where an environment variable does not, such as Go's `profiler.Start`.",
+      "Wrong: per the key, `DD_PROFILING_ENABLED` is widely supported but is not honored by every profiler (for example plain Go needs code).",
+      "Wrong: because the environment variable is not always available, \"both\" cannot always be used."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-08",
+    "topic": "Official practice set",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "",
+    "q": "Which of the following tags is used to track service deployments?",
+    "options": [
+      "service",
+      "env",
+      "version"
+    ],
+    "answer": 2,
+    "explanation": "The practice file doesn't mark an answer for this question; this key comes from the current docs. The `version` tag is reserved in Unified Service Tagging and is what Deployment Tracking uses to monitor deployments and service behavior. Each new deployment is expected to carry a distinct `version` value.",
+    "notes": [
+      "Wrong: `service` identifies the service, not which deployment is running.",
+      "Wrong: `env` scopes data by environment (such as `prod` or `staging`), not by deployment.",
+      "Correct: the `version` tag tracks deployments."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/deployment_tracking/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-09",
+    "topic": "Official practice set",
+    "subtopic": "Error Tracking",
+    "difficulty": "",
+    "q": "What are the three span tags that must be present on an error span for Datadog Error Tracking to process it?",
+    "options": [
+      "error.message, error.type, and error.stack",
+      "error.msg, error.type, and error.stacktrace",
+      "err.msg, err.type, and err.stack"
+    ],
+    "answer": 0,
+    "explanation": "For backend services, an error span must contain the `error.stack`, `error.message` and `error.type` span attributes, and belong to a complete trace, to be tracked by Error Tracking. Error Tracking then fingerprints the error from its type, message and stack frames.",
+    "notes": [
+      "Correct: `error.message`, `error.type` and `error.stack` are the required span attributes.",
+      "Wrong: `error.msg` and `error.stacktrace` are not the attribute names Datadog uses.",
+      "Wrong: the attributes use the `error.` prefix, not `err.`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/#use-span-attributes-to-track-error-spans",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-10",
+    "topic": "Official practice set",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "",
+    "q": "Which filter is always on to retain a subset of important spans?",
+    "options": [
+      "App Analytics Retention Filter",
+      "Datadog Intelligent Retention Filter",
+      "Custom Retention Filter"
+    ],
+    "answer": 1,
+    "explanation": "The Datadog Intelligent Retention Filter is always active for your services and keeps a representative selection of traces through diversity sampling and 1% flat sampling. Spans it indexes do not count toward indexed span usage.",
+    "notes": [
+      "Wrong: App Analytics is legacy; its filters were converted to retention filters in October 2020, and none of them is always on.",
+      "Correct: the Intelligent Retention Filter is always on.",
+      "Wrong: custom retention filters are ones you create, edit or disable yourself; they are not always on."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#datadog-intelligent-retention-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-11",
+    "topic": "Official practice set",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "",
+    "q": "When configuring the RUM SDK to correlate browser requests with APM traces, what is the origin that allowedTracingOrigins should allow?",
+    "options": [
+      "calls made by the browser application",
+      "calls made by the receiving backend web server to a third party application",
+      "calls for the endpoints used by the receiving backend web server"
+    ],
+    "answer": 0,
+    "explanation": "To link RUM resources to backend traces, you list the internal, first-party origins called by your browser application, so the SDK adds trace headers to those requests. Current docs: the Browser SDK setup uses the `allowedTracingUrls` parameter (it matches the full URL) instead of `allowedTracingOrigins`.",
+    "notes": [
+      "Correct: the setting lists the first-party origins the browser application calls.",
+      "Wrong: backend-to-third-party calls are traced by the backend's Datadog SDK, not configured in the RUM SDK.",
+      "Wrong: the setting is about URLs the browser calls, not endpoints the backend server itself uses."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/other_telemetry/rum/#setup-rum",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-12",
+    "topic": "Official practice set",
+    "subtopic": "Profile Collection",
+    "difficulty": "",
+    "q": "A java application needs to be configured with profiling. Where must `-javaagent` be placed and why?",
+    "options": [
+      "Anywhere after the `java` command; The placement does not matter because the profiler library will be loaded in any order.",
+      "After the `-jar` command; To ensure that the profiler is loaded as late as possible for profiling to occur.",
+      "Before the `-jar` command; To ensure that the profiler is loaded as early as possible for profiling to occur."
+    ],
+    "answer": 2,
+    "explanation": "The `-javaagent` argument must come before `-jar` so it is passed as a JVM option rather than an application argument; that way the tracer and profiler load at JVM startup, before the application runs.",
+    "notes": [
+      "Wrong: placement matters; the docs say `-javaagent` must come before `-jar`.",
+      "Wrong: after `-jar` the flag becomes an application argument instead of a JVM option, and the goal is to load the agent early, not late.",
+      "Correct: put `-javaagent` before `-jar` so it loads as a JVM option at startup."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-13",
+    "topic": "Official practice set",
+    "subtopic": "Profile Collection",
+    "difficulty": "",
+    "q": "What is the environment variable that enables profiling for the tracing libraries that support this option?",
+    "options": [
+      "DD_PROFILING_ENABLED",
+      "DD_APM_PROFILER_ENABLED",
+      "DD_APM_PROFILING_ENABLED"
+    ],
+    "answer": 0,
+    "explanation": "`DD_PROFILING_ENABLED=true` enables the profiler in the Datadog SDKs that support it, such as Java, Python, Ruby, Node.js and .NET. For .NET with Single Step APM Instrumentation, it is the only variable that must be set to activate the profiler.",
+    "notes": [
+      "Correct: `DD_PROFILING_ENABLED` is the profiler switch.",
+      "Wrong: `DD_APM_PROFILER_ENABLED` is not a Datadog setting.",
+      "Wrong: `DD_APM_PROFILING_ENABLED` mixes the Agent's `DD_APM_` prefix with the SDK setting; it is not the profiler switch."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-14",
+    "topic": "Official practice set",
+    "subtopic": "Tagging",
+    "difficulty": "",
+    "q": "Which tag is used to track services?",
+    "options": [
+      "env",
+      "service",
+      "version"
+    ],
+    "answer": 1,
+    "explanation": "Unified Service Tagging uses three reserved tags: `env`, `service` and `version`. The `service` tag identifies the service so traces, metrics, logs and profiles can be tied to it.",
+    "notes": [
+      "Wrong: `env` scopes data by environment.",
+      "Correct: `service` is the tag that identifies and tracks services.",
+      "Wrong: `version` tracks deployments of a service."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-15",
+    "topic": "Official practice set",
+    "subtopic": "Profilers",
+    "difficulty": "",
+    "q": "Which search technique returns certain profiles on the Search Profile page?",
+    "options": [
+      "using facets",
+      "using scopes",
+      "filtering out profiles on the Datadog Agent"
+    ],
+    "answer": 0,
+    "explanation": "In APM > Profiles you filter profiles by infrastructure or application tags, and facets such as Env, Service, Version, Host and Runtime are available by default.",
+    "notes": [
+      "Correct: facets filter the profiles shown in profile search.",
+      "Wrong: \"scopes\" is not the search mechanism on the profile search page.",
+      "Wrong: filtering on the Agent changes what is collected, not how you search profiles in Datadog."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profile_visualizations/#search-profiles",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-16",
+    "topic": "Official practice set",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "",
+    "q": "What filters allow indexed spans to be available in a Notebook or Dashboard after 15 minutes?",
+    "options": [
+      "spans retained by the Custom Retention Filter only",
+      "spans retained by the Datadog Intelligent Retention Filter only",
+      "spans retained by the Datadog Intelligent Retention Filter and the Custom Retention Filter"
+    ],
+    "answer": 2,
+    "explanation": "By default, spans indexed by custom retention filters and by the Intelligent Retention Filter are included in Trace Explorer aggregated views and in dashboard and notebook queries. Live data covers only the last 15 minutes; after that, only indexed spans can be queried.",
+    "notes": [
+      "Wrong: Intelligent Retention Filter spans are also included, not only custom filters.",
+      "Wrong: spans from custom retention filters are included too.",
+      "Correct: both custom and Intelligent Retention Filter spans are available in dashboards and notebooks."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#in-the-trace-explorer-dashboards-and-notebooks",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-17",
+    "topic": "Official practice set",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "",
+    "q": "Assume that an increase in errors has been spotted on the Errors graph of the Service Page. After the incident is resolved what data is used in the resulting post mortem notebook?",
+    "options": [
+      "trace metric",
+      "indexed spans",
+      "screenshot"
+    ],
+    "answer": 0,
+    "explanation": "The Service page graphs, including Errors, are built on trace metrics, which are computed from 100% of traffic and retained for 15 months, so the exported graph stays accurate in a postmortem. Current docs: notebooks also automatically snapshot graphs with fixed time ranges and show the snapshot once data passes its retention limit.",
+    "notes": [
+      "Correct: the Errors graph is a trace metric, calculated on all traffic and kept 15 months.",
+      "Wrong: indexed spans are a sampled subset kept 15 days by retention filters, not what the Errors graph uses.",
+      "Wrong: a screenshot is static; the graph exported from the Service page is a live trace metric query."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/ddsketch_trace_metrics/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-18",
+    "topic": "Official practice set",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "",
+    "q": "Monitors will be linked to services in the service map and on dashboards if the query is scoped with which tag?",
+    "options": [
+      "env",
+      "service",
+      "version"
+    ],
+    "answer": 1,
+    "explanation": "Monitors are attached to an APM service when `service:<SERVICE_NAME>` is in the monitor's tags, in its query, or the query is grouped by service. Monitor status is then shown on the Service page and the Service Map.",
+    "notes": [
+      "Wrong: `env` scopes by environment and does not link a monitor to a service.",
+      "Correct: scoping or tagging with `service` links the monitor to the service.",
+      "Wrong: `version` tracks deployments, not service ownership of monitors."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#service-monitor",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-19",
+    "topic": "Official practice set",
+    "subtopic": "Instrumentation Types",
+    "difficulty": "",
+    "q": "What is the type of instrumentation that would be needed to write custom spans?",
+    "options": [
+      "Manual Instrumentation",
+      "Custom Instrumentation",
+      "Dynamic Instrumentation"
+    ],
+    "answer": 1,
+    "explanation": "Custom instrumentation means embedding tracing code in your application to create, modify or delete spans and add application-specific metadata. Current docs: the docs call this \"code-based custom instrumentation\", use \"manually managed SDKs\" for installing and configuring the SDK yourself, and note that Dynamic Instrumentation can also create custom spans from the Datadog UI without code changes.",
+    "notes": [
+      "Wrong: in current docs \"manual\" refers to manually managed SDKs (installing and configuring the SDK yourself), not to writing custom spans.",
+      "Correct: custom instrumentation adds spans through tracing API calls in code.",
+      "Wrong: Dynamic Instrumentation adds spans from the Datadog UI without writing code; writing spans in code is custom instrumentation."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-20",
+    "topic": "Official practice set",
+    "subtopic": "OOTB Tracer vs Community Tracer",
+    "difficulty": "",
+    "q": "What can be used to create spans for an unsupported language?",
+    "options": [
+      "Community Tracers",
+      "Datadog Agent",
+      "Datadog Tracer"
+    ],
+    "answer": 0,
+    "explanation": "For languages without an official Datadog SDK, community-contributed trace libraries (for example `spandex` for Elixir) can create spans and send them to Datadog. Current docs: Datadog also has a guide for sending traces from runtimes no Datadog SDK supports by using the OpenTelemetry SDK.",
+    "notes": [
+      "Correct: community tracers cover languages Datadog's own SDKs do not.",
+      "Wrong: the Agent receives and forwards spans; it does not create spans inside your application.",
+      "Wrong: an official Datadog tracer only exists for supported languages."
+    ],
+    "ref": "https://docs.datadoghq.com/extend/community/libraries/#apm--continuous-profiler-client-libraries",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-21",
+    "topic": "Official practice set",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "",
+    "q": "One way to add a service summary page’s Latency graph to a dashboard is to",
+    "options": [
+      "right-click on the graph, select Save As, and specify a dashboard name.",
+      "hold the mouse pointer over the graph, press Ctrl/ cmd+C top copy it, open the clipboard, and select the target dashboard to export it to.",
+      "click the Service Config button and specify the dashboard name in the Dashboards list."
+    ],
+    "answer": 1,
+    "explanation": "Copying a graph with `Cmd/Ctrl + C` adds it to the Datadog Clipboard, from which items can be exported to a new or existing dashboard, notebook or incident. Current docs: the Service page also has an export arrow in the upper-right corner of each graph to send it to an existing dashboard.",
+    "notes": [
+      "Wrong: there is no right-click \"Save As\" option that saves a graph to a dashboard.",
+      "Correct: copy the graph with `Cmd/Ctrl + C`, open the Clipboard and export it to the target dashboard.",
+      "Wrong: there is no Service Config button with a Dashboards list for exporting graphs."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/guide/datadog_clipboard/#exporting",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-22",
+    "topic": "Official practice set",
+    "subtopic": "Using Trace Search (during incident)",
+    "difficulty": "",
+    "q": "A user is looking at some unusual measurements in a graph of a service’s latency metric, and wants to see if there are similar unusual things happening in other metrics that Datadog is collecting at the same time (for example, from integrations). To see this information, they should click on the graph and select:",
+    "options": [
+      "“Find correlated metrics”.",
+      "“View related logs”.",
+      "“View related profiles”."
+    ],
+    "answer": 0,
+    "explanation": "The practice file doesn't mark an answer for this question; this key comes from the current docs. Metric Correlations searches other metrics (from dashboards, integrations, APM and custom metrics) that behaved irregularly around the same time; you start it by clicking a graph and selecting Find correlated metrics.",
+    "notes": [
+      "Correct: Find correlated metrics looks for other metrics with irregular behavior at the same time.",
+      "Wrong: View related logs shows logs, not other metrics from integrations.",
+      "Wrong: View related profiles shows code-level profiling data, not other metrics."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/graph_insights/correlations/#find-correlated-metrics",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-official-23",
+    "topic": "Official practice set",
+    "subtopic": "Service Performance Dashboards",
+    "difficulty": "",
+    "q": "What does an Apdex score measure?",
+    "options": [
+      "user satisfaction with the performance of a service in terms of ratio of requests that return without error.",
+      "the relative performance of a service compared to its past performance.",
+      "user satisfaction with the performance of a service, in terms of the ratio of requests that are met within a specified time threshold."
+    ],
+    "answer": 2,
+    "explanation": "The practice file doesn't mark an answer for this question; this key comes from the current docs. Apdex is a 0-to-1 measure of user satisfaction based on response time: you set a threshold T, and requests are satisfied (below T), tolerated (T to 4T) or frustrated (above 4T or errored). Apdex = (satisfied + tolerated/2) / total requests.",
+    "notes": [
+      "Wrong: Apdex is based on response time against a threshold; errors only count as frustrated requests.",
+      "Wrong: Apdex compares requests with a fixed threshold, not with the service's past performance.",
+      "Correct: Apdex is the share of requests meeting the response-time threshold (tolerated count as half)."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/configure_an_apdex_for_your_traces_with_datadog_apm/",
+    "verified": "2026-11"
+  }
+]

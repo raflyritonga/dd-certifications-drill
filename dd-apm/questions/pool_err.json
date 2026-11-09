@@ -1,0 +1,422 @@
+[
+  {
+    "id": "ap-err-001",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "easy",
+    "q": "A developer adds custom instrumentation that sets `error` and `error.message` on a span when a payment fails. The spans show as errors in the Trace Explorer, but no issue appears in Error Tracking. What is missing?",
+    "options": [
+      "The spans must also be indexed by a custom retention filter before Error Tracking processes them.",
+      "The span must also carry `error.type` and `error.stack`.",
+      "Error Tracking must first be enabled on the service with `DD_ERROR_TRACKING_ENABLED=true`."
+    ],
+    "answer": 1,
+    "explanation": "An error span is only tracked when it has all three attributes `error.type`, `error.message` and `error.stack` and belongs to a complete trace. Error Tracking for APM needs no extra SDK or configuration change.",
+    "notes": [
+      "Wrong: retention filters control which error samples appear on the issue panel, not whether the error is processed.",
+      "Correct: `error.type`, `error.message` and `error.stack` are all required for a span to be tracked.",
+      "Wrong: Error Tracking for APM requires no additional SDK and no configuration changes."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/#use-span-attributes-to-track-error-spans",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-002",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "medium",
+    "q": "The `orders` service raises two errors with the same type and the same top-most stack frame. Their messages are `Order \"84213\" not found` and `Order \"99107\" not found`. How does Error Tracking group them by default?",
+    "options": [
+      "Into one issue, because text between quotes is ignored when grouping",
+      "Into two issues, because the error messages are different",
+      "Into one issue only if an `error.fingerprint` tag is set on both spans"
+    ],
+    "answer": 0,
+    "explanation": "Default grouping ignores numbers, punctuation and anything between quotes or parentheses; only word-like tokens are used. With the same service, type and top frame, both errors share one issue.",
+    "notes": [
+      "Correct: quoted values and numbers are ignored, so the normalized messages match.",
+      "Wrong: the only difference is inside quotes, which grouping ignores.",
+      "Wrong: no custom fingerprint is needed; default grouping already merges these errors."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/error_grouping/#default-grouping",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-003",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "easy",
+    "q": "A developer wants every error raised in this block to land in one Error Tracking issue, whatever its message:\n\nwith tracer.trace(\"checkout.validate\") as span:\n    span.set_tag(\"<TAG>\", \"checkout-validation\")\n    validate(cart)\n\nWhich tag name replaces `<TAG>`?",
+    "options": [
+      "`error.group`",
+      "`issue.fingerprint`",
+      "`error.fingerprint`"
+    ],
+    "answer": 2,
+    "explanation": "Custom grouping uses a string `error.fingerprint` span tag on the error span. When present, it takes precedence over the default grouping strategy.",
+    "notes": [
+      "Wrong: `error.group` is not the tag Error Tracking reads for custom grouping.",
+      "Wrong: `issue.fingerprint` is not a documented tag; the tag lives under `error.`.",
+      "Correct: `error.fingerprint` gives full control over how error spans are grouped."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/error_grouping/#custom-grouping",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-004",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "medium",
+    "q": "The `payments-api` and `refunds-api` services both set `error.fingerprint` to `stripe-timeout` on their timeout error spans. How many Error Tracking issues result?",
+    "options": [
+      "One, because the fingerprint value is used as-is to group errors",
+      "Two, because grouping is always scoped to the service",
+      "None, because a custom fingerprint only applies when the error has no stack trace"
+    ],
+    "answer": 1,
+    "explanation": "Errors with the same service and the same `error.fingerprint` share an issue, but errors with different `service` values always go to different issues.",
+    "notes": [
+      "Wrong: the value is used as-is, but grouping is still scoped per service.",
+      "Correct: the same fingerprint in two services produces two issues.",
+      "Wrong: custom fingerprints work on any error span and take precedence over default grouping."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/error_grouping/#custom-grouping",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-005",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "easy",
+    "q": "In the Error Tracking Explorer, some issues in the list carry a `New` tag. What does this tag indicate?",
+    "options": [
+      "The issue was first seen less than two days ago and is still in FOR REVIEW",
+      "The issue first appeared in the most recently deployed `version` of the service",
+      "The issue was created in the last 24 hours, whatever its current status"
+    ],
+    "answer": 0,
+    "explanation": "The explorer tags an issue `New` when it was first seen less than two days ago and is in the FOR REVIEW state. `New` is a tag on the issue list, not one of the five issue statuses.",
+    "notes": [
+      "Correct: `New` means first seen less than two days ago and still in FOR REVIEW.",
+      "Wrong: `New` is based on when the issue was first seen; the version-related tag is `Regression`, for a RESOLVED issue that recurs in a newer version.",
+      "Wrong: the window is two days, not 24 hours, and the issue must be in FOR REVIEW."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/explorer/#explore-your-issues",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-006",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "medium",
+    "q": "An on-call engineer opens a FOR REVIEW issue and creates a work item from it in the team's ticketing tool. They do not touch the status. What happens to the issue's status?",
+    "options": [
+      "It stays FOR REVIEW until someone changes it manually.",
+      "It moves to IGNORED until the work item is closed.",
+      "It moves to REVIEWED automatically."
+    ],
+    "answer": 2,
+    "explanation": "Error Tracking automatically marks an issue REVIEWED when it is assigned or when a work item is created from it.",
+    "notes": [
+      "Wrong: creating a work item is one of the automatic review triggers.",
+      "Wrong: IGNORED is for issues that need no action; work items do not ignore issues.",
+      "Correct: assigning the issue or creating a work item from it auto-marks it REVIEWED."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/issue_states/#automatic-review",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-007",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "medium",
+    "q": "A service does not set a `version` tag. One of its issues has had no new errors for 16 days and nobody has triaged it. What does Error Tracking do?",
+    "options": [
+      "Nothing, because automatic resolution only works when `version` tags are set",
+      "It automatically marks the issue RESOLVED",
+      "It automatically marks the issue IGNORED"
+    ],
+    "answer": 1,
+    "explanation": "Without `version` tags, Error Tracking auto-resolves an issue when no new errors have been reported for it in the last 14 days.",
+    "notes": [
+      "Wrong: auto-resolution also works without version tags, using a 14-day no-new-errors rule.",
+      "Correct: no new errors in 14 days auto-resolves the issue.",
+      "Wrong: inactivity leads to RESOLVED, not IGNORED; IGNORED is set by users."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/issue_states/#automatic-resolution",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-008",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "medium",
+    "q": "An issue was marked RESOLVED after a fix shipped in version 2.3. A week later the same error occurs in version 2.4 of the service. What does Error Tracking do?",
+    "options": [
+      "It reopens the same issue in FOR REVIEW and tags it Regression.",
+      "It creates a new issue with a Regression tag and leaves the old one RESOLVED.",
+      "It keeps the issue RESOLVED and only increases its occurrence count."
+    ],
+    "answer": 0,
+    "explanation": "Regression detection moves a RESOLVED issue back to FOR REVIEW with a Regression tag when the error recurs in a newer version, so all the issue's context is kept without duplication.",
+    "notes": [
+      "Correct: the existing issue is reopened to FOR REVIEW and tagged Regression.",
+      "Wrong: regressions reopen the existing issue instead of duplicating it.",
+      "Wrong: a recurrence in a newer version triggers a regression and a status change."
+    ],
+    "ref": "https://docs.datadoghq.com/error_tracking/regression_detection/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-009",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "easy",
+    "q": "A health-check client throws an expected, non-actionable error thousands of times a day. The team wants Error Tracking to stop collecting it and stop counting it toward billing. Which status should they set on the issue?",
+    "options": [
+      "IGNORED",
+      "RESOLVED",
+      "EXCLUDED"
+    ],
+    "answer": 2,
+    "explanation": "EXCLUDED stops collecting new errors for the issue, and they no longer count toward usage or billing. Excluded issues remain visible in the IGNORED tab.",
+    "notes": [
+      "Wrong: IGNORED only marks the issue as needing no action; unlike EXCLUDED, it does not stop collection or billing.",
+      "Wrong: RESOLVED means fixed; a recurrence would trigger a regression.",
+      "Correct: EXCLUDED stops collection and removes the errors from billing."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/issue_states/#excluding-an-issue",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-010",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "medium",
+    "q": "In the `web-store` service, an exception raised in the child span `cart.lookup` propagates up to the service entry span `GET /cart`. Both spans carry `error.type`, `error.message` and `error.stack`. Which error does Error Tracking keep for this service?",
+    "options": [
+      "Both errors, counted as two occurrences of the same issue",
+      "Only the top-most error, on the `GET /cart` span",
+      "Only the error on `cart.lookup`, where the exception was raised"
+    ],
+    "answer": 1,
+    "explanation": "If an error is reported multiple times within a service, Error Tracking keeps only the top-most error. Here that is the error on the service entry span `GET /cart`.",
+    "notes": [
+      "Wrong: an error reported several times in one service is not counted once per span; only one is kept.",
+      "Correct: only the top-most error within the service is kept.",
+      "Wrong: the deepest span is not the one kept; Error Tracking keeps the top-most error in the service."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/#use-span-attributes-to-track-error-spans",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-011",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "easy",
+    "q": "A team wants an Error Tracking monitor that alerts whenever an error appears for the first time or a resolved issue regresses. Which alerting condition should they choose?",
+    "options": [
+      "New Issue",
+      "High Impact",
+      "Regression"
+    ],
+    "answer": 0,
+    "explanation": "The New Issue condition alerts when an issue occurs for the first time or a regression occurs. Regressions move back to For Review, so New Issue monitors cover them by default.",
+    "notes": [
+      "Correct: New Issue covers both first occurrences and regressions.",
+      "Wrong: High Impact alerts on issues with many impacted end users.",
+      "Wrong: there is no separate Regression condition; only New Issue and High Impact exist."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/monitors/#select-the-alerting-condition",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-012",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "hard",
+    "q": "An engineer creates a New Issue monitor, selects Backend issues and chooses \"Define your alert metric\". Which suggested metric can they use?",
+    "options": [
+      "Impacted Users, counting distinct user emails on error spans",
+      "Impacted Sessions, once RUM and APM are connected",
+      "Error Occurrences only"
+    ],
+    "answer": 2,
+    "explanation": "The suggested metrics are Error Occurrences, Impacted Users and Impacted Sessions. When All or Backend issues are selected, only Error Occurrences is available.",
+    "notes": [
+      "Wrong: Impacted Users is not offered when Backend issues are selected.",
+      "Wrong: Impacted Sessions is not offered for All or Backend issues.",
+      "Correct: with All or Backend selected, only Error Occurrences is available."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/monitors/#define-alert-conditions",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-013",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "medium",
+    "q": "A High Impact Error Tracking monitor keeps notifying about a known, harmless issue. The team wants to stop notifications for that issue only, without editing the monitor. What should they do?",
+    "options": [
+      "Set the issue to REVIEWED, because High Impact monitors only alert on FOR REVIEW issues",
+      "Set the issue to IGNORED, which mutes it from monitor notifications",
+      "Schedule a monitor downtime, because issue states do not affect Error Tracking monitors"
+    ],
+    "answer": 1,
+    "explanation": "Error Tracking monitors use issue states: issues marked IGNORED are automatically muted from monitor notifications. High Impact monitors alert on issues that are For Review or Reviewed.",
+    "notes": [
+      "Wrong: High Impact monitors alert on both For Review and Reviewed issues.",
+      "Correct: IGNORED issues are automatically muted from monitor notifications.",
+      "Wrong: Error Tracking monitors do use issue states; marking the issue IGNORED is the documented way to mute it."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/monitors/#muting-monitors",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-014",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "hard",
+    "q": "An issue was first seen on November 1. Three commits modified lines in its stack trace: A on July 1, B on October 20, and C on November 3. Which commit does Error Tracking show as the suspect commit?",
+    "options": [
+      "Commit B",
+      "Commit C",
+      "Commit A"
+    ],
+    "answer": 0,
+    "explanation": "A suspect commit must modify a line in the stack trace, be authored before the first error occurrence and no more than 90 days before it, and be the most recent commit meeting these rules. Only B qualifies.",
+    "notes": [
+      "Correct: B is the most recent commit authored before the first occurrence and within 90 days.",
+      "Wrong: C was authored after the first error occurrence.",
+      "Wrong: A was authored more than 90 days before the first occurrence."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/suspect_commits/#suspect-commit-criteria",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-015",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "medium",
+    "q": "To get suspect commits and inline code snippets in Error Tracking, a team links a containerized Python service to its Git repository with environment variables. Which pair should they set?",
+    "options": [
+      "`DD_VERSION` and `DD_GIT_REPOSITORY_URL`",
+      "`DD_COMMIT_SHA` and `DD_REPOSITORY_URL`",
+      "`DD_GIT_COMMIT_SHA` and `DD_GIT_REPOSITORY_URL`"
+    ],
+    "answer": 2,
+    "explanation": "The `DD_GIT_*` environment variables `DD_GIT_COMMIT_SHA` and `DD_GIT_REPOSITORY_URL` embed Git information so the SDK can tag spans for Source Code Integration.",
+    "notes": [
+      "Wrong: `DD_VERSION` sets the version tag, not the commit SHA.",
+      "Wrong: these names lack the `GIT_` part of the documented variables.",
+      "Correct: `DD_GIT_COMMIT_SHA` and `DD_GIT_REPOSITORY_URL` link telemetry to a commit and repository."
+    ],
+    "ref": "https://docs.datadoghq.com/source_code/service-mapping/python/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-016",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "easy",
+    "q": "Remote Configuration is not available for a Java service, so Exception Replay cannot be turned on from the in-app settings page. Which environment variable enables it?",
+    "options": [
+      "`DD_DYNAMIC_INSTRUMENTATION_ENABLED=true`",
+      "`DD_EXCEPTION_REPLAY_ENABLED=true`",
+      "`DD_ERROR_TRACKING_REPLAY_ENABLED=true`"
+    ],
+    "answer": 1,
+    "explanation": "If in-app enablement is not available, set `DD_EXCEPTION_REPLAY_ENABLED=true`. The environment variable does not need Remote Configuration and overrides the in-app setting.",
+    "notes": [
+      "Wrong: this enables Dynamic Instrumentation, not Exception Replay.",
+      "Correct: `DD_EXCEPTION_REPLAY_ENABLED=true` enables Exception Replay without Remote Configuration.",
+      "Wrong: this is not a documented Datadog environment variable."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/exception_replay/#requirements--setup",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-017",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "medium",
+    "q": "Exception Replay is enabled on a service. One instance throws the same exception type hundreds of times in an hour, but only one snapshot with variable values appears. Why?",
+    "options": [
+      "Snapshots are limited to one per exception type per instance per hour.",
+      "Snapshots are limited to one per issue per day across all instances.",
+      "Only the first exception after each deployment is captured."
+    ],
+    "answer": 0,
+    "explanation": "Exception Replay snapshots are rate-limited to one snapshot per exception type per instance per hour. In some runtimes a snapshot is captured only after the second occurrence.",
+    "notes": [
+      "Correct: the rate limit is one snapshot per exception type per instance per hour.",
+      "Wrong: the limit is per instance and per hour, not per issue per day.",
+      "Wrong: captures are rate-limited by time, not tied to deployments."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/exception_replay/#missing-variable-values",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-018",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "hard",
+    "q": "Exception Replay is enabled and supported, but issues never show captured variable values. The org's first logs index has an exclusion filter that drops logs from unknown sources. What should the team do?",
+    "options": [
+      "Add a span retention filter on `@error.debug_info_captured:true` so snapshots are kept.",
+      "Set `DD_LOGS_INJECTION=true` so snapshots are attached to the error spans.",
+      "Add a `source:dd_debugger` logs index, with no sampling, ahead of the other indexes."
+    ],
+    "answer": 2,
+    "explanation": "Exception Replay snapshots are emitted as logs linked to spans. A dedicated logs index matching `source:dd_debugger` must take precedence over other indexes, because the first matching index wins.",
+    "notes": [
+      "Wrong: `@error.debug_info_captured:true` is a query to find errors that have snapshots; snapshots are logs, not spans.",
+      "Wrong: log injection adds trace IDs to app logs; it does not store snapshots.",
+      "Correct: snapshots are `source:dd_debugger` logs and need an index that matches them first."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/error_tracking/exception_replay/#create-a-logs-index-for-exception-replay-snapshots",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-019",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "medium",
+    "q": "A Python service (ddtrace 3.8+) catches exceptions in its own code and returns fallback values, so they never reach Error Tracking. Without changing code, how can the team report these handled errors from their own code only?",
+    "options": [
+      "Set `DD_ERROR_TRACKING_HANDLED_ERRORS_INCLUDE=all`",
+      "Set `DD_ERROR_TRACKING_HANDLED_ERRORS=user`",
+      "Set `DD_TRACE_REPORT_HANDLED_ERRORS=true`"
+    ],
+    "answer": 1,
+    "explanation": "`DD_ERROR_TRACKING_HANDLED_ERRORS` accepts `user`, `third_party` or `all` to report handled errors from user code, third-party packages, or both. Handled errors are attached to spans as span events and reported to Error Tracking.",
+    "notes": [
+      "Wrong: `_INCLUDE` takes a list of full module names, not `all`.",
+      "Correct: `user` reports handled errors from the application's own code.",
+      "Wrong: this is not a documented ddtrace environment variable."
+    ],
+    "ref": "https://docs.datadoghq.com/error_tracking/backend/capturing_handled_errors/python/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-err-020",
+    "topic": "Insight Discovery",
+    "subtopic": "Error Tracking",
+    "difficulty": "hard",
+    "q": "An APM issue in Error Tracking shows its occurrence count and timeline, but the issue panel says no error samples were found. What should the team do to see samples?",
+    "options": [
+      "Retain the related error spans with a custom retention filter.",
+      "Raise the Error Tracking daily rate limit on the settings page.",
+      "Enable Exception Replay on the service."
+    ],
+    "answer": 0,
+    "explanation": "All errors are processed, but only retained errors appear as samples. For APM, the error spans must be retained with a custom retention filter.",
+    "notes": [
+      "Correct: spans must be retained by a custom retention filter for samples to show.",
+      "Wrong: the errors are already being processed; the rate limit caps ingestion, not sample retention.",
+      "Wrong: Exception Replay adds variable snapshots; it does not retain error spans."
+    ],
+    "ref": "https://docs.datadoghq.com/error_tracking/troubleshooting/#no-error-samples-found-for-an-issue",
+    "verified": "2026-11"
+  }
+]

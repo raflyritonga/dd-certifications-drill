@@ -1,0 +1,632 @@
+[
+  {
+    "id": "ap-samp-001",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "easy",
+    "q": "With Datadog's default head-based sampling, where is the decision to keep or drop a trace made?",
+    "options": [
+      "In the Datadog backend after the whole trace arrives, based on its errors and latency",
+      "At the start of the root span, then passed downstream in the request context",
+      "Separately in each service's SDK, at the moment each of its own spans finishes"
+    ],
+    "answer": 1,
+    "explanation": "Head-based sampling decides at the start of the root span and propagates the decision downstream (for example in HTTP headers), so the trace is kept or dropped as a whole.",
+    "notes": [
+      "Wrong: that describes tail-style sampling after the trace completes, not head-based sampling.",
+      "Correct: the root span decides and the decision travels with the request context.",
+      "Wrong: per-service decisions would create incomplete traces; the decision is shared from the root."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#head-based-sampling",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-002",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "On the Ingestion Control page, the services with the highest Downstream Bytes/s all use the Agent's default sampling, with no SDK sampling rules. The team wants to lower ingestion across all of them with one change. What should they do?",
+    "options": [
+      "Lower `DD_APM_TARGET_TPS` on the Datadog Agents",
+      "Lower `DD_TRACE_RATE_LIMIT` on each of those services",
+      "Lower the retention rate of the Intelligent Retention Filter"
+    ],
+    "answer": 0,
+    "explanation": "When top services use the Agent's automatic rates, lowering the Agent's target traces per second (`DD_APM_TARGET_TPS`, default 10) reduces head-based volume for every service reporting to that Agent.",
+    "notes": [
+      "Correct: the Agent target TPS drives the automatic rates of all services on that Agent.",
+      "Wrong: the SDK rate limiter is ignored when the Agent default mechanism is used.",
+      "Wrong: retention filters control indexing, not ingestion, and the Intelligent Retention Filter has no retention rate to tune."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/trace_ingestion_volume_control/#globally-configure-the-ingestion-sampling-rate-at-the-agent-level",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-003",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "easy",
+    "q": "A service's traces are sampled by a rule set in `DD_TRACE_SAMPLING_RULES`. Which ingestion reason do the spans of those traces carry?",
+    "options": [
+      "`ingestion_reason:auto`",
+      "`ingestion_reason:manual`",
+      "`ingestion_reason:rule`"
+    ],
+    "answer": 2,
+    "explanation": "All spans from a trace sampled using an SDK sampling configuration are tagged with the ingestion reason `rule`.",
+    "notes": [
+      "Wrong: `auto` is for traces sampled by the Agent's automatic rates.",
+      "Wrong: `manual` is for in-code force keep or drop decisions.",
+      "Correct: SDK user-defined sampling rules produce `ingestion_reason:rule`."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#in-sdks-user-defined-rules",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-004",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "A Python service named `shop` runs with:\n\nDD_TRACE_SAMPLING_RULES='[{\"service\": \"shop\", \"resource\": \"GET /checkout\", \"sample_rate\": 1},{\"service\": \"shop\", \"sample_rate\": 0.2}]'\n\nWhat sampling rate applies to traces that start at the `GET /cart` resource of `shop`?",
+    "options": [
+      "100%, because the first rule applies to the whole service",
+      "20%, from the second rule",
+      "The Agent's automatic rate, because `GET /cart` is not listed"
+    ],
+    "answer": 1,
+    "explanation": "The first rule only matches `GET /checkout`; other endpoints of the service fall through to the service-level rule at 0.2, so 20% of their traces are kept.",
+    "notes": [
+      "Wrong: the first rule is scoped to the `GET /checkout` resource only.",
+      "Correct: `GET /cart` matches the service-only rule with `sample_rate` 0.2.",
+      "Wrong: the service-level rule matches every other resource of `shop`, so the Agent rate does not apply."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#in-sdks-user-defined-rules",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-005",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "A Go service still sets `DD_TRACE_SAMPLE_RATE=0.1`. According to the current docs, what should replace it?",
+    "options": [
+      "`DD_SPAN_SAMPLING_RULES='[{\"sample_rate\":0.1}]'`",
+      "`DD_APM_TARGET_TPS=0.1` on the Agent",
+      "`DD_TRACE_SAMPLING_RULES='[{\"sample_rate\":0.1}]'`"
+    ],
+    "answer": 2,
+    "explanation": "`DD_TRACE_SAMPLE_RATE` is deprecated for Go (and Java and Python); the docs say to express the same rate as a rule in `DD_TRACE_SAMPLING_RULES`, for example `[{\"sample_rate\":0.1}]`.",
+    "notes": [
+      "Wrong: span sampling rules keep individual spans, not whole traces.",
+      "Wrong: the Agent target is a traces-per-second number, not a percentage.",
+      "Correct: a rule with only `sample_rate` replaces the deprecated global rate."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#in-sdks-user-defined-rules",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-006",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "A team sets this on a busy Python service and does not set `DD_TRACE_RATE_LIMIT`:\n\nDD_TRACE_SAMPLING_RULES='[{\"service\": \"api\", \"sample_rate\": 1}]'\n\nHow many traces can each instance of `api` ingest through this rule?",
+    "options": [
+      "Up to 100 traces per second",
+      "Up to 10 traces per second",
+      "No limit, because `sample_rate` is 1"
+    ],
+    "answer": 0,
+    "explanation": "When sampling rules are used, the SDK rate limiter applies; if `DD_TRACE_RATE_LIMIT` is not set, the limit is 100 traces per second per service instance.",
+    "notes": [
+      "Correct: the default SDK rate limit is 100 traces per second per service instance.",
+      "Wrong: 10 traces per second is the Agent's default target for automatic sampling.",
+      "Wrong: the rate limiter still caps ingestion even with a 100% sample rate."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#in-sdks-user-defined-rules",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-007",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "hard",
+    "q": "A service has a 100% SDK sampling rule. Its Traffic Breakdown column on the Ingestion Control page shows a large orange segment with a warning icon. What does this mean, and what fixes it?",
+    "options": [
+      "Traces were dropped because the Agent hit its CPU or memory limit; give the Agent more resources",
+      "Traces were not kept because of the sampling rate; raise `DD_APM_TARGET_TPS` on the Agent",
+      "Traces were dropped by the SDK rate limiter; raise `DD_TRACE_RATE_LIMIT` for the service"
+    ],
+    "answer": 2,
+    "explanation": "Orange is the share of complete traces dropped by the SDK rate limiter (100 traces per second by default when rules set a percentage); the warning appears when 25% or more is dropped this way.",
+    "notes": [
+      "Wrong: drops from Agent CPU or RAM limits are shown in red.",
+      "Wrong: traces not kept by sampling rates are gray, and the Agent target does not apply to a service with rules.",
+      "Correct: orange is the SDK rate limiter, which `DD_TRACE_RATE_LIMIT` controls."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_controls/#traffic-breakdown",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-008",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "A service sets `DD_TRACE_SAMPLING_RULES` locally to keep 50% of `GET /checkout`. Later, an engineer adds a remote resource-based rule of 10% for the same resource from the Ingestion Control page. Which rate applies?",
+    "options": [
+      "50%, because environment variables set at deploy time override UI settings",
+      "10%, because remotely configured sampling rules take precedence over local ones",
+      "The Agent's automatic rate, because conflicting rules cancel each other out"
+    ],
+    "answer": 1,
+    "explanation": "Remotely configured sampling rules (resource-based sampling) are first in the precedence order, above adaptive sampling and local `DD_TRACE_SAMPLING_RULES`.",
+    "notes": [
+      "Wrong: the docs state Remote > Local.",
+      "Correct: remote resource-based rules have the highest precedence.",
+      "Wrong: conflicting rules do not cancel; the higher-precedence rule wins."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_controls/#sampling-rules-precedence",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-009",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "easy",
+    "q": "A team wants Datadog to adjust sampling rates for a group of services so that their ingestion lands on a monthly volume target, while still capturing traces for low-traffic endpoints. Which feature fits?",
+    "options": [
+      "Adaptive sampling",
+      "The rare sampler",
+      "The Intelligent Retention Filter"
+    ],
+    "answer": 0,
+    "explanation": "Adaptive sampling takes a monthly ingested volume target and uses Remote Configuration to adjust rates per environment, service and resource, keeping at least one trace per combination every 5 minutes.",
+    "notes": [
+      "Correct: adaptive sampling is built around a monthly ingestion target.",
+      "Wrong: the rare sampler catches rare span combinations at a fixed per-Agent rate, with no monthly target.",
+      "Wrong: the Intelligent Retention Filter decides indexing, not ingestion volume."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/adaptive_sampling/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-010",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "On Agent 7.50, a team expects the Agent to catch traces from low-traffic endpoints that head-based sampling misses, but they see no `ingestion_reason:rare` spans. What is the most likely reason?",
+    "options": [
+      "The rare sampler only runs for services that have `DD_TRACE_SAMPLING_RULES` set",
+      "The rare sampler is disabled by default and must be turned on with `DD_APM_ENABLE_RARE_SAMPLER`",
+      "The rare sampler shares the `DD_APM_ERROR_TPS` budget, which is already used up by error traces"
+    ],
+    "answer": 1,
+    "explanation": "Since Agent 6/7.41.0 the rare sampler is not enabled by default; enable it with `apm_config.enable_rare_sampler` / `DD_APM_ENABLE_RARE_SAMPLER` or from the Ingestion Control page.",
+    "notes": [
+      "Wrong: it is the opposite; error and rare samplers are ignored for services with SDK sampling rules.",
+      "Correct: on Agent 7.41.0 and later the rare sampler defaults to off.",
+      "Wrong: the rare sampler has its own limit of 5 traces per second per Agent."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#rare-traces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-011",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "hard",
+    "q": "After the team adds `DD_TRACE_SAMPLING_RULES` with a 5% rate for the `payments` service, the Ingestion Reasons breakdown no longer shows any `error` ingestion for `payments`, even though errors still happen. Why?",
+    "options": [
+      "The Agent's error and rare samplers are ignored for services that have SDK sampling rules",
+      "The SDK rate limiter drops error traces before other traces once a rule is set",
+      "Setting a sampling rule automatically sets `DD_APM_ERROR_TPS` to `0` on the Agent"
+    ],
+    "answer": 0,
+    "explanation": "The docs note that error and rare samplers are ignored for services for which you set library sampling rules, so only the rule decides which `payments` traces are kept.",
+    "notes": [
+      "Correct: services with SDK sampling rules are skipped by the error and rare samplers.",
+      "Wrong: the rate limiter drops traces at the root by rate, not by error status.",
+      "Wrong: SDK rules do not change Agent settings; `DD_APM_ERROR_TPS` stays as configured for other services."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#error-and-rare-traces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-012",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "A developer sets Manual Keep on a span in a downstream service, after the request context has already been passed on to other services. What can happen?",
+    "options": [
+      "The whole trace is always kept, because Manual Keep overrides every other sampler",
+      "The span is kept and tagged `ingestion_reason:rule` instead of `manual`",
+      "Spans in other services may not be kept, so the trace can look incomplete"
+    ],
+    "answer": 2,
+    "explanation": "The docs say to set Manual Keep before context propagation; if it is set afterwards, the entire trace may not be kept across services, and a keep on a non-root span can make the trace look incomplete.",
+    "notes": [
+      "Wrong: the docs warn the trace may not be kept across services, and it can still be dropped by Agent or server rules.",
+      "Wrong: force keep and drop use `ingestion_reason:manual`.",
+      "Correct: a late keep decision does not reach the services that already received the context."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#force-keep-and-drop",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-013",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "A team builds span-based metrics from the `http.request` spans of `my-service`. They want the metrics to reflect all traffic, without ingesting 100% of full traces. What should they configure?",
+    "options": [
+      "`DD_TRACE_SAMPLING_RULES` with `sample_rate: 1` for `my-service` and its resources",
+      "`DD_SPAN_SAMPLING_RULES` for `my-service` and `http.request` with `sample_rate: 1.0`",
+      "A custom retention filter on `service:my-service` with the retention rate set to 100%"
+    ],
+    "answer": 1,
+    "explanation": "Single span sampling rules (`DD_SPAN_SAMPLING_RULES`) keep individual spans dropped by head-based sampling, so span-based metrics can use 100% of traffic without ingesting complete traces.",
+    "notes": [
+      "Wrong: a 100% trace sampling rule ingests the full traces, which the team wants to avoid.",
+      "Correct: single span sampling keeps just the spans needed for the metrics.",
+      "Wrong: retention filters only index already-ingested spans; they cannot add ingestion."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#single-spans",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-014",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "hard",
+    "q": "A team sets `DD_SPAN_SAMPLING_RULES='[{\"service\": \"auth\", \"sample_rate\": 0}]'`, hoping to remove `auth` spans from traces that head-based sampling keeps. What is the result?",
+    "options": [
+      "`auth` spans are removed from every kept trace, which then appears partial",
+      "Every trace that contains an `auth` span is dropped entirely",
+      "Spans kept by head-based sampling are not affected"
+    ],
+    "answer": 2,
+    "explanation": "Single span sampling rules cannot drop spans that head-based sampling keeps; they can only keep extra spans that head-based sampling dropped.",
+    "notes": [
+      "Wrong: single span rules never remove spans from kept traces.",
+      "Wrong: single span rules do not make trace-level drop decisions.",
+      "Correct: single span rules only add spans that head-based sampling dropped."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/ingestion_mechanisms/#single-spans",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-015",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "On the Ingestion Control page, a service is flagged `Legacy Setup`. What should the team do?",
+    "options": [
+      "Remove its App Analytics settings, such as `DD_TRACE_ANALYTICS_ENABLED`, and rely on Agent and SDK sampling",
+      "Set `DD_TRACE_ANALYTICS_ENABLED=true` globally so that all web integrations report analyzed spans again",
+      "Upgrade the Agent to 7.53.0 or later so that the service is onboarded to adaptive sampling automatically"
+    ],
+    "answer": 0,
+    "explanation": "`Legacy Setup` marks services using deprecated App Analytics options; to migrate, remove those options and use the Agent and SDK sampling mechanisms (and retention filters for indexing).",
+    "notes": [
+      "Correct: the docs say to remove legacy App Analytics options and use the current ingestion mechanisms.",
+      "Wrong: that enables the deprecated App Analytics mechanism the flag is warning about.",
+      "Wrong: adaptive sampling needs Agent 7.53.0, but upgrading does not remove legacy settings or onboard anything."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/legacy_app_analytics/#migrate-to-the-new-configuration-options",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-016",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "easy",
+    "q": "A team lowers a Datadog-instrumented service's ingestion sampling rate from 100% to 5%. What happens to its `trace.*` request, error and latency metrics?",
+    "options": [
+      "They stay accurate, because they are calculated from 100% of the traffic",
+      "They fall to about 5% of their previous values, in line with the new rate",
+      "They are rebuilt from indexed spans only, so retention filters drive them"
+    ],
+    "answer": 0,
+    "explanation": "Request, error and latency (RED) trace metrics are calculated from 100% of application traffic regardless of ingestion sampling, so lowering the rate for a Datadog-instrumented service does not change them (OpenTelemetry SDK or Collector sampling is an exception).",
+    "notes": [
+      "Correct: ingestion controls do not affect APM trace metrics.",
+      "Wrong: trace metrics are computed before sampling, so they are not scaled down.",
+      "Wrong: trace metrics do not depend on retention filters or indexing."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/trace_ingestion_volume_control/#effects-of-reducing-trace-ingestion-volume",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-017",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "Which spans feed a custom metric created in APM > Generate Metrics?",
+    "options": [
+      "Only spans indexed by custom retention filters",
+      "100% of application traffic, including spans dropped by sampling",
+      "All ingested spans, whether or not a retention filter indexes them"
+    ],
+    "answer": 2,
+    "explanation": "Custom metrics are created from spans ingested by APM, regardless of whether a retention filter indexes them; spans dropped by sampling cannot generate metrics.",
+    "notes": [
+      "Wrong: span-based metrics do not require spans to be indexed.",
+      "Wrong: dropped spans cannot generate metrics; only trace metrics cover 100% of traffic.",
+      "Correct: generation runs on every ingested span, independent of retention."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/generate_metrics/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-018",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "hard",
+    "q": "A team has two span-based metrics on checkout spans: a count of spans and a distribution of `@duration`. They then lower the ingestion sampling rate for the checkout service. Which statement is true?",
+    "options": [
+      "Neither metric changes, because metrics from spans use 100% of traffic",
+      "The count metric drops, while the duration distribution stays representative",
+      "The duration distribution becomes skewed, while the count stays accurate"
+    ],
+    "answer": 1,
+    "explanation": "Metrics from spans use ingested spans, so lower sampling reduces any count metric; distribution metrics such as duration stay representative because sampling is mostly uniform.",
+    "notes": [
+      "Wrong: only `trace.*` metrics use 100% of traffic; span-based metrics follow ingestion.",
+      "Correct: counts shrink with sampling, latency distributions keep their shape.",
+      "Wrong: it is the reverse; the count is impacted and the distribution is not."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/trace_ingestion_volume_control/#metrics-from-spans",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-019",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "easy",
+    "q": "An analyst graphs span counts from the past week in a notebook. By default, which spans can the query use?",
+    "options": [
+      "Only spans indexed by custom retention filters, including default filters",
+      "Spans from custom retention filters and the Intelligent Retention Filter",
+      "All ingested spans, because notebooks read the Live Search data"
+    ],
+    "answer": 1,
+    "explanation": "By default, spans indexed by custom retention filters and the Intelligent Retention Filter are included in Trace Explorer aggregated views, dashboards and notebook queries.",
+    "notes": [
+      "Wrong: Intelligent Retention Filter spans are included too.",
+      "Correct: both custom and Intelligent filter spans are available.",
+      "Wrong: Live Search only covers the last 15 minutes and cannot be exported to dashboards."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#in-the-trace-explorer-dashboards-and-notebooks",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-020",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "easy",
+    "q": "To cut the ingested-bytes part of the APM bill, an engineer disables several custom retention filters. What effect does this have on ingestion?",
+    "options": [
+      "None, because retention filters only decide which ingested spans are indexed",
+      "Ingestion drops, because the Agent stops sending spans that match no filter",
+      "Ingestion drops 15 days later, when the indexed data expires"
+    ],
+    "answer": 0,
+    "explanation": "Retention filters do not affect which traces the Agent collects and sends (ingests); ingestion is controlled with ingestion controls.",
+    "notes": [
+      "Correct: retention filters work only on spans that were already ingested.",
+      "Wrong: the Agent does not evaluate retention filters.",
+      "Wrong: indexed data expiring has nothing to do with ingested volume."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#retention-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-021",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "easy",
+    "q": "A span is indexed by a custom retention filter. How long can it be searched in the Trace Explorer?",
+    "options": [
+      "15 minutes",
+      "30 days",
+      "15 days"
+    ],
+    "answer": 2,
+    "explanation": "Spans indexed through a custom retention filter are retained and searchable for 15 days.",
+    "notes": [
+      "Wrong: 15 minutes is the Live Search window for all ingested spans.",
+      "Wrong: 30 days applies to spans indexed by the Intelligent Retention Filter.",
+      "Correct: custom retention filters keep spans for 15 days."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#indexed-spans-search-with-15-day-retention",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-022",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "easy",
+    "q": "The Datadog Intelligent Retention Filter is made up of which mechanisms?",
+    "options": [
+      "The `Error Default` and `Synthetics Default` filters",
+      "Head-based sampling and rare sampling",
+      "Diversity sampling and one percent flat sampling"
+    ],
+    "answer": 2,
+    "explanation": "The always-on Intelligent Retention Filter is composed of diversity sampling and one percent flat sampling.",
+    "notes": [
+      "Wrong: those are default retention filters, separate from the Intelligent filter.",
+      "Wrong: head-based and rare sampling are ingestion mechanisms, not retention.",
+      "Correct: diversity sampling plus 1% flat sampling."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#datadog-intelligent-retention-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-023",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "Finance asks whether spans kept by the Intelligent Retention Filter add to the indexed spans bill. What is the answer?",
+    "options": [
+      "Yes, they are billed like spans from any other retention filter",
+      "No, they do not count toward indexed span usage",
+      "Only the 1% flat sample is billed; diversity sampling is free"
+    ],
+    "answer": 1,
+    "explanation": "Spans indexed by the Intelligent Retention Filter (diversity sampling and 1% flat sampling) are not counted toward indexed span usage and do not impact the bill.",
+    "notes": [
+      "Wrong: the Intelligent filter is explicitly excluded from indexed span usage.",
+      "Correct: neither part of the Intelligent filter counts toward usage.",
+      "Wrong: both diversity and flat sampling are free of indexed span usage."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#datadog-intelligent-retention-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-024",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "For each environment, service, operation and resource combination, diversity sampling keeps high-latency spans at which percentiles?",
+    "options": [
+      "`p75`, `p90` and `p95`",
+      "`p50`, `p95` and `p99`",
+      "`p90`, `p99` and `p99.9`"
+    ],
+    "answer": 0,
+    "explanation": "Diversity sampling retains high latency spans at the `p75`, `p90` and `p95` percentiles (with their traces) for each environment, service, operation and resource.",
+    "notes": [
+      "Correct: p75, p90 and p95 are the documented percentiles.",
+      "Wrong: p50 and p99 are not the diversity sampling percentiles.",
+      "Wrong: diversity sampling does not target p99 or p99.9."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#diversity-sampling",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-025",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "hard",
+    "q": "An analyst uses the Trace Explorer to compare how many checkouts come from `basic`, `enterprise` and `premium` merchants. They want the proportions to reflect real traffic. What should they add to the query?",
+    "options": [
+      "`retained_by:diversity_sampling`",
+      "`-retained_by:retention_filter`",
+      "`-retained_by:diversity_sampling`"
+    ],
+    "answer": 2,
+    "explanation": "Diversity sampling is biased toward errors and high latency, so excluding it with `-retained_by:diversity_sampling` keeps the analysis on data that is proportionally representative.",
+    "notes": [
+      "Wrong: this keeps only the biased diversity dataset.",
+      "Wrong: this removes the custom-filter data and keeps the biased diversity data.",
+      "Correct: excluding diversity sampling gives realistic proportions."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/guide/leveraging_diversity_sampling/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-026",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "easy",
+    "q": "Which retention filter is enabled by default to index error spans, and what is its default query?",
+    "options": [
+      "`Error Default`, with the query `status:error`",
+      "`Error Default`, with the query `ingestion_reason:error`",
+      "`Intelligent Errors`, with the query `@error.type:*`"
+    ],
+    "answer": 0,
+    "explanation": "The `Error Default` retention filter indexes error spans with `status:error`; its query and retention rate are configurable and it can be disabled.",
+    "notes": [
+      "Correct: `Error Default` uses `status:error`.",
+      "Wrong: `ingestion_reason:error` marks spans caught by the Agent error sampler, not the filter query.",
+      "Wrong: no filter by that name exists; errors in the Intelligent filter come from diversity sampling."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#default-retention-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-027",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "Retention filter A, at the top of the list, keeps 10% of spans matching `resource_name:\"POST /hello_world\"`. Filter B, lower in the list, keeps 100% of `service:greeter`, which owns that resource. What happens to `POST /hello_world` spans not selected by filter A?",
+    "options": [
+      "Filter B indexes all of them, since its 100% rate covers every `greeter` span",
+      "They are not indexed by filter B, because filter A already processed them",
+      "The highest retention rate wins, so all of them are indexed"
+    ],
+    "answer": 1,
+    "explanation": "Filter order matters: a span that matches an earlier filter is either kept or dropped there, and a lower matching filter does not catch the already-processed span.",
+    "notes": [
+      "Wrong: lower filters never see spans that an earlier filter matched.",
+      "Correct: the first matching filter decides, so the other 90% stay unindexed by B.",
+      "Wrong: the retention rates are not compared; list order decides."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#retention-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-028",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "A team wants complete traces that contain `service:billing` spans to be queryable in Trace Queries. What should they set on their retention filter?",
+    "options": [
+      "A higher Span rate, with no other change",
+      "A Trace rate in addition to the Span rate",
+      "The query `retained_by:trace_retention_filter`"
+    ],
+    "answer": 1,
+    "explanation": "A Trace rate turns the filter into a trace-level filter that indexes all spans of matching traces, which makes them queryable in Trace Queries.",
+    "notes": [
+      "Wrong: a span-level filter only indexes the matching spans, so traces are not complete.",
+      "Correct: the Trace rate indexes whole traces for Trace Queries.",
+      "Wrong: `retained_by` is an attribute set on retained spans, not a way to configure a filter."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#create-your-own-retention-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-029",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "hard",
+    "q": "A trace analytics monitor on a low-traffic endpoint never alerts. The team has disabled the `Error Default` retention filter and has no custom filters, yet the endpoint's error spans appear in the Trace Explorer tagged `retained_by:diversity_sampling`. What is the cause?",
+    "options": [
+      "Trace analytics monitors only evaluate spans from the 15-minute Live Search window",
+      "Diversity-sampled spans are deleted after 15 minutes, before the monitor can run",
+      "Intelligent Retention Filter spans are excluded from trace analytics monitors"
+    ],
+    "answer": 2,
+    "explanation": "Spans indexed by the Intelligent Retention Filter (diversity sampling and 1% flat sampling) are excluded from APM trace analytics monitor evaluation, so the team needs a custom retention filter for the spans they want to alert on.",
+    "notes": [
+      "Wrong: trace analytics monitors evaluate indexed spans, not Live Search.",
+      "Wrong: diversity-sampled spans are retained for 30 days, not 15 minutes.",
+      "Correct: Intelligent filter spans do not count for trace analytics monitors."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#in-trace-analytics-monitors",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-samp-030",
+    "topic": "Application Instrumentation",
+    "subtopic": "Sampling vs Retention",
+    "difficulty": "medium",
+    "q": "Service `frontend` starts traces and makes the head-based sampling decision, then calls `cart` and `inventory`. If you group `datadog.estimated_usage.apm.ingested_bytes` by `sampling_service`, where do the bytes of `cart` spans go?",
+    "options": [
+      "To `sampling_service:frontend`",
+      "To `sampling_service:cart`",
+      "Split evenly between `frontend` and `cart`"
+    ],
+    "answer": 0,
+    "explanation": "The `sampling_service` dimension assigns ingested bytes to the service that makes the sampling decision, not the service that emits the span.",
+    "notes": [
+      "Correct: `frontend` made the decision, so it gets the downstream bytes.",
+      "Wrong: grouping by `service` (not `sampling_service`) would attribute them to `cart`.",
+      "Wrong: bytes are not split; they go to the deciding service."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/metrics/#what-is-the-sampling-service",
+    "verified": "2026-11"
+  }
+]

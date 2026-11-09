@@ -1,0 +1,422 @@
+[
+  {
+    "id": "ap-cat-001",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "easy",
+    "q": "A company has just started using Datadog and has not written any entity definitions yet. Which products populate the Catalog automatically by default?",
+    "options": [
+      "APM, Universal Service Monitoring, and RUM",
+      "APM, Log Management, and Infrastructure Monitoring host metrics",
+      "APM, Synthetic Monitoring, and Cloud Network Monitoring flows"
+    ],
+    "answer": 0,
+    "explanation": "By default, Catalog is pre-populated with entities detected through APM, eBPF-based Universal Service Monitoring, and RUM applications. Logs and infrastructure metrics can also feed it, but only through a manual import.",
+    "notes": [
+      "Correct: APM, USM, and RUM are the three default automatic discovery sources.",
+      "Wrong: logs and host metrics are imported manually from the Import Entries tab, not discovered by default.",
+      "Wrong: Synthetics and Cloud Network Monitoring are not automatic Catalog discovery sources."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/set_up/discover_entities/#automatic-discovery-with-apm-usm-and-rum",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-002",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "easy",
+    "q": "A team wants to keep its Catalog metadata in Git and sync it through the GitHub integration. Which file names does Datadog look for in the repository?",
+    "options": [
+      "`datadog.yaml` or `catalog.datadog.json`",
+      "`service.datadog.yaml` or `entity.datadog.yaml`",
+      "`.datadog/service.yaml` or `owners.datadog.yaml`"
+    ],
+    "answer": 1,
+    "explanation": "Datadog accepts both `service.datadog.yaml` and `entity.datadog.yaml` and scans for them throughout each repository it can read.",
+    "notes": [
+      "Wrong: `datadog.yaml` is the Agent's main config file, not an entity definition.",
+      "Correct: the GitHub and GitLab integrations scan for `service.datadog.yaml` and `entity.datadog.yaml`.",
+      "Wrong: these paths are not file names the Catalog scans for."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/set_up/create_entities/#create-the-entity-definition",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-003",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "easy",
+    "q": "A team wants the Catalog entry for its service to show the service's runbook and its GitHub source repository. Where do these go in a schema v3.0 entity definition?",
+    "options": [
+      "`metadata.contacts` entries with `type: runbook` and `type: github`",
+      "`integrations.github` and `integrations.runbook` blocks",
+      "`metadata.links` entries with `type: runbook` and `type: repo`"
+    ],
+    "answer": 2,
+    "explanation": "Runbooks, docs, and repositories are entries in the `links` field (under `metadata` in v3.0), each with a `name`, a `type` such as `runbook`, `doc`, or `repo`, a `url`, and an optional `provider` such as `github`. The docs say to use `links` for GitHub or GitLab source code links.",
+    "notes": [
+      "Wrong: `contacts` holds ways to reach the team, such as Slack or email, not runbooks or repos.",
+      "Wrong: `integrations` holds PagerDuty and Opsgenie settings; there is no `github` or `runbook` block.",
+      "Correct: runbooks and source repos are `links` entries with `type: runbook` and `type: repo`."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/entity_model/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-004",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "medium",
+    "q": "The `payments-team` owns a v3.0 entity, but the `sre-team` should also be listed as an operator contact for it. How is this expressed in the entity definition?",
+    "options": [
+      "Set `owner: payments-team` and list `sre-team` under `additionalOwners` with `type: operator`",
+      "Set `team: [payments-team, sre-team]` at the top level of the file so both teams are owners",
+      "Add `sre-team` under `spec.dependsOn` so it is linked to the entity as an operator dependency"
+    ],
+    "answer": 0,
+    "explanation": "Schema v3.0 supports multi-ownership: `team` became `owner`, and extra teams go in `additionalOwners`, each with a `name` and a `type`.",
+    "notes": [
+      "Correct: v3.0 uses `owner` plus `additionalOwners` entries such as `type: operator`.",
+      "Wrong: the top-level `team` field belongs to v2.x schemas and holds a single team.",
+      "Wrong: `dependsOn` declares dependencies on other entities, not owners."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/entity_model/#schema-structure",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-005",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "medium",
+    "q": "Several v2.2 service definitions use `application: shopping-app` to group services. After moving to schema v3.0, how should this grouping be represented?",
+    "options": [
+      "Keep `application` as a field, but move it under `metadata` on each service definition",
+      "Define a `kind: system` named `shopping-app` that lists the services as components",
+      "Add the tag `application:shopping-app` to each service and let Catalog build the group from that tag"
+    ],
+    "answer": 1,
+    "explanation": "In v3.0, `application` became its own kind, `system`, and no longer exists as a field on a service. A system lists its members in `spec.components`.",
+    "notes": [
+      "Wrong: `application` is no longer a field on a service in v3.0.",
+      "Correct: groupings are modeled as a `kind: system` entity with `spec.components` such as `service:cart-api`.",
+      "Wrong: tags do not create a system entity; the system must be declared."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/entity_model/#schema-structure",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-006",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "easy",
+    "q": "Forty small cron-job services share the same owner and links. The team wants to define all of them in one `service.datadog.yaml` file. How are the definitions separated in that file?",
+    "options": [
+      "As items of a top-level `services:` list key",
+      "With a blank line between each definition",
+      "With three dashes (`---`) between YAML documents"
+    ],
+    "answer": 2,
+    "explanation": "You can register multiple entities in one YAML file by creating multiple YAML documents separated by `---`.",
+    "notes": [
+      "Wrong: there is no top-level `services:` list key in the definition schema.",
+      "Wrong: a blank line does not split YAML documents.",
+      "Correct: each definition is its own YAML document, separated by `---`."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/set_up/create_entities/#github-and-gitlab-integrations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-007",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "medium",
+    "q": "A developer pushed an updated `entity.datadog.yaml` through the GitHub integration, but the Catalog does not show the change. Where can they find validation errors for the synced definition?",
+    "options": [
+      "In Event Management, filtered on `source:software_catalog` and `status:error`",
+      "In the Log Explorer, filtered on `source:github` and `status:error` for the repository",
+      "In the GitHub integration tile, under the Repo Configuration tab's error log"
+    ],
+    "answer": 0,
+    "explanation": "Datadog emits events when services are updated or when there is an error. Filter the Event Explorer by `source:software_catalog` and `status:error` to see validation errors.",
+    "notes": [
+      "Correct: validation results are events with `source:software_catalog`.",
+      "Wrong: the errors are events, not logs.",
+      "Wrong: Repo Configuration is where you link the GitHub account; it does not list definition errors."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/set_up/create_entities/#integration-validation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-008",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "medium",
+    "q": "A user can browse the Catalog but gets a permission error when clicking **Save Entry** on a new definition. Which out-of-the-box roles include the Catalog write permission by default?",
+    "options": [
+      "Datadog Read Only Role and Datadog Standard Role",
+      "Datadog Admin Role and Datadog Standard Role",
+      "Datadog Admin Role only"
+    ],
+    "answer": 1,
+    "explanation": "The Catalog write permission is enabled by default in the Datadog Admin Role and the Datadog Standard Role. The read permission is in the Read Only and Standard roles.",
+    "notes": [
+      "Wrong: Read Only and Standard are the default holders of the read permission, not write.",
+      "Correct: Admin and Standard roles have Catalog write by default.",
+      "Wrong: the Standard role also has write by default, not only Admin."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/set_up/#write-permission",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-009",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "medium",
+    "q": "The `checkout` service has 12 unmuted monitors tagged `service:checkout`. During a migration, an SRE mutes 3 of them. How does this affect the monitor count on the service's **Setup Guidance** tab in the Catalog?",
+    "options": [
+      "It stays at 12, since muting does not change which monitors are tagged with the service",
+      "It stays at 12, and the 3 muted monitors are shown with a separate Muted label",
+      "It drops to 9, since the total count does not include muted monitors and groups"
+    ],
+    "answer": 2,
+    "explanation": "The Catalog links monitors to a service when they are tagged, scoped, or grouped by `service` or APM primary tags. The total monitor count on the Setup Guidance tab leaves out muted monitors and groups, so muting 3 of 12 shows 9.",
+    "notes": [
+      "Wrong: the monitors stay linked to the service, but muted ones are left out of the total count.",
+      "Wrong: muted monitors are left out of the total count, so it does not stay at 12.",
+      "Correct: the Setup Guidance monitor total excludes muted monitors and groups."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/troubleshooting/#associated-monitors-not-displayed-in-the-setup-guidance-section",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-010",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "easy",
+    "q": "A team lead wants to compare latency, traffic, error rate, and Apdex for their services across environments. Which Catalog view is built for this?",
+    "options": [
+      "Performance",
+      "Reliability",
+      "Software Delivery"
+    ],
+    "answer": 0,
+    "explanation": "The Performance view compares latency, traffic, error rate, and Apdex by environment.",
+    "notes": [
+      "Correct: Performance shows latency, traffic, error rate, and Apdex by environment.",
+      "Wrong: Reliability surfaces recent deploys, rising error rates, open incidents, and failing monitors.",
+      "Wrong: Software Delivery covers CI pipeline health, static analysis violations, and DORA metrics."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/#what-you-can-do-in-catalog",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-011",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "medium",
+    "q": "A team has set up the Opsgenie integration with an API key and added `integrations.opsgenie` with a `service-url` and `region` to their service definition. Where does the on-call information now appear in the Catalog?",
+    "options": [
+      "On the service's Setup Guidance tab, as a newly detected product",
+      "In an On Call box on the service's Ownership tab",
+      "As an Opsgenie rule in the Ownership & Documentation scorecard"
+    ],
+    "answer": 1,
+    "explanation": "After the Opsgenie integration and definition metadata are in place, an On Call information box appears in the Ownership tab for the service.",
+    "notes": [
+      "Wrong: Setup Guidance checks recommended setup such as tracing, logs, and monitors; it is not where on-call details appear.",
+      "Correct: the Ownership tab gains an On Call box sourced from Opsgenie.",
+      "Wrong: adding Opsgenie metadata does not create a scorecard rule."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/integrations/#collaboration-incident-management-and-ticketing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-012",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "hard",
+    "q": "A company imports Backstage descriptors with the GitHub integration. One `catalog-info.yaml` holds three documents: two `kind: Component` and one `kind: Resource`. What happens to this file?",
+    "options": [
+      "The two components are imported, and the `Resource` document is skipped with a warning event",
+      "The `Resource` document is imported as a new custom entity type named `resource`",
+      "The whole file is rejected, since one section is not `kind:component` or `kind:system`"
+    ],
+    "answer": 2,
+    "explanation": "The Catalog processes the whole YAML file at once. If any section does not have `kind:component` or `kind:system`, the entire `catalog-info.yaml` file is rejected.",
+    "notes": [
+      "Wrong: there is no partial import; one invalid section rejects the whole file.",
+      "Wrong: Backstage `Resource` is not mapped to a custom entity type; only component and system are recognized.",
+      "Correct: one section without `kind:component` or `kind:system` rejects the entire file."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/set_up/import_entities/#import-entity-descriptor-files-from-backstage",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-013",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "medium",
+    "q": "An admin used the Import Entries tab to add services found in logs through their `DD_SERVICE` tags. A few weeks later, some of those services are gone from the Catalog. What would have kept them listed?",
+    "options": [
+      "Adding metadata such as an owner or contacts to them",
+      "Raising the retention of the log index those services were found in to 30 days",
+      "Clicking **Clear Previously Imported Services** after the import"
+    ],
+    "answer": 0,
+    "explanation": "Entries imported from logs or infrastructure telemetry may expire unless you add metadata, such as the owner or contacts, through the API, GitHub integration, or GitLab integration.",
+    "notes": [
+      "Correct: imported entries without metadata can expire; adding owner or contacts keeps them.",
+      "Wrong: log index retention does not control whether imported Catalog entries expire.",
+      "Wrong: that button removes previously imported services from the Explore view; it does not keep them listed."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/set_up/discover_entities/#import-entities-from-infrastructure-and-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-014",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "hard",
+    "q": "APM infers a MongoDB database named `web-store-mongo` that instrumented services call. A team writes a `kind: datastore` definition to add an owner to this inferred entity. What must `metadata.name` be?",
+    "options": [
+      "`web-store-mongo`, the database name on its own",
+      "`peer.db.name:web-store-mongo,peer.db.system:mongodb`",
+      "`datastore:web-store-mongo`, the entity reference"
+    ],
+    "answer": 1,
+    "explanation": "For inferred datastores and queues, `metadata.name` must exactly match the peer tags APM uses, here `peer.db.name` and `peer.db.system`. Only manually defined datastores can use a free-form name.",
+    "notes": [
+      "Wrong: a bare name does not match the inferred entity's peer tags; it would describe a separate, manually defined datastore.",
+      "Correct: the name must exactly match the inferred peer tags, for example `peer.db.name:web-store-mongo,peer.db.system:mongodb`.",
+      "Wrong: `kind:name` references are used in lists such as `spec.components` or `dependsOn`, not as `metadata.name`."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/entity_model/native_entities/#datastore-peer-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-015",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "easy",
+    "q": "How often does Datadog evaluate the out-of-the-box Scorecard rules against entities in the Catalog?",
+    "options": [
+      "Every hour",
+      "Every 7 days",
+      "Every 24 hours"
+    ],
+    "answer": 2,
+    "explanation": "Datadog evaluates the default Scorecards every 24 hours for all registered entities. Custom rules get their outcomes from the Scorecards API or Workflow Automation on a cadence you choose.",
+    "notes": [
+      "Wrong: default rules are not evaluated hourly.",
+      "Wrong: weekly is not the default cadence.",
+      "Correct: default Scorecards are evaluated every 24 hours, once per day."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/scorecards/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-016",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "medium",
+    "q": "Which of these out-of-the-box rules belongs to the Observability Best Practices scorecard?",
+    "options": [
+      "Logs correlation is active",
+      "Have any SLOs defined for the service",
+      "Code repos defined"
+    ],
+    "answer": 0,
+    "explanation": "Observability Best Practices has two rules: deployment tracking is active and logs correlation is active.",
+    "notes": [
+      "Correct: logs correlation, checked against the past hour of logs for APM services, is an Observability Best Practices rule.",
+      "Wrong: having SLOs defined is a Production Readiness rule.",
+      "Wrong: code repos defined is an Ownership & Documentation rule."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/scorecards/scorecard_configuration/#observability-best-practices",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-017",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "hard",
+    "q": "A scorecard has 2 enabled rules and 10 services. Rule A passes for 8 services and rule B passes for 4. Only 3 services pass both rules. What overall score does the scorecard show?",
+    "options": [
+      "30%, the share of services that pass every rule",
+      "60%, the share of passing evaluations across all rules",
+      "40%, the pass rate of the lowest-scoring rule in the scorecard"
+    ],
+    "answer": 1,
+    "explanation": "A scorecard's overall score counts passing evaluations across all rules, not services that pass every rule. Here that is (8 + 4) / 20 = 60%. Skipped and disabled rules are left out.",
+    "notes": [
+      "Wrong: the docs say the score is not how many entities pass all rules.",
+      "Correct: 12 passes out of 20 rule evaluations gives 60%.",
+      "Wrong: the overall score is not the lowest rule's pass rate."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/scorecards/scorecard_configuration/#how-scores-are-calculated",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-018",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "medium",
+    "q": "An analyst wants to compare a service's request and resource statistics in the Catalog with the same period three months ago, but the data does not go back that far. What do the docs recommend?",
+    "options": [
+      "Raise the Catalog data retention setting in that service's entity definition",
+      "Create a retention filter to keep the service's spans for 90 days",
+      "Use Metric Explorer; Catalog statistics are kept for up to 30 days"
+    ],
+    "answer": 2,
+    "explanation": "Span summaries and service and resource statistics in the Catalog are retained for up to 30 days. For deeper analysis on APM trace metrics, the docs point to Metric Explorer.",
+    "notes": [
+      "Wrong: entity definitions hold metadata and have no retention setting.",
+      "Wrong: retention filters control indexed spans; they do not extend Catalog statistics.",
+      "Correct: Catalog statistics last up to 30 days; trace metrics can be analyzed further in Metric Explorer."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/#what-appears-in-catalog",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-019",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "medium",
+    "q": "On a service's Setup Guidance tab, `Infrastructure Monitoring` shows `Not Detected`, even though the hosts it runs on have the Agent installed. What is the most likely explanation?",
+    "options": [
+      "The service itself has not emitted infrastructure metrics for a long time",
+      "The organization's Infrastructure Monitoring subscription has lapsed",
+      "Setup Guidance only checks products listed in the service's entity definition"
+    ],
+    "answer": 0,
+    "explanation": "The Setup Guidance table shows activity for the entity, not billing. If the service has not emitted infrastructure metrics for a long time, Infrastructure Monitoring can show `Not Detected` even with hosts running it.",
+    "notes": [
+      "Correct: Setup Guidance is based on the entity's telemetry activity, not on what is installed or billed.",
+      "Wrong: the table does not reflect billing or subscriptions.",
+      "Wrong: the checks are automatic and based on telemetry, not on fields in the definition."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/set_up/#verify-configuration-completeness",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-cat-020",
+    "topic": "Insight Discovery",
+    "subtopic": "Software Catalog",
+    "difficulty": "hard",
+    "q": "A service's definition is synced from GitHub through the GitHub integration. A separate script also posts updates for the same service to the definition API. Owners and links keep switching back and forth. What should the team do?",
+    "options": [
+      "Increase the GitHub integration's sync interval so that the API updates win and stay in place",
+      "Manage this service's definition through only one method: the GitHub integration or the API",
+      "Rename the file to `entity.datadog.yaml`, which takes priority over definitions posted through the API"
+    ],
+    "answer": 1,
+    "explanation": "Updating the same service through both a source code integration and the API can cause unintended overwriting. The docs say to create and change definition files with one of the two.",
+    "notes": [
+      "Wrong: changing sync timing does not stop the two sources overwriting each other.",
+      "Correct: use either GitHub/GitLab or the Definition API for a service, not both.",
+      "Wrong: both file names are accepted equally; neither takes priority over the API."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/set_up/create_entities/#github-and-gitlab-integrations",
+    "verified": "2026-11"
+  }
+]

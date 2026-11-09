@@ -1,0 +1,422 @@
+[
+  {
+    "id": "ap-appr-001",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "easy",
+    "q": "In a standard host-based setup, where does a Datadog SDK running inside an application send the spans it generates?",
+    "options": [
+      "Directly to the Datadog intake, authenticated with the `DD_API_KEY` set on the application",
+      "To the local Datadog Agent (by default at `localhost:8126`), which forwards them to Datadog",
+      "To DogStatsD on port 8125, which turns each span into a trace metric before upload"
+    ],
+    "answer": 1,
+    "explanation": "The Agent is configured by default with `apm_config.enabled: true` and listens for trace data at `http://localhost:8126`. SDKs send spans to the Agent, and the Agent forwards them to Datadog.",
+    "notes": [
+      "Wrong: in the standard architecture the SDK does not send traces straight to the intake. The API key is configured on the Agent.",
+      "Correct: SDK -> Agent on `localhost:8126` (or the `apm.socket` Unix socket) -> Datadog.",
+      "Wrong: port 8125 is DogStatsD, where the SDK sends stats and runtime metrics, not spans."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/#install-and-configure-the-agent",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-002",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "easy",
+    "q": "A company on the base APM tier (not APM Pro or APM Enterprise) wants to use Universal Service Monitoring. How is it priced?",
+    "options": [
+      "It is included in all APM tiers at no additional cost.",
+      "It needs APM Pro, which bundles it with Data Streams Monitoring.",
+      "It is billed per host on top of the APM host price."
+    ],
+    "answer": 0,
+    "explanation": "Universal Service Monitoring is included in all APM tiers (APM, APM Pro and APM Enterprise) at no additional cost. APM Pro adds Data Streams Monitoring, and APM Enterprise adds the Continuous Profiler as well.",
+    "notes": [
+      "Correct: USM comes with every APM tier at no extra cost.",
+      "Wrong: APM Pro adds Data Streams Monitoring; USM is already in the base tier.",
+      "Wrong: USM has no separate per-host charge on top of APM."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/billing/apm_tracing_profiler/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-003",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "medium",
+    "q": "For services instrumented with Datadog SDKs, where are trace metrics such as `trace.<SPAN_NAME>.hits` and `trace.<SPAN_NAME>.errors` calculated by default?",
+    "options": [
+      "In the Datadog backend, from the spans kept after ingestion sampling",
+      "In the Datadog backend, from the spans indexed by retention filters",
+      "In the Datadog Agent, from all the traces the SDK sends to it"
+    ],
+    "answer": 2,
+    "explanation": "By default, trace metrics are calculated in the Datadog Agent from the traces the instrumented application sends to it. They are based on 100% of the application's traffic, regardless of the ingestion sampling configuration.",
+    "notes": [
+      "Wrong: they are not computed from the sampled, ingested subset; sampling does not change them.",
+      "Wrong: retention filters only decide indexing and play no part in trace metrics.",
+      "Correct: the Agent computes them from every trace it receives, before ingestion sampling drops any."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-004",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "hard",
+    "q": "In which setup are APM trace metrics (hits, errors, latency) calculated from only a sampled subset of requests?",
+    "options": [
+      "Services instrumented with OpenTelemetry SDKs that apply sampling at the SDK level",
+      "Services using Datadog SDKs with `DD_TRACE_SAMPLING_RULES` set to keep 5% of traces",
+      "Services whose spans are indexed by a retention filter with a 1% span rate"
+    ],
+    "answer": 0,
+    "explanation": "When applications use OpenTelemetry libraries and sample at the SDK level, fewer spans reach Datadog, so APM metrics are calculated from the sampled data. With Datadog SDKs, trace metrics are calculated from all traffic whatever the sampling rules.",
+    "notes": [
+      "Correct: OTel SDK sampling happens before Datadog sees the spans, so the metrics reflect only sampled traffic.",
+      "Wrong: Datadog SDK sampling rules do not affect trace metrics, which use 100% of traffic.",
+      "Wrong: retention filters only control indexing after ingestion and have no effect on trace metrics."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/metrics/metrics_namespace/#sampling-impact-on-trace-metrics",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-005",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "medium",
+    "q": "A noisy health-check service drives up the APM ingested-bytes bill. An engineer adds a retention filter for that service with a 0% retention rate. Will this lower ingested bytes?",
+    "options": [
+      "Yes. A 0% retention filter tells the Agent to stop sending any of that service's spans to Datadog.",
+      "No. Retention filters only control indexing; reduce ingestion with sampling controls instead.",
+      "Yes, but only after the Agent restarts and loads the updated retention filter list."
+    ],
+    "answer": 1,
+    "explanation": "Retention filters do not affect which traces the Agent collects and sends to Datadog (ingestion). To control ingestion, use ingestion controls such as sampling rules.",
+    "notes": [
+      "Wrong: retention filters are applied in Datadog after ingestion. The Agent never sees them.",
+      "Correct: indexing and ingestion are separate. Ingested volume is reduced with ingestion controls.",
+      "Wrong: retention filters are not Agent configuration, so a restart changes nothing."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#retention-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-006",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "medium",
+    "q": "The tag `@feature_flag:beta` exists only on spans that no retention filter indexes. An engineer searches for it in the Trace Explorer with the time range set to the past 4 hours. What do they get?",
+    "options": [
+      "All matching spans, because the Trace Explorer searches every ingested span for any time range",
+      "Matching spans, but only if `@feature_flag` has been added as a facet",
+      "No results, because ranges longer than 15 minutes search indexed spans only"
+    ],
+    "answer": 2,
+    "explanation": "Live Search covers all ingested spans for a rolling 15 minutes. Any longer time range searches only spans indexed by retention filters, so a tag that appears only on non-indexed spans returns nothing.",
+    "notes": [
+      "Wrong: every ingested span is searchable only in Live Search, which covers 15 minutes.",
+      "Wrong: making it a facet does not make non-indexed spans searchable.",
+      "Correct: beyond 15 minutes, the Trace Explorer switches to indexed data only."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#indexed-spans-search-with-15-day-retention",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-007",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "medium",
+    "q": "A service keeps only 5% of its traces through SDK sampling rules. Yet the backend traces started by Synthetic API tests are still sent to Datadog for every test run. What keeps them at ingestion?",
+    "options": [
+      "The test request carries `x-datadog-sampling-priority: 1`, which makes the Agent keep the trace.",
+      "The `Synthetics Default` retention filter tells the Agent to keep all Synthetic test traffic.",
+      "The Agent's error sampler keeps every trace whose origin header is `synthetics`."
+    ],
+    "answer": 0,
+    "explanation": "Synthetic tests add Datadog headers to their requests, including `x-datadog-sampling-priority: 1` to make sure the Agent keeps the trace, and `x-datadog-origin: synthetics` to tag the spans with `ingestion_reason:synthetics`.",
+    "notes": [
+      "Correct: the sampling priority header set by the test makes the Agent keep the trace.",
+      "Wrong: `Synthetics Default` is a retention filter; it decides indexing after ingestion and never tells the Agent what to send.",
+      "Wrong: the error sampler catches error traces only; `x-datadog-origin` just identifies Synthetic traffic."
+    ],
+    "ref": "https://docs.datadoghq.com/synthetics/apm/#how-are-traces-linked-to-tests",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-008",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "easy",
+    "q": "Instead of one Datadog Agent per underlying host, a team runs one Agent per container. How are its APM hosts counted for billing?",
+    "options": [
+      "By underlying host, whatever the number of Agent containers",
+      "By Kubernetes pod, with pause containers excluded",
+      "Each container running an Agent counts as one APM host"
+    ],
+    "answer": 2,
+    "explanation": "Datadog recommends one Agent per underlying host. If you run one Agent per container instead, each container is treated as a single host, so the price is the APM host price times the number of containers.",
+    "notes": [
+      "Wrong: you are billed by underlying host only when the Agent runs once per host.",
+      "Wrong: APM is never priced by pod; in Kubernetes it is priced by node.",
+      "Correct: with one Agent per container, every container is billed as an APM host."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/billing/apm_tracing_profiler/#faq",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-009",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "medium",
+    "q": "A retailer wants its traced point-of-sale devices billed under APM Edge Devices. How is a device identified as an APM Edge Device?",
+    "options": [
+      "Install the Datadog IoT Agent on each device, which reports APM data in edge mode.",
+      "Run the standard Agent 7.75.0 or later with `DD_APM_MODE=edge` (or `apm_config.mode: edge`).",
+      "Set `DD_APM_EDGE_ENABLED=true` on the Datadog SDK of every application on the device."
+    ],
+    "answer": 1,
+    "explanation": "APM Edge Devices needs the standard Datadog Agent 7.75.0 or later running in APM Edge mode, set with `DD_APM_MODE=edge` or `apm_config.mode: edge` in `datadog.yaml`. The Datadog IoT Agent does not support APM.",
+    "notes": [
+      "Wrong: the Datadog IoT Agent does not support APM.",
+      "Correct: edge mode is an Agent setting, `DD_APM_MODE=edge` or `apm_config.mode: edge`, on Agent 7.75.0+.",
+      "Wrong: edge mode is configured on the Agent, not on the SDKs, and this variable does not exist."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/billing/apm_tracing_profiler/#apm-edge-devices",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-010",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "hard",
+    "q": "Datadog counts the APM hosts sending traces once an hour. On a high watermark plan (HWMP), which hourly measurement sets the bill for a 31-day month?",
+    "options": [
+      "The average of all hourly measurements in the month",
+      "The ninth highest hourly measurement",
+      "The single highest hourly measurement"
+    ],
+    "answer": 1,
+    "explanation": "The hourly measurements are ordered from highest to lowest at the end of the month, and Datadog bills the ninth highest (the eighth highest in February). This roughly matches the 99th percentile, which shields you from short spikes.",
+    "notes": [
+      "Wrong: averaging is used for Fargate tasks, not for APM hosts on HWMP.",
+      "Correct: the ninth highest hourly count is billed (eighth in February).",
+      "Wrong: the top hours are dropped so unexpected spikes are not billed."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/billing/apm_tracing_profiler/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-011",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "medium",
+    "q": "A team runs the Datadog Agent as a DaemonSet on 12 Kubernetes worker nodes. These nodes run 150 traced application pods with one container each. How many APM hosts are billed?",
+    "options": [
+      "12",
+      "150",
+      "162"
+    ],
+    "answer": 0,
+    "explanation": "In Kubernetes, APM is priced by nodes, not by pods. With one Agent per underlying host, the container count does not matter.",
+    "notes": [
+      "Correct: each of the 12 nodes running the Agent is one APM host.",
+      "Wrong: pods and containers are not billed as APM hosts when the Agent runs per node.",
+      "Wrong: nodes and pods are not added together; only nodes count."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/billing/apm_tracing_profiler/#faq",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-012",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "easy",
+    "q": "Which APM tier bundles the Continuous Profiler into the per-host price, with four profiled containers per host included?",
+    "options": [
+      "APM Pro",
+      "APM",
+      "APM Enterprise"
+    ],
+    "answer": 2,
+    "explanation": "APM Enterprise ($40 per host) includes Data Streams Monitoring and the Continuous Profiler with four profiled containers per host per month. APM Pro adds only Data Streams Monitoring.",
+    "notes": [
+      "Wrong: APM Pro adds Data Streams Monitoring but not the Continuous Profiler.",
+      "Wrong: the base APM tier includes neither the profiler nor DSM.",
+      "Correct: APM Enterprise includes the profiler, with 4 profiled containers per host."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/billing/apm_tracing_profiler/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-013",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "medium",
+    "q": "Log and trace correlation works for most requests. However, some logs carry a `dd.trace_id` whose trace cannot be found in APM. What is the most likely explanation?",
+    "options": [
+      "Log injection only works on root spans, so logs written in child spans point to missing traces.",
+      "Traces and logs are sampled independently, so that trace was not kept; this is expected.",
+      "Trace IDs in logs must be converted to 128-bit values before Datadog will store the matching trace."
+    ],
+    "answer": 1,
+    "explanation": "Traces and logs are sampled independently. Even after correlation is set up, a log can hold a trace ID for a trace that was dropped by trace sampling or not retained, and this does not mean the configuration is wrong.",
+    "notes": [
+      "Wrong: log injection is not limited to root spans; the missing trace is a sampling effect.",
+      "Correct: trace sampling can drop the trace even though the log still carries its ID.",
+      "Wrong: no such conversion is needed for the trace to be stored."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-014",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "medium",
+    "q": "A frontend team connects RUM to APM and sets `traceSampleRate: 20` in the Browser SDK initialization. What does this setting change?",
+    "options": [
+      "About 20% of backend traces from browser requests are kept; session sampling is unchanged.",
+      "Only 20% of RUM sessions are collected, and each collected session keeps all of its backend traces.",
+      "All backend traces are still ingested, but only 20% of them are indexed by retention filters."
+    ],
+    "answer": 0,
+    "explanation": "`traceSampleRate` keeps a set percentage of the backend traces started from browser requests (100% if unset). It does not affect RUM session sampling; only backend traces are sampled out.",
+    "notes": [
+      "Correct: it controls the share of backend traces ingested from browser requests.",
+      "Wrong: the docs state that `traceSampleRate` does not affect RUM session sampling.",
+      "Wrong: it controls ingestion of backend traces, not indexing by retention filters."
+    ],
+    "ref": "https://docs.datadoghq.com/real_user_monitoring/correlate_with_other_telemetry/apm/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-015",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "medium",
+    "q": "A team runs Synthetic API tests against a traced backend and has not created any retention filters. A week later they open a failed test result and can still view the backend trace for that run. What made this possible?",
+    "options": [
+      "The `Error Default` retention filter indexes every trace started by a Synthetic test.",
+      "Synthetic traces are stored with the test result in Synthetic Monitoring, outside APM retention.",
+      "The `Synthetics Default` retention filter keeps traces from Synthetic tests for 15 days."
+    ],
+    "answer": 2,
+    "explanation": "Traces generated by Synthetic tests are retained for 15 days by the `Synthetics Default` retention filter, just like other APM traces. This filter is enabled when you use Synthetic Monitoring.",
+    "notes": [
+      "Wrong: `Error Default` indexes error spans (`status:error`), not every Synthetic trace.",
+      "Wrong: the traces live in APM and are kept by an APM retention filter.",
+      "Correct: `Synthetics Default` keeps traces from Synthetic API and browser tests for 15 days."
+    ],
+    "ref": "https://docs.datadoghq.com/synthetics/apm/#how-long-are-traces-retained",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-016",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "easy",
+    "q": "What is required for a span in the Trace View to show code-level data in its Profiles tab?",
+    "options": [
+      "Logs injection must be enabled so profiles can be joined through the trace ID in logs.",
+      "The process must run both APM tracing and the Continuous Profiler.",
+      "A retention filter must index the span with a 100% trace rate."
+    ],
+    "answer": 1,
+    "explanation": "Application processes that have both APM distributed tracing and the Continuous Profiler enabled are linked automatically. You can then go from a span to its profiling data in the Profiles tab.",
+    "notes": [
+      "Wrong: logs injection is for logs and traces correlation, not for profiles.",
+      "Correct: running tracing and profiling in the same process is what links them.",
+      "Wrong: indexing does not create the link between traces and profiles."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/connect_traces_and_profiles/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-017",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "medium",
+    "q": "In the Catalog, a Flask service shows the type Web, and a Redis dependency shows the type Cache. How does Datadog determine these service types?",
+    "options": [
+      "Automatically, from the `span.type` attribute on the incoming span data",
+      "From a `component` tag that the team sets with `DD_TAGS` on each service",
+      "From Watchdog's classification of each service's traffic and latency patterns"
+    ],
+    "answer": 0,
+    "explanation": "Every monitored service has a type, which Datadog determines automatically from the `span.type` attribute on incoming spans. Types are Cache, Custom, DB, Serverless function and Web; for example Redis maps to Cache and Postgres to DB.",
+    "notes": [
+      "Correct: the service type comes from the `span.type` attribute set by the integration.",
+      "Wrong: no manual tag is needed; the type is derived from span data automatically.",
+      "Wrong: Watchdog detects anomalies; it does not classify service types."
+    ],
+    "ref": "https://docs.datadoghq.com/internal_developer_portal/catalog/#service-types",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-018",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "hard",
+    "q": "During a time window when APM connection errors caused some spans to be dropped, the Service Map view was unavailable. What explains this?",
+    "options": [
+      "The map reads only indexed spans, and retention filters skip spans during errors.",
+      "The map is drawn from Cloud Network Monitoring flows, which stop during Agent errors.",
+      "The map is rendered from complete traces that include root spans, and spans were missing."
+    ],
+    "answer": 2,
+    "explanation": "The Service Map is rendered from complete traces that include the root spans. When spans are missing in the query window, for example after APM connection errors, the map view may be unavailable for that period.",
+    "notes": [
+      "Wrong: the map does not depend on indexing, and retention filters do not change behaviour during errors.",
+      "Wrong: the Service Map is built from APM (and RUM) data, not from network flows.",
+      "Correct: missing spans break complete traces, so the map cannot be rendered for that window."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/services_map/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-019",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "hard",
+    "q": "A team creates a metric from ingested `checkout` spans in APM > Generate Metrics and groups it by `@user.id`. What billing risk does Datadog warn about?",
+    "options": [
+      "Every span the metric counts is also billed as an indexed span.",
+      "It is billed as a custom metric, so a high-cardinality group-by raises cost.",
+      "The spans it reads are billed again as ingested GB each time it runs."
+    ],
+    "answer": 1,
+    "explanation": "Span-based metrics are considered custom metrics and are billed accordingly. Datadog advises against grouping by unbounded or very high-cardinality attributes such as user IDs, request IDs or session IDs.",
+    "notes": [
+      "Wrong: generating a metric does not index spans; it works on ingested spans whether or not they are indexed.",
+      "Correct: span-based metrics are custom metrics, and each `@user.id` value adds billed timeseries.",
+      "Wrong: ingested volume is billed once at ingestion; metric generation does not re-bill it."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/generate_metrics/#create-a-metric-from-spans-or-traces",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-appr-020",
+    "topic": "APM Fundamentals",
+    "subtopic": "Datadog Approach to APM",
+    "difficulty": "easy",
+    "q": "A team has just instrumented its services with APM. What must they do before the Service Map shows those services and their dependencies?",
+    "options": [
+      "Nothing extra: the Service Map is built automatically from the data APM (and RUM) collects.",
+      "Enable Cloud Network Monitoring on every host so service-to-service flows can be drawn.",
+      "Declare each dependency in the service's entity definition so the map knows which edges to draw."
+    ],
+    "answer": 0,
+    "explanation": "The Service Map shows data collected by Datadog APM and RUM, and no setup is required to view services. Its edges show the calls observed between services.",
+    "notes": [
+      "Correct: the docs state that no setup is required; the map comes from APM and RUM data.",
+      "Wrong: network monitoring is not required. The map is built from trace data.",
+      "Wrong: dependencies are observed from traces, not declared manually."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/services_map/#setup",
+    "verified": "2026-11"
+  }
+]

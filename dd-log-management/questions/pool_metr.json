@@ -1,0 +1,527 @@
+[
+  {
+    "id": "lm-metr-001",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "easy",
+    "q": "A team keeps its `main` index for 15 days but wants to graph checkout volume year over year. If they generate a log-based metric for it, what retention and granularity does the metric get?",
+    "options": [
+      "15 days, matching the retention of the index the logs land in",
+      "15 months at 10-second granularity",
+      "13 months at 1-minute granularity"
+    ],
+    "answer": 1,
+    "explanation": "Log-based metrics let you visualize trends over all ingested logs at 10s granularity for 15 months, independent of index retention.",
+    "notes": [
+      "Wrong: the metric does not inherit index retention; it is stored as a metric for 15 months.",
+      "Correct: log-based metrics are kept 15 months with 10-second datapoints.",
+      "Wrong: near-miss numbers; the docs state 15 months and 10-second datapoints."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-002",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "easy",
+    "q": "An index has an exclusion filter that drops 90% of `status:info` logs. A log-based count metric uses the query `status:info`. Which logs does the metric count?",
+    "options": [
+      "All ingested `status:info` logs, including the ones the exclusion filter drops from the index",
+      "Only the 10% of `status:info` logs that the exclusion filter keeps in the index",
+      "None, because a metric query cannot overlap an active index exclusion filter"
+    ],
+    "answer": 0,
+    "explanation": "Log-based metrics summarize the entire ingest stream. Excluded logs are discarded from indexes but can still be used to generate metrics.",
+    "notes": [
+      "Correct: exclusion filters only affect indexing; metric generation sees every ingested log.",
+      "Wrong: the metric is evaluated on the ingest stream, not on indexed logs.",
+      "Wrong: overlapping an exclusion filter is the main use case, not a restriction."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-003",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "easy",
+    "q": "While building a timeseries of 5xx errors grouped by `service` in the Log Explorer, an engineer wants to turn this exact query into a long-term metric without retyping it. What should they do?",
+    "options": [
+      "Open the Patterns view and click Add Exclusion Filter to store the query",
+      "Save the view as a Saved View and enable metric retention on it",
+      "Open the Export menu and choose Generate new metric"
+    ],
+    "answer": 2,
+    "explanation": "You can create a metric from an Analytics search by selecting Generate new metric from the Export menu; the Export docs list Metric as the way to aggregate logs into long-term KPIs.",
+    "notes": [
+      "Wrong: Add Exclusion Filter stops indexing a pattern; it does not create a metric.",
+      "Wrong: Saved Views store an investigation starting point; they have no metric retention setting.",
+      "Correct: Export > Generate new metric creates a log-based metric from the current search."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#generate-a-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-004",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "easy",
+    "q": "In the New Metric form, what do you enter as the field to track to get a count of every log that matches the query?",
+    "options": [
+      "`*`",
+      "`@count`",
+      "`status`"
+    ],
+    "answer": 0,
+    "explanation": "Selecting `*` generates a count of all logs matching the query; entering a numeric attribute instead creates a distribution.",
+    "notes": [
+      "Correct: `*` produces a count metric of matching logs.",
+      "Wrong: `@count` is not a special keyword; it would be treated as a log attribute.",
+      "Wrong: `status` is a dimension you could group by, not the way to request a count."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#add-a-new-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-005",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "A team creates a log-based metric that tracks the measure `@duration` and leaves Calculate percentiles unchecked. Which aggregations does the metric provide?",
+    "options": [
+      "`avg`, `count`, `median`, `95percentile`, `max`",
+      "`count`, `min`, `max`, `sum`, `avg`",
+      "`p50`, `p75`, `p90`, `p95`, `p99`"
+    ],
+    "answer": 1,
+    "explanation": "Entering a numeric attribute creates a distribution with `count`, `min`, `max`, `sum` and `avg` aggregations. Percentiles are only added when you enable them.",
+    "notes": [
+      "Wrong: these are the Agent-side defaults of a HISTOGRAM metric, not a log-based distribution.",
+      "Correct: a log-based distribution provides count, min, max, sum and avg.",
+      "Wrong: percentiles are optional and only generated when Calculate percentiles is checked."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#add-a-new-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-006",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "In the New Metric form, which percentile aggregations can you optionally generate for a log-based distribution metric?",
+    "options": [
+      "`p25`, `p50`, `p75`, `p99`",
+      "`p90`, `p95`, `p99`, `p99.9`",
+      "`p50`, `p75`, `p90`, `p95`, `p99`"
+    ],
+    "answer": 2,
+    "explanation": "For distribution metrics you can optionally generate p50, p75, p90, p95 and p99 percentiles, which are also billed as custom metrics.",
+    "notes": [
+      "Wrong: p25 is not one of the generated percentiles.",
+      "Wrong: the form offers p50, p75, p90, p95 and p99; p99.9 is not in the set and p50/p75 are missing.",
+      "Correct: these are the five percentile aggregations offered."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#add-a-new-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-007",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "hard",
+    "q": "A log-based distribution metric on `@duration` is grouped by `service` and `env`, which produces 6 unique tag value combinations. Percentiles are enabled. How many custom metrics does it generate?",
+    "options": [
+      "6",
+      "30",
+      "60"
+    ],
+    "answer": 2,
+    "explanation": "A distribution counts as 5 custom metrics per tag value combination (count, sum, min, max, avg), and percentiles add another 5 per combination: 5x6 + 5x6 = 60.",
+    "notes": [
+      "Wrong: 1 per combination is how COUNT or GAUGE metrics are counted, not distributions.",
+      "Wrong: 30 covers only the base distribution aggregations and ignores the percentiles.",
+      "Correct: 30 for the base aggregations plus 30 for p50/p75/p90/p95/p99."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/billing/custom_metrics/#adding-percentile-aggregations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-008",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "An engineer creates a log-based count metric and leaves the group by field empty. On a dashboard, they try to filter the metric by `env:prod`. What happens?",
+    "options": [
+      "It cannot: log-based metrics have no tags unless dimensions are added to the group by",
+      "It works, because log-based metrics automatically inherit every tag present on the matching logs",
+      "It works, because `host`, `service` and `env` are always added to log-based metrics"
+    ],
+    "answer": 0,
+    "explanation": "By default, metrics generated from logs do not have any tags unless explicitly added in the group by step.",
+    "notes": [
+      "Correct: without a group by on `env`, the metric has no `env` tag to filter on.",
+      "Wrong: tags are not inherited; only selected dimensions become tags.",
+      "Wrong: there is no automatic set of reserved tags on log-based metrics."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#add-a-new-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-009",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "In the New Metric form, an engineer groups a metric by the attribute `@http.status_code` and keeps the default tag name. What tag key appears on the generated metric?",
+    "options": [
+      "`@http.status_code`",
+      "`http.status_code`",
+      "`status_code`"
+    ],
+    "answer": 1,
+    "explanation": "Metric tag names are equal to the originating attribute or tag name, without the `@`.",
+    "notes": [
+      "Wrong: the `@` prefix is dropped from the tag name.",
+      "Correct: the tag key is the attribute name without the `@`.",
+      "Wrong: by default the full attribute name is kept (minus the `@`); it is not shortened to its last segment."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#add-a-new-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-010",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "easy",
+    "q": "Which of these dimensions does Datadog specifically warn against using as a group by for a log-based metric?",
+    "options": [
+      "`env`",
+      "`@request_id`",
+      "`service`"
+    ],
+    "answer": 1,
+    "explanation": "Log-based metrics are billed as custom metrics, so Datadog warns against grouping by unbounded or very high cardinality attributes such as timestamps, user IDs, request IDs or session IDs.",
+    "notes": [
+      "Wrong: `env` has few values and is a normal dimension.",
+      "Correct: a request ID is unique per request, creating a new custom metric for almost every log.",
+      "Wrong: `service` is low cardinality and a common, recommended dimension."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#add-a-new-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-011",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "A team wants to rename the log-based metric `logs.checkout.errors` to `checkout.errors.count`. What do they have to do?",
+    "options": [
+      "Edit the name field on the existing metric; history is kept",
+      "Change the stream filter query, which regenerates the metric with a new name",
+      "Create a new log-based metric with the new name"
+    ],
+    "answer": 2,
+    "explanation": "After creation you can update the filter query, group by and percentiles, but changing the metric type or name requires a new metric.",
+    "notes": [
+      "Wrong: the name is not an editable field after creation.",
+      "Wrong: editing the filter changes which logs are aggregated, not the metric name.",
+      "Correct: a new metric must be created to change the name."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#update-a-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-012",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "A log-based distribution metric on `@duration`, grouped by `service`, has Calculate percentiles enabled. To cut custom metric costs, the team wants to stop generating the percentile metrics but keep the metric itself. What should they do?",
+    "options": [
+      "Create a new metric without percentiles, because percentile selection is fixed at creation",
+      "Uncheck Calculate percentiles on the existing log-based metric",
+      "Remove `service` from the group by, because percentiles are only generated per group-by dimension"
+    ],
+    "answer": 1,
+    "explanation": "After creation you can update the stream filter query, the aggregation groups and the percentile selection: unchecking Calculate percentiles removes the percentile metrics. Only a change of type or name needs a new metric.",
+    "notes": [
+      "Wrong: percentile selection is one of the fields you can update after creation; only type and name changes need a new metric.",
+      "Correct: unchecking Calculate percentiles removes the percentile metrics while the metric keeps its other aggregations.",
+      "Wrong: removing a dimension lowers cardinality, but percentiles are still generated for the remaining tag combinations."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#update-a-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-013",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "hard",
+    "q": "This query returns logs in the Log Explorer, but a log-based metric that uses it as its filter stays empty in the Metrics Explorer:\n\n`*:timeout`\n\nWhat is the most likely reason?",
+    "options": [
+      "Log-based metric filters do not support full-text search",
+      "New log-based metrics wait for the next index rollover before producing datapoints",
+      "Metric filters only match logs whose `status` attribute has been remapped"
+    ],
+    "answer": 0,
+    "explanation": "The stream filter is evaluated at ingest time and does not support full-text search (`*:search_term`), so a query that works in the Log Explorer can match nothing. The docs suggest rewriting the term as a quoted phrase, such as `message:\"...\"`.",
+    "notes": [
+      "Correct: full-text search is not supported in log-based metric filters.",
+      "Wrong: there is no index rollover step; metrics are computed on the ingest stream at 10-second intervals.",
+      "Wrong: no status remapping is required for a log to match a metric filter."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#add-a-new-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-014",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "hard",
+    "q": "A nightly batch job forwards log files whose timestamps are three hours old. They appear in the Log Explorer, but a log-based count metric on them shows nothing. Why?",
+    "options": [
+      "Log-based metrics only count logs collected by the Datadog Agent, not forwarded log files",
+      "Log-based metrics are computed hourly, and that hour's bucket was already closed",
+      "Aggregation only considers logs ingested with a timestamp within the past 20 minutes"
+    ],
+    "answer": 2,
+    "explanation": "Log-based metric aggregation only considers logs ingested with a timestamp within the past 20 minutes, so logs with old timestamps are not counted.",
+    "notes": [
+      "Wrong: log-based metrics are computed on the whole ingest stream, whatever the collection method.",
+      "Wrong: datapoints are generated every 10 seconds, not in hourly buckets.",
+      "Correct: logs whose timestamp is older than 20 minutes at ingestion are ignored by the metric."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#add-a-new-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-015",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "hard",
+    "q": "On Monday a team creates a log-based metric for payment failures. Their manager asks to see the metric for the whole previous month. What is true?",
+    "options": [
+      "Datadog backfills the metric from logs still within index retention when it is saved",
+      "The metric has no data before it was created, because it is computed from logs as they are ingested",
+      "They can turn on a one-time backfill from the log archives in the metric's settings"
+    ],
+    "answer": 1,
+    "explanation": "The stream filter query is evaluated against the log stream at ingest time, not against indexed logs, so there is no backfill. Past data has to come from Log Explorer analytics on indexed logs.",
+    "notes": [
+      "Wrong: the filter is not run against indexed logs, so nothing is backfilled from indexes.",
+      "Correct: log-based metrics only aggregate logs as they flow in after the metric exists.",
+      "Wrong: the only editable fields are the filter query, the group by and the percentile selection; there is no backfill option."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#add-a-new-log-based-metric",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-016",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "easy",
+    "q": "How are metrics generated from ingested logs billed?",
+    "options": [
+      "As custom metrics",
+      "As indexed log events, per million",
+      "Included in the log ingestion price at no extra cost"
+    ],
+    "answer": 0,
+    "explanation": "Metrics created from ingested logs, including their percentile aggregations, are billed as custom metrics.",
+    "notes": [
+      "Correct: log-based metrics are billed as custom metrics.",
+      "Wrong: indexed-event billing applies to logs kept in indexes, not to metrics.",
+      "Wrong: they are not free; each name and tag combination counts toward custom metric usage."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-017",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "Which name can be used as-is for a new log-based metric under the custom metric naming convention?",
+    "options": [
+      "`5xx.checkout.errors`",
+      "`checkout.errors_5xx`",
+      "`checkout errors/5xx`"
+    ],
+    "answer": 1,
+    "explanation": "Metric names must start with a letter and contain only ASCII alphanumerics, underscores and periods.",
+    "notes": [
+      "Wrong: metric names must start with a letter, not a digit.",
+      "Correct: starts with a letter and uses only letters, digits, periods and underscores.",
+      "Wrong: spaces and `/` are not allowed and would be converted to underscores."
+    ],
+    "ref": "https://docs.datadoghq.com/metrics/custom_metrics/#naming-custom-metrics",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-018",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "easy",
+    "q": "What is the maximum length of a log-based metric name?",
+    "options": [
+      "100 characters",
+      "255 characters",
+      "200 characters"
+    ],
+    "answer": 2,
+    "explanation": "Log-based metric names follow the custom metric convention: no more than 200 characters, with fewer than 100 preferred for the UI.",
+    "notes": [
+      "Wrong: 100 is the preferred length for the UI, not the limit.",
+      "Wrong: 255 is a common limit elsewhere but not for metric names.",
+      "Correct: metric names must not exceed 200 characters."
+    ],
+    "ref": "https://docs.datadoghq.com/metrics/custom_metrics/#naming-custom-metrics",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-019",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "A user with only the Datadog Read Only Role needs to create log-based metrics. Which permission should their custom role add?",
+    "options": [
+      "`logs_generate_metrics`",
+      "`logs_write_pipelines`",
+      "`logs_write_exclusion_filters`"
+    ],
+    "answer": 0,
+    "explanation": "`logs_generate_metrics` grants a role the ability to use the Generate Metrics feature. It is global and covers creating, editing and deleting log-based metrics.",
+    "notes": [
+      "Correct: this permission controls the Generate Metrics feature.",
+      "Wrong: `logs_write_pipelines` is for creating and changing log pipelines.",
+      "Wrong: `logs_write_exclusion_filters` is for index exclusion filters."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/logs-rbac-permissions/#logs_generate_metrics",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-020",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "A platform team wants to track the volume of unparsed logs per owning team, including logs that are never indexed, and alert on a quota. What should they do?",
+    "options": [
+      "Add an exclusion filter on `datadog.pipelines:false` and count the excluded logs per team in Live Tail",
+      "Run `datadog.pipelines:false` in the Log Explorer, group it by `team`, and save it as a Saved View",
+      "Create a log-based count metric with the query `datadog.pipelines:false` grouped by `team`, then a metric monitor"
+    ],
+    "answer": 2,
+    "explanation": "A Log Explorer query only sees unparsed indexed logs. A log-based metric on `datadog.pipelines:false`, grouped by ownership dimensions, covers every ingested log and can drive a metric monitor with a quota per team.",
+    "notes": [
+      "Wrong: excluding the logs hides them, and Live Tail has no counting or alerting.",
+      "Wrong: the Log Explorer filter only returns indexed logs, so non-indexed unparsed logs are missed, and a Saved View cannot alert.",
+      "Correct: this is the documented way to track and alert on unparsed log volume."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/detect-unparsed-logs/#create-a-metric-to-track-for-unparsed-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-021",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "A team uses an exclusion filter to drop 100% of a noisy `response code from ses 200` pattern from their index. They still want an alert if that pattern's volume suddenly changes. What is the recommended approach?",
+    "options": [
+      "Create a log-based count metric with the pattern's query, then an anomaly monitor on that metric",
+      "Create a log monitor with the pattern's query, because log monitors evaluate all ingested logs",
+      "Watch the pattern in Live Tail and set an alert on its volume there"
+    ],
+    "answer": 0,
+    "explanation": "Once a pattern is excluded you can still track it at the ingest level with a log-based metric using the same query, then add an anomaly detection monitor on that metric.",
+    "notes": [
+      "Correct: this is the Logging without Limits guide's workflow for excluded patterns.",
+      "Wrong: log monitors only evaluate indexed logs, so a 100% excluded pattern never reaches them.",
+      "Wrong: excluded logs are visible in Live Tail, but Live Tail has no alerting on volume."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/getting-started-lwl/#create-an-anomaly-detection-monitor",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-022",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "easy",
+    "q": "Which tag on the Log Management usage metrics tells you whether a log matched an exclusion filter?",
+    "options": [
+      "`datadog_index`",
+      "`datadog_is_excluded`",
+      "`status`"
+    ],
+    "answer": 1,
+    "explanation": "Log usage metrics carry `datadog_index`, `datadog_is_excluded` and `service`. `datadog_is_excluded` shows whether a log matches an exclusion query.",
+    "notes": [
+      "Wrong: `datadog_index` shows which index routing query the log matched.",
+      "Correct: `datadog_is_excluded` indicates whether the log matched an exclusion query.",
+      "Wrong: `status` reflects the log status (info, warning) and only exists on `ingested_events`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#logs-usage-metrics",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-023",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "hard",
+    "q": "An engineer graphs `datadog.estimated_usage.logs.ingested_events` by `datadog_index` and sees a large series with the value `N/A`. What does it mean?",
+    "options": [
+      "The logs were dropped before ingestion because they exceeded the maximum log size",
+      "The logs matched an exclusion filter in an index called N/A",
+      "They were ingested, but no index filter routed them to an index"
+    ],
+    "answer": 2,
+    "explanation": "`N/A` for `datadog_index` or `datadog_is_excluded` means the logs were ingested but did not match any inclusion or exclusion criteria to be explicitly routed to an index.",
+    "notes": [
+      "Wrong: the metric counts ingested logs, so these logs were ingested.",
+      "Wrong: N/A is a placeholder value, not an index name.",
+      "Correct: N/A marks ingested logs that no index filter routed to an index."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#logs-usage-metrics",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-024",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "A team indexes millions of `200` access logs a day only to power a dashboard of request counts per endpoint. What is the most cost-effective way to keep the dashboard?",
+    "options": [
+      "Generate a count metric grouped by endpoint, then exclude the logs from the index",
+      "Move the logs to a separate index with 3-day retention and keep the dashboard on log analytics",
+      "Archive the logs and rehydrate them each week to refresh the dashboard"
+    ],
+    "answer": 0,
+    "explanation": "Log-based metrics summarize the full ingest stream cheaply and keep 15 months of data, so the logs can be excluded from indexing while the trend stays visible.",
+    "notes": [
+      "Correct: the metric replaces the indexed logs for trending, so indexing them is no longer needed.",
+      "Wrong: the logs are still indexed and billed, and the dashboard loses history after 3 days.",
+      "Wrong: rehydration indexes logs again and is slow and costly for a routine dashboard."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-metr-025",
+    "topic": "Log Utilization",
+    "subtopic": "Metric Generation",
+    "difficulty": "medium",
+    "q": "A team wants 15 months of p95 request latency per service from access logs that contain the measure `@duration`. How should they configure the log-based metric?",
+    "options": [
+      "Track `*`, group by `service` and `@duration`, and leave percentiles off",
+      "Track `@duration`, group by `service`; p95 is part of the default aggregations",
+      "Track `@duration`, group by `service`, and check Calculate percentiles"
+    ],
+    "answer": 2,
+    "explanation": "Entering a numeric attribute as the field to track creates a distribution with `count`, `min`, `max`, `sum` and `avg`; p50, p75, p90, p95 and p99 are only generated when you add percentile aggregations. The dimension to split by goes in the group by.",
+    "notes": [
+      "Wrong: `*` only counts logs, and grouping by `@duration` turns every distinct latency into a tag value, exploding cardinality.",
+      "Wrong: the default distribution aggregations are count, min, max, sum and avg; p95 needs percentiles enabled.",
+      "Correct: a distribution on `@duration` with percentiles gives p95 per `service` tag."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#add-a-new-log-based-metric",
+    "verified": "2026-11"
+  }
+]

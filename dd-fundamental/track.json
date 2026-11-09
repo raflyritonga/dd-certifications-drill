@@ -1,0 +1,25 @@
+{
+  "key": "fundamentals",
+  "order": 1,
+  "title": "Datadog Fundamentals",
+  "short": "Fundamentals",
+  "storage": "ddf-drill-v1",
+  "checked": "October 2026",
+  "pools": ["pool_fund", "pool_net", "pool_allot", "pool_agent", "pool_data", "pool_viz", "pool_apm"],
+  "packages": 20,
+  "focus": [
+    {"topic": "Networking & Datadog Ports", "label": "Ports & networking", "hot": true},
+    {"topic": "Allotments, Billing & Custom Metrics", "label": "Allotments & custom metrics", "hot": true}
+  ],
+  "official": {
+    "file": "questions/official.json",
+    "source": "materials/datadog-fundamentals-certification-practice-exam-questions.md",
+    "ref": "https://learn.datadoghq.com/courses/datadog-fundamentals-practice-exam"
+  },
+  "private": {
+    "file": "materials/examtopics.json",
+    "key": "examtopics",
+    "title": "ExamTopics sample",
+    "desc": "Your private set of the 20 public ExamTopics questions. Loaded from materials/, which stays out of Git."
+  }
+}

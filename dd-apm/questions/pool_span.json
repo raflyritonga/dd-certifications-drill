@@ -1,0 +1,317 @@
+[
+  {
+    "id": "ap-span-001",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "easy",
+    "q": "An engineer clicks a span in the Trace Explorer to open its trace. Which visualization does the Trace View show by default?",
+    "options": [
+      "Waterfall",
+      "Flame Graph",
+      "Span List"
+    ],
+    "answer": 1,
+    "explanation": "The Flame Graph is the default Trace View visualization: it shows all color-coded spans of the trace on a timeline. Span List, Waterfall and Map are the other options you can switch to.",
+    "notes": [
+      "Wrong: the Waterfall shows one row per span, but you have to switch to it.",
+      "Correct: the Flame Graph is the default visualization.",
+      "Wrong: the Span List groups resources in a table and is not the default."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#trace-visualizations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-002",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "medium",
+    "q": "Inside one slow trace, an engineer wants a sortable table of resources with columns for span count, average duration and `% EXEC TIME`. Which Trace View visualization gives this?",
+    "options": [
+      "Map",
+      "Waterfall",
+      "Span List"
+    ],
+    "answer": 2,
+    "explanation": "The Span List displays resources by group (service by default), sorted by span count, and can be sorted by RESOURCE, SPANS, AVG DURATION, EXEC TIME or % EXEC TIME. It is meant for scanning latency by resource or group.",
+    "notes": [
+      "Wrong: the Map shows service nodes with their share of execution time, not a resource table.",
+      "Wrong: the Waterfall shows each span as a timeline row, not aggregated columns per resource.",
+      "Correct: the Span List aggregates by resource with SPANS, AVG DURATION, EXEC TIME and % EXEC TIME columns."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#trace-visualizations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-003",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "medium",
+    "q": "In the Waterfall view of a trace, what does the length of each span's color-coded bar represent?",
+    "options": [
+      "The span's duration as a percentage of the total trace duration",
+      "The span's execution time, excluding time spent waiting on children",
+      "The number of child spans the span created"
+    ],
+    "answer": 0,
+    "explanation": "Each Waterfall row shows a relative span duration: the bar length corresponds to the percentage of the total trace duration. The absolute duration is shown separately in milliseconds.",
+    "notes": [
+      "Correct: bar length is relative duration, as a share of total trace duration.",
+      "Wrong: execution time is shown in the Span List and flame graph legend (% Exec Time), not by Waterfall bar length.",
+      "Wrong: child spans are expanded with the chevron; bar length is not a child count."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#trace-visualizations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-004",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "medium",
+    "q": "In one trace, `web-store` calls `auth-service` and then `cart`, and `cart` in turn calls `auth-service` again. How does the trace Map show the second call to `auth-service`?",
+    "options": [
+      "As a loop edge pointing back to the existing `auth-service` node",
+      "As a duplicated `auth-service` node",
+      "As one `auth-service` node with a call counter on it"
+    ],
+    "answer": 1,
+    "explanation": "To prevent cyclic dependencies, the trace Map represents a service that calls a service already invoked by the original service with a duplicated node. So `cart`'s call appears as a second `auth-service` node.",
+    "notes": [
+      "Wrong: the Map avoids cycles, so it does not draw edges back to an existing node.",
+      "Correct: repeat invocations become duplicated nodes to prevent cyclic dependencies.",
+      "Wrong: nodes show the percentage of total execution time, not a call counter."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#trace-visualizations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-005",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "hard",
+    "q": "In a trace Map, the edge from `cart` to `payments` is highlighted red, but the `payments` node has no red border. What does this indicate?",
+    "options": [
+      "The `payments` service entry span is in an error state",
+      "The call from `cart` to `payments` breached a latency threshold",
+      "The exit span in `cart` that calls `payments` is in an error state"
+    ],
+    "answer": 2,
+    "explanation": "A red node border means that service's entry span is in error, while a red edge means the error occurred in a service exit span making the call to the next service. Here only the outgoing call from `cart` failed.",
+    "notes": [
+      "Wrong: an errored service entry span would give the `payments` node a red border.",
+      "Wrong: the Map highlights errors with red, not latency thresholds.",
+      "Correct: an error in a service exit span highlights the edge to the next service in red."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#trace-visualizations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-006",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "easy",
+    "q": "Where in Datadog APM do you find the span summary table that aggregates spans across all traces of an endpoint?",
+    "options": [
+      "On the Resource page for that endpoint",
+      "In the Span Info tab of the trace side panel",
+      "In the Span List visualization of a single trace"
+    ],
+    "answer": 0,
+    "explanation": "The Resource page has a span summary section that gives a span analysis breakdown of all matching traces for that resource. The Span Info tab and the Span List only cover one span or one trace.",
+    "notes": [
+      "Correct: the span summary is a section of the Resource page.",
+      "Wrong: Span Info shows the tags and metadata of the single selected span.",
+      "Wrong: the Span List groups resources within one trace only, not across all traces of the endpoint."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/resource_page/#span-summary",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-007",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "medium",
+    "q": "On the Resource page for `GET /orders`, the span summary shows `postgres.query` with `Avg Spans/trace` of 120 and `% of Traces` of 100%. Each query is fast. What problem does this most likely point to?",
+    "options": [
+      "The database is an inferred service that is missing its peer tags",
+      "An N+1 query pattern in the endpoint's code",
+      "Ingestion sampling is duplicating the database spans"
+    ],
+    "answer": 1,
+    "explanation": "The span summary shows how often a span appears per trace and in what share of traces; Datadog notes this helps detect N+1 problems. A very high average count of a fast query on every request is the typical N+1 sign.",
+    "notes": [
+      "Wrong: peer tags affect how the inferred database is named, not how many query spans each request creates.",
+      "Correct: many occurrences of the same query in every trace is the N+1 pattern the span summary helps detect.",
+      "Wrong: sampling decides which traces are kept; it does not create extra spans."
+    ],
+    "ref": "https://docs.datadoghq.com/glossary/#span-summary",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-008",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "hard",
+    "q": "In a resource's span summary, the `redis.command` row shows `% of Traces` = 40% and `Avg Spans/trace` = 3. What is the correct reading?",
+    "options": [
+      "40% of this resource's traces contain the span, and in those traces it occurs 3 times on average",
+      "Across all of this resource's traces, the span occurs 3 times on average, and it uses 40% of their execution time",
+      "40% of all traces in the service contain the span, and the span has 3 child spans on average"
+    ],
+    "answer": 0,
+    "explanation": "`% of Traces` is the share of traces including the current resource where the span appears at least once. `Avg Spans/trace` is averaged only over those traces where the span is present, not over all of the resource's traces.",
+    "notes": [
+      "Correct: both metrics are scoped to the resource, and the average counts only traces where the span is present.",
+      "Wrong: the average excludes traces without the span, and execution time share is the separate `Avg % Exec Time` column.",
+      "Wrong: the scope is the resource's traces, not the whole service, and the metric counts occurrences of the span, not its children."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/resource_page/#span-summary",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-009",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "hard",
+    "q": "Span B runs for 100 ms. Its sibling span C runs for 40 ms, entirely while B is running. Neither has children. How much execution time does Datadog give span C?",
+    "options": [
+      "40 ms",
+      "0 ms",
+      "20 ms"
+    ],
+    "answer": 2,
+    "explanation": "When spans are concurrent, Datadog divides the overlapping time by the number of concurrently active spans. The 40 ms overlap is split between B and C, so C gets 20 ms (and B gets 60 + 20 = 80 ms).",
+    "notes": [
+      "Wrong: that would count the overlap fully for C, ignoring that B is active at the same time.",
+      "Wrong: C has no children, so it is active for its whole duration and gets a share of the overlap.",
+      "Correct: 40 ms of overlap divided by 2 active spans gives C 20 ms."
+    ],
+    "ref": "https://docs.datadoghq.com/glossary/#execution-time",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-010",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "easy",
+    "q": "In the Logs tab of the trace side panel, an engineer hovers over one of the correlated logs. What happens?",
+    "options": [
+      "The flame graph filters down to the span that wrote the log",
+      "A line showing the log's timestamp appears on the trace flame graph",
+      "The log opens in the Log Explorer in a new tab"
+    ],
+    "answer": 1,
+    "explanation": "Hovering over a log in the Logs tab draws a line at its timestamp on the flame graph. Clicking the log, not hovering, takes you to the Log Explorer search.",
+    "notes": [
+      "Wrong: hovering does not filter or focus the flame graph.",
+      "Correct: hover shows the log's timestamp as a line on the flame graph.",
+      "Wrong: you reach the Log Explorer by clicking the log, not by hovering."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#more-information",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-011",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "medium",
+    "q": "For a service running on Kubernetes, the Processes tab of the trace side panel is empty. Traces and infrastructure metrics are fine. What must be enabled?",
+    "options": [
+      "Process collection (Live Processes) on the Agent",
+      "Cloud Network Monitoring",
+      "Runtime metrics with `DD_RUNTIME_METRICS_ENABLED`"
+    ],
+    "answer": 0,
+    "explanation": "The Processes tab correlates the span with processes on the host or pod at the time of the request, and needs process collection enabled. Cloud Network Monitoring powers the Network tab instead.",
+    "notes": [
+      "Correct: span-specific processes require process collection.",
+      "Wrong: Cloud Network Monitoring feeds the Network tab (TCP retransmits, round-trip time).",
+      "Wrong: runtime metrics cover language runtime data such as heap and GC, not the Processes tab."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#more-information",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-012",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "medium",
+    "q": "A Kafka Streams job aggregates 50 messages, each produced in a different trace, into one result. The team wants the aggregation span to point back to each producing span. What should they use?",
+    "options": [
+      "Baggage items that carry each producer's service name",
+      "A retention filter on the aggregation service",
+      "Span links"
+    ],
+    "answer": 2,
+    "explanation": "Span links correlate spans that are causally related but lack a parent-child relationship, including across traces. Fan-in cases such as message aggregation in Kafka Streams are a listed use case.",
+    "notes": [
+      "Wrong: baggage propagates business key-value data; it does not link spans together.",
+      "Wrong: a retention filter decides which spans are indexed; it creates no relationship between spans.",
+      "Correct: span links connect each message's span to the aggregated result, even across traces."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/span_links/#common-use-cases",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-013",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "medium",
+    "q": "An engineer opens a batch job trace larger than 100MB, and the Trace View switches to Trace Preview mode. Which visualizations can they use?",
+    "options": [
+      "Flame Graph and Span List",
+      "Waterfall and Map",
+      "Flame Graph only"
+    ],
+    "answer": 1,
+    "explanation": "Trace Preview mode, used when a trace exceeds 100MB, returns only the most critical spans and limits visualizations to Waterfall and Map. In the Waterfall, numbered pills let you fetch the remaining spans.",
+    "notes": [
+      "Wrong: neither the Flame Graph nor the Span List is available in Trace Preview.",
+      "Correct: large traces can only be viewed with Waterfall and Map.",
+      "Wrong: the Flame Graph is the normal default but is not offered in Trace Preview."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#trace-preview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-014",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "medium",
+    "q": "In the Flame Graph of a trace, an engineer types `service:web-*` in the span search bar. No spans are highlighted, although the trace has spans from `web-ui` and `web-api`. Why?",
+    "options": [
+      "Wildcards are not supported in the Trace View search bar",
+      "Span search only works in the Span List visualization",
+      "Key-value search only accepts the `resource` key, not `service`"
+    ],
+    "answer": 0,
+    "explanation": "Span search works in the Waterfall and Flame Graph and supports free text, `key:value` (for example `service:web-ui`), group, Boolean and range expressions, but wildcards are not supported in the Trace search bar.",
+    "notes": [
+      "Correct: the docs state that wildcards are not supported in the Trace search bar.",
+      "Wrong: span search is offered in the Waterfall and Flame Graph visualizations.",
+      "Wrong: key-value search accepts keys such as `service`; `service:web-ui` is the documented example."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#span-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-span-015",
+    "topic": "Insight Discovery",
+    "subtopic": "Span Summary",
+    "difficulty": "easy",
+    "q": "In a large trace's flame graph, an engineer focuses on one span to investigate it. What is the effect?",
+    "options": [
+      "Other spans are excluded from span search results until focus is reset",
+      "The view shows that span plus its parent spans up to the root span",
+      "The view rescales with that span as the new root, showing it and its children"
+    ],
+    "answer": 2,
+    "explanation": "Focusing narrows the view to the span and its children, and the visualization rescales with that span as the new root. It only changes the display: it does not filter search results or alter the trace.",
+    "notes": [
+      "Wrong: focus does not filter spans out of search results.",
+      "Wrong: focus shows the span's children, not its ancestors.",
+      "Correct: the selected span becomes the new root and its descendants fill the timeline."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/trace_view/#focus-on-a-span",
+    "verified": "2026-11"
+  }
+]

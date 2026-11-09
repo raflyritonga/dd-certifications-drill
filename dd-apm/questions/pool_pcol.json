@@ -1,0 +1,527 @@
+[
+  {
+    "id": "ap-pcol-001",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "easy",
+    "q": "A Java service is started like this:\n\njava -jar shop.jar -javaagent:dd-java-agent.jar -Ddd.profiling.enabled=true\n\nNo profiles arrive in Datadog. What is the fix?",
+    "options": [
+      "Move `-javaagent` and the `-D` flags before `-jar`",
+      "Rename the property to `-Ddd.profiler.enabled=true`",
+      "Also export `DD_APM_ENABLED=true` for the application"
+    ],
+    "answer": 0,
+    "explanation": "The `-javaagent` argument must come before `-jar`. Anything after `-jar <file>` is passed to the application as an argument instead of being treated as a JVM option, so the agent never loads.",
+    "notes": [
+      "Correct: placed before `-jar`, `-javaagent` and the system properties become JVM options.",
+      "Wrong: the documented system property is `-Ddd.profiling.enabled`; the real problem is the argument order.",
+      "Wrong: `DD_APM_ENABLED` is an Agent setting; it does not make the JVM load an agent passed after `-jar`."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=java",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-002",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "easy",
+    "q": "A Python service already runs under `ddtrace-run` and sends traces. What is the documented way to also turn on the Continuous Profiler?",
+    "options": [
+      "Install the separate `ddprofiler` pip package and import it at startup",
+      "Set `DD_PROFILING_ENABLED=true` in the environment of the `ddtrace-run` command",
+      "Start the app with `ddtrace-run --profiling python app.py` instead"
+    ],
+    "answer": 1,
+    "explanation": "`ddtrace` provides both tracing and profiling. Setting `DD_PROFILING_ENABLED=true` when launching with `ddtrace-run` enables the profiler.",
+    "notes": [
+      "Wrong: the profiler is shipped inside `ddtrace`; there is no separate package to install.",
+      "Correct: `DD_PROFILING_ENABLED=true ddtrace-run python app.py` is the documented setup.",
+      "Wrong: profiling is turned on with the environment variable, not a `ddtrace-run` flag."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=python",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-003",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "A team wants to control the Python profiler's life cycle in code instead of using `ddtrace-run`:\n\nfrom ddtrace.profiling import Profiler\nprof = Profiler(service='my-web-app')\nprof.start()\n\nWhere should `prof.start()` be called?",
+    "options": [
+      "At the end of startup, after all modules are imported, so imports do not add overhead",
+      "Inside each request handler, so that samples are tied to individual requests",
+      "As early as possible, for example before other imports, so everything is profiled"
+    ],
+    "answer": 2,
+    "explanation": "The docs say `prof.start()` should run as early as possible, for example before other imports, to make sure everything is profiled.",
+    "notes": [
+      "Wrong: starting late means code that runs before `start()` is not profiled.",
+      "Wrong: the profiler is started once per process, not per request.",
+      "Correct: start the `Profiler` object as early as possible in the process."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=python",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-004",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "A Go service is traced with `dd-trace-go` v2 and is not built with Orchestrion. The team sets `DD_PROFILING_ENABLED=true` on the container, but no profiles appear. What is missing?",
+    "options": [
+      "The `-Ddd.profiling.enabled=true` flag, which is how the Go profiler is switched on",
+      "A call to `profiler.Start(...)`, with `defer profiler.Stop()`, in the application code",
+      "`DD_APM_PROFILING_ENABLED=true` on the Agent, which Go needs instead of the SDK setting"
+    ],
+    "answer": 1,
+    "explanation": "For Go you import `github.com/DataDog/dd-trace-go/v2/profiler` and start it in code with `profiler.Start`. Only apps built with Orchestrion already contain the profiler code and can be enabled with `DD_PROFILING_ENABLED=true` alone.",
+    "notes": [
+      "Wrong: `-D` system properties are a Java (JVM) mechanism.",
+      "Correct: without Orchestrion, the Go profiler must be started in code.",
+      "Wrong: there is no such Agent setting; the profiler is configured in the application."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=go",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-005",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "A Go service calls `profiler.Start` without the `WithProfileTypes` option. Engineers want to look at mutex contention, but no mutex profile is available. Why?",
+    "options": [
+      "Only CPU and heap are on by default; add mutex with `profiler.WithProfileTypes`",
+      "Mutex profiles are only collected when the Datadog Agent runs v7.50 or later",
+      "Mutex contention profiling exists only for Java and .NET, not for the Go profiler"
+    ],
+    "answer": 0,
+    "explanation": "The Go profiler enables only the CPU and heap profiles by default. Block, mutex and goroutine profiles are off to keep overhead low and are enabled through `profiler.WithProfileTypes`.",
+    "notes": [
+      "Correct: add `profiler.MutexProfile` to `WithProfileTypes` to collect it.",
+      "Wrong: profile types are chosen in the Go SDK, not by the Agent version.",
+      "Wrong: Go has a `MutexProfile` type; it is just disabled by default."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=go",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-006",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "A team checks its services against the profiler's documented runtime requirements. Which service can be profiled?",
+    "options": [
+      "A Ruby service running on JRuby 9.4",
+      "A PHP 8.2 service on 64-bit Linux",
+      "A Node.js 16 service on Linux"
+    ],
+    "answer": 1,
+    "explanation": "The PHP profiler requires at least PHP 7.1 on 64-bit Linux, so PHP 8.2 qualifies. The Ruby profiler does not support JRuby or TruffleRuby, and the Node.js profiler requires at least Node.js 18.",
+    "notes": [
+      "Wrong: the Ruby profiler requires Ruby 2.5+ and does not support JRuby or TruffleRuby.",
+      "Correct: PHP 7.1 or later on 64-bit Linux is supported.",
+      "Wrong: the Node.js profiler requires at least Node.js 18."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=php",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-007",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "easy",
+    "q": "A Ruby app has the `datadog` gem installed and `DD_PROFILING_ENABLED=true` set. Which start command does the setup guide use so the profiler starts with the app?",
+    "options": [
+      "`bundle exec ddtrace-run ruby myapp.rb`",
+      "`bundle exec datadog-profile ruby myapp.rb`",
+      "`bundle exec ddprofrb exec ruby myapp.rb`"
+    ],
+    "answer": 2,
+    "explanation": "The Ruby setup adds `ddprofrb exec` to the application start command, for example `bundle exec ddprofrb exec ruby myapp.rb` (or `bin/rails s` for Rails).",
+    "notes": [
+      "Wrong: `ddtrace-run` is the Python launcher.",
+      "Wrong: there is no `datadog-profile` command in the Ruby gem.",
+      "Correct: `ddprofrb exec` wraps the Ruby start command."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=ruby",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-008",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "hard",
+    "q": "A Rails app runs under the Phusion Passenger web server, so it cannot be started with `ddprofrb exec`. How can the Ruby profiler still be started?",
+    "options": [
+      "Add `require 'datadog/profiling/preload'` to the application entry point, such as `config.ru`",
+      "Set `DD_PROFILING_PRELOAD=true` so the gem starts the profiler on its own",
+      "Enable Single Step APM Instrumentation, which starts the Ruby profiler for Passenger apps"
+    ],
+    "answer": 0,
+    "explanation": "When `ddprofrb exec` is not an option, for example with Phusion Passenger, the docs say to add `require 'datadog/profiling/preload'` to the entry point, such as `config.ru`.",
+    "notes": [
+      "Correct: the preload require is the documented alternative to `ddprofrb exec`.",
+      "Wrong: `DD_PROFILING_PRELOAD` is not a documented setting.",
+      "Wrong: Single Step APM Instrumentation cannot be used to set up the Ruby profiler."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=ruby",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-009",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "hard",
+    "q": "A Linux host uses Single Step APM Instrumentation for Java, Python and Ruby services, and `application_monitoring.yaml` sets `DD_PROFILING_ENABLED: auto`. Java and Python profiles appear, but the Ruby service has none. What explains this?",
+    "options": [
+      "`application_monitoring.yaml` is only read by the Java and Python SDKs",
+      "Single Step APM Instrumentation cannot be used to set up the Ruby profiler",
+      "Ruby profiles are uploaded only every 15 minutes, so they take longer to appear"
+    ],
+    "answer": 1,
+    "explanation": "The Ruby profiler docs state that Single Step APM Instrumentation cannot be used to set up the Ruby profiler. Ruby needs the `datadog` gem with `ddprofrb exec` or the preload require.",
+    "notes": [
+      "Wrong: the file applies to any SDK loaded on the host, not only Java and Python.",
+      "Correct: SSI does not set up profiling for Ruby.",
+      "Wrong: profiles are uploaded about once a minute in every language."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=ruby",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-010",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "A team wants to try the Continuous Profiler on AWS Lambda functions. For which runtime do the docs list profiler support on AWS Lambda, in Preview?",
+    "options": [
+      "Python",
+      "Go",
+      "Java"
+    ],
+    "answer": 0,
+    "explanation": "Python (and Node.js) profiler support is in Preview for some serverless platforms such as AWS Lambda. The Go and Java profilers are not supported on serverless platforms.",
+    "notes": [
+      "Correct: Python profiling on AWS Lambda is in Preview.",
+      "Wrong: the Go profiler is not supported on serverless platforms such as AWS Lambda.",
+      "Wrong: the Java profiler is not supported on serverless platforms."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=python",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-011",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "easy",
+    "q": "A Node.js service starts the tracer in code:\n\nconst tracer = require('dd-trace').init({\n  service: 'my-web-app',\n  env: 'prod'\n})\n\nWhich option, added to `init`, turns on the profiler?",
+    "options": [
+      "`runtimeMetrics: true`",
+      "`profiling: true`",
+      "`profiler: { upload: true }`"
+    ],
+    "answer": 1,
+    "explanation": "The Node.js in-code setup passes `profiling: true` to `require('dd-trace').init()`. The environment variable equivalent is `DD_PROFILING_ENABLED=true`.",
+    "notes": [
+      "Wrong: `runtimeMetrics` enables runtime metrics, not profiling.",
+      "Correct: `profiling: true` enables the profiler in code.",
+      "Wrong: this is not a documented `init` option."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=node_js",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-012",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "easy",
+    "q": "A .NET service was instrumented with the Datadog .NET APM package. Traces appear, but the Profiles page is empty for the service. What is the most likely reason?",
+    "options": [
+      "The .NET profiler only supports .NET Framework apps, not .NET 6 and later versions",
+      "Profiles are only sent while `DD_TRACE_DEBUG=true` is set",
+      "The profiler is off by default; `DD_PROFILING_ENABLED` must be set for the app"
+    ],
+    "answer": 2,
+    "explanation": "The docs warn that, unlike APM, the Continuous Profiler is not activated when the APM package is installed. You must enable it explicitly for each application you want to profile.",
+    "notes": [
+      "Wrong: .NET Core 2.1+, .NET 5 to .NET 10 and .NET Framework 4.6.1+ are supported.",
+      "Wrong: `DD_TRACE_DEBUG` only turns on debug logging.",
+      "Correct: set `DD_PROFILING_ENABLED` for the application to activate the profiler."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=dot_net",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-013",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "On Linux with Single Step APM Instrumentation, a .NET application sets `DD_PROFILING_ENABLED=Auto`. When does the profiler activate for a process?",
+    "options": [
+      "Right at startup, for every .NET process on the host",
+      "Only after Remote Configuration turns profiling on for that service in the UI",
+      "Only if it has created a trace and has run for over 30 seconds"
+    ],
+    "answer": 2,
+    "explanation": "With `Auto`, the .NET profiler activates only if a trace has been created and the application lasts more than 30 seconds. This avoids profiling short-lived processes that never trace.",
+    "notes": [
+      "Wrong: that is the behavior of `1` or `true`, not `Auto`.",
+      "Wrong: `Auto` depends on traces and process lifetime, not on Remote Configuration.",
+      "Correct: both conditions, a trace and more than 30 seconds of runtime, must be met."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=dot_net",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-014",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "hard",
+    "q": "A team moved a .NET container to Single Step APM Instrumentation, but its Dockerfile still sets `CORECLR_ENABLE_PROFILING`, `CORECLR_PROFILER` and `CORECLR_PROFILER_PATH` from an earlier manual install. What happens?",
+    "options": [
+      "SSI detects the old variables and overrides them with the SDK version it installed",
+      "The earlier install is silently used instead of SSI's; remove the variables",
+      "The container refuses to start until `DD_PROFILING_ENABLED=Auto` is also set"
+    ],
+    "answer": 1,
+    "explanation": "If these variables (and the `Datadog.Linux.ApiWrapper.x64.so` entry in `LD_PRELOAD`) are still set, the previously installed version is silently used instead of the one installed by SSI. Remove them to avoid conflicts.",
+    "notes": [
+      "Wrong: SSI does not override them; the old install wins silently.",
+      "Correct: remove the `CORECLR_*` variables and the `LD_PRELOAD` entry.",
+      "Wrong: nothing fails at startup; the issue is that the wrong version runs."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=dot_net",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-015",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "A .NET service runs in a Linux container limited to 0.5 CPU. Profiling is enabled and the Agent is reachable, but no profiles arrive. What explains this?",
+    "options": [
+      "It is disabled below one core unless `DD_PROFILING_MIN_CORES_THRESHOLD` is lowered",
+      "The profiler needs at least 2 GB of container memory and silently stops below that limit",
+      "Containers must set `DD_PROFILING_WALLTIME_ENABLED=true` before any profile is uploaded"
+    ],
+    "answer": 0,
+    "explanation": "Because the profiler has a fixed overhead, it is disabled in containers with less than one core. Setting `DD_PROFILING_MIN_CORES_THRESHOLD` to a lower value, such as `0.5`, allows it to run, at the cost of more CPU use.",
+    "notes": [
+      "Correct: the one-core threshold can be lowered with `DD_PROFILING_MIN_CORES_THRESHOLD`.",
+      "Wrong: the documented limit is CPU cores, not memory.",
+      "Wrong: wall time is on by default; disabling it is a way to reduce CPU use."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profiler_troubleshooting/dotnet/#linux-containers",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-016",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "A Java team finds the default profiler overhead too high and wants Datadog's built-in lower-overhead configuration. Which JVM option applies it?",
+    "options": [
+      "`-Ddd.profiling.mode=lite`",
+      "`-Ddd.profiling.jfr-template-override-file=comprehensive`",
+      "`-Ddd.profiling.jfr-template-override-file=minimal`"
+    ],
+    "answer": 2,
+    "explanation": "The `minimal` template raises the sampling threshold for `ThreadSleep`, `ThreadPark` and `JavaMonitorWait` to 500 ms (from 100 ms) and disables the allocation and exception events.",
+    "notes": [
+      "Wrong: there is no `dd.profiling.mode` setting.",
+      "Wrong: `comprehensive` adds granularity and increases overhead.",
+      "Correct: `minimal` is the documented lower-overhead configuration."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profiler_troubleshooting/java/#reduce-overhead-from-default-setup",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-017",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "easy",
+    "q": "After running `php datadog-setup.php --enable-profiling --php-bin=all`, how can you quickly confirm that the profiler extension is loaded?",
+    "options": [
+      "Run `php -v` and check that the output lists `datadog-profiling`",
+      "Run `php datadog-setup.php status` and check for `profiling: active`",
+      "Run `datadog-agent status` and look for a PHP profiler check"
+    ],
+    "answer": 0,
+    "explanation": "The PHP setup guide validates the install by running `php -v` and checking for `datadog-profiling` in the output.",
+    "notes": [
+      "Correct: `php -v` shows `with datadog-profiling vX` when the extension is loaded.",
+      "Wrong: the documented validation step is `php -v`, not a `status` subcommand.",
+      "Wrong: the profiler is a PHP extension, not an Agent check."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=php",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-018",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "A PHP-FPM app has the profiler installed, but no profiles show up. The PHP troubleshooting guide says to run `phpinfo()`. Where should it run?",
+    "options": [
+      "From the command line with `php -i`, because the CLI shares the web server's settings",
+      "From the web server, because each Server API (SAPI) can be configured independently",
+      "On the Agent host, because the Agent gathers the profiler's diagnostics"
+    ],
+    "answer": 1,
+    "explanation": "The profiler hooks into `phpinfo()` to run diagnostics. If the web server has the problem, run `phpinfo()` from the web server and not the command line, because each SAPI can be configured independently.",
+    "notes": [
+      "Wrong: the CLI SAPI may be configured differently from PHP-FPM.",
+      "Correct: run it in the SAPI that has the problem, here the web server.",
+      "Wrong: the diagnostics come from the PHP extension, not the Agent."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profiler_troubleshooting/php/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-019",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "easy",
+    "q": "Before enabling the profiler, a team checks its Datadog Agent. Which setup matches the profiler requirements?",
+    "options": [
+      "Agent v5+ with DogStatsD listening on `8125/UDP`",
+      "Agent v7+ with the Process Agent on; APM can stay off",
+      "Agent v6+ (v7+ recommended) with APM enabled on `8126/TCP`"
+    ],
+    "answer": 2,
+    "explanation": "The profiler needs Datadog Agent v6+ (v7+ recommended). If APM is not already enabled, set `DD_APM_ENABLED=true` and the port to `8126/TCP`.",
+    "notes": [
+      "Wrong: Agent v5 is below the minimum, and `8125/UDP` is the DogStatsD port.",
+      "Wrong: the Process Agent is unrelated; APM must be enabled.",
+      "Correct: Agent v6+ with APM on `8126/TCP`."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=java",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-020",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "A Python service is profiled with `ddtrace`. Which environment variable sets how often the profiler flushes its recorded data, and what is its default?",
+    "options": [
+      "`DD_PROFILING_FLUSH_INTERVAL`, default `60.0` seconds",
+      "`DD_PROFILING_UPLOAD_INTERVAL`, default `15.0` seconds",
+      "`DD_PROFILING_UPLOAD_INTERVAL`, default `60.0` seconds"
+    ],
+    "answer": 2,
+    "explanation": "In `ddtrace`, `DD_PROFILING_UPLOAD_INTERVAL` is the interval in seconds to wait before flushing recorded events. Its default is `60.0`.",
+    "notes": [
+      "Wrong: `ddtrace` has no `DD_PROFILING_FLUSH_INTERVAL`; the setting is `DD_PROFILING_UPLOAD_INTERVAL`.",
+      "Wrong: the default is `60.0` seconds, not 15.",
+      "Correct: `DD_PROFILING_UPLOAD_INTERVAL` defaults to `60.0` seconds."
+    ],
+    "ref": "https://ddtrace.readthedocs.io/en/stable/configuration.html",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-021",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "A .NET service is profiled, but `DD_ENV` and `DD_VERSION` are not set for it. Which `env` and `version` values do its profiles get?",
+    "options": [
+      "`unspecified-environment` and `unspecified-version`",
+      "`none` and `latest`",
+      "No values; the profiles are rejected until both are set"
+    ],
+    "answer": 0,
+    "explanation": "For the .NET profiler, `DD_ENV` falls back to `unspecified-environment` and `DD_VERSION` to `unspecified-version` when they are not set. If `DD_SERVICE` is missing, the service name is derived from the application name.",
+    "notes": [
+      "Correct: these are the documented fallback values for `DD_ENV` and `DD_VERSION`.",
+      "Wrong: `none` and `latest` are not the documented defaults.",
+      "Wrong: profiles are still sent; they get the `unspecified-*` values instead."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/enabling/?prog_lang=dot_net",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-022",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "A Node.js service on Windows Server has tracing and the profiler enabled with a current `dd-trace` version. Profiles appear, but its spans show no data on the Profiles tab. What explains this?",
+    "options": [
+      "The Trace to Profiling integration for Node.js is not available on Windows",
+      "Node.js also needs `DD_PROFILING_TIMELINE_ENABLED=true` to link spans to profiles",
+      "Each span must be activated in a scope before the profiler can link to it"
+    ],
+    "answer": 0,
+    "explanation": "For Node.js, the Trace to Profiling integration is enabled by default when profiling is on, but only on Linux and macOS. The feature is not available on Windows.",
+    "notes": [
+      "Correct: Node.js Trace to Profiling works on Linux and macOS only.",
+      "Wrong: for Node.js the integration is on by default on Linux and macOS; no extra variable is listed.",
+      "Wrong: scope activation is the requirement for manually created Java spans."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/connect_traces_and_profiles/#prerequisites",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-023",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "hard",
+    "q": "A Java service runs on Windows, where the profiler uses the Java Flight Recorder (JFR) engine. The team cannot break down its flame graphs by endpoint. Why?",
+    "options": [
+      "Endpoint profiling must first be turned on with `DD_PROFILING_ENDPOINT_COLLECTION_ENABLED=true`",
+      "Endpoint profiling for Java requires the Datadog profiler engine, and JFR is not supported",
+      "Endpoint profiling only works when the service also sends logs that carry trace IDs"
+    ],
+    "answer": 1,
+    "explanation": "Endpoint profiling is on by default once Java profiling is enabled, but it requires the Datadog profiler engine; JFR is not supported. On Windows the Java profiler uses JFR.",
+    "notes": [
+      "Wrong: for Java, endpoint profiling is enabled by default when profiling is on.",
+      "Correct: Java endpoint profiling needs the Datadog profiler, not JFR.",
+      "Wrong: endpoint profiling uses traces and profiles, not log correlation."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/connect_traces_and_profiles/#prerequisites-1",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-024",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "medium",
+    "q": "On a Linux host using Single Step APM Instrumentation, a team wants every instrumented Java and Python service to be profiled without editing each service's start command. Which configuration does Datadog document?",
+    "options": [
+      "`DD_PROFILING_ENABLED` under `apm_configuration_default` in `application_monitoring.yaml`",
+      "`apm_config.profiling_enabled: true` in the Agent's main `datadog.yaml` file",
+      "`DD_PROFILING_ENABLED` under `runtime_security_config` in `system-probe.yaml`"
+    ],
+    "answer": 0,
+    "explanation": "`/etc/datadog-agent/application_monitoring.yaml` configures any SDK on the host, including SDKs loaded by SSI, through the `apm_configuration_default` block. Environment variables set on a service override the file.",
+    "notes": [
+      "Correct: host-wide SDK settings go in `application_monitoring.yaml`.",
+      "Wrong: profiling is an SDK setting, not an `apm_config` option in `datadog.yaml`.",
+      "Wrong: `system-probe.yaml` configures the system probe, not the SDKs."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_collection/library_config/application_monitoring_yaml/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-pcol-025",
+    "topic": "Application Instrumentation",
+    "subtopic": "Profile Collection",
+    "difficulty": "hard",
+    "q": "On a Linux host, a Java service's CPU profiles look degraded. The host has `/proc/sys/kernel/perf_event_paranoid` set to `3`. What is happening?",
+    "options": [
+      "The Datadog engine hands CPU sampling to JFR, which stops collecting CPU samples entirely",
+      "The profiler stays disabled until the value is lowered all the way to `-1`",
+      "Perf events are unusable, so CPU sampling falls back to itimer; set it to `2` or lower"
+    ],
+    "answer": 2,
+    "explanation": "With `perf_event_paranoid` at `3`, the profiler cannot use perf events to schedule CPU sampling and falls back to itimer, which degrades profile quality. Setting it to `2` or lower fixes this.",
+    "notes": [
+      "Wrong: the documented fallback is itimer, and CPU samples are still collected.",
+      "Wrong: the profiler still runs; `2` or lower is enough.",
+      "Correct: lowering the value to `2` or below lets the profiler use perf events again."
+    ],
+    "ref": "https://docs.datadoghq.com/profiler/profiler_troubleshooting/java/#advanced-linux-settings-for-cpu-profiles",
+    "verified": "2026-11"
+  }
+]

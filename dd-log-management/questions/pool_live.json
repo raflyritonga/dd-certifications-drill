@@ -1,0 +1,422 @@
+[
+  {
+    "id": "lm-live-001",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "easy",
+    "q": "From the Log Explorer, how do you switch to Live Tail to watch logs as they arrive?",
+    "options": [
+      "Click Group into Patterns and set the auto-refresh interval to one second.",
+      "Choose the Live Tail option in the time range selector.",
+      "Open the Index facet and select the `livetail` index."
+    ],
+    "answer": 1,
+    "explanation": "Live Tail is opened from the Log Explorer by choosing the Live Tail option in the time range (time picker). It then queries logs as they flow into Datadog.",
+    "notes": [
+      "Wrong: Group into Patterns aggregates indexed logs; it does not stream logs in real time.",
+      "Correct: the docs say to choose the Live Tail option in the timerange of the Log Explorer.",
+      "Wrong: there is no `livetail` index; the Index facet only scopes searches to your indexes and historical views."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/live_tail/#live-tail-view",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-002",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "easy",
+    "q": "A team has just deployed a new version of the `checkout` service and wants to confirm within seconds that the process started cleanly. Which Datadog view fits this best?",
+    "options": [
+      "Live Tail",
+      "A historical view rehydrated from the log archive",
+      "Watchdog Insights in a Saved View"
+    ],
+    "answer": 0,
+    "explanation": "Live Tail shows log events in near real time and the docs name checking that a process started correctly or that a new deployment went smoothly as a typical use.",
+    "notes": [
+      "Correct: Live Tail streams logs in near real time, ideal for checking a fresh deployment.",
+      "Wrong: rehydration pulls old logs back from an archive; it is not for watching live startup logs.",
+      "Wrong: Watchdog Insights surfaces anomalies and outliers in a search context; it is not a real-time stream to confirm startup."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/live_tail/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-003",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "easy",
+    "q": "Which statement about the logs shown in Live Tail is accurate?",
+    "options": [
+      "They are the raw payloads as received, before any pipeline runs.",
+      "They are only logs that matched an index filter and passed every exclusion filter.",
+      "They are structured, processed, and enriched by your log pipelines."
+    ],
+    "answer": 2,
+    "explanation": "Logs flowing through Live Tail are already structured, processed, and enriched by Log Pipelines. Live Tail also shows non-indexed logs, so index and exclusion filters do not limit it.",
+    "notes": [
+      "Wrong: Live Tail shows logs after pipeline processing, not raw payloads.",
+      "Wrong: Live Tail shows both indexed and non-indexed logs, including logs removed by exclusion filters.",
+      "Correct: the docs state Live Tail logs are structured, processed, and enriched from Log Pipelines."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/live_tail/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-004",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "easy",
+    "q": "An engineer sees `service:cart status:info` logs streaming in Live Tail, but the same query in the Log Explorer over the past 15 minutes returns nothing. What is the most likely cause?",
+    "options": [
+      "Live Tail only shows logs for attributes that have a declared facet.",
+      "The Log Explorer cannot return logs that are less than one hour old.",
+      "An index exclusion filter is removing those logs from the index."
+    ],
+    "answer": 2,
+    "explanation": "Excluded logs are discarded from indexes but still flow through Live Tail. Datadog's troubleshooting for logs present in Live Tail but missing from the Log Explorer is to review exclusion filters and index filters.",
+    "notes": [
+      "Wrong: Live Tail search does not need facets, and facets would not explain the Explorer returning nothing.",
+      "Wrong: the Log Explorer searches recent indexed logs; a Past 15 minutes search is a normal use.",
+      "Correct: exclusion filters drop logs from the index, so they appear in Live Tail but not in the Explorer."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/#logs-present-in-live-tail-but-missing-from-logs-explorer",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-005",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "medium",
+    "q": "The daily quota on the `main` index is reached at 11:00 UTC. What happens to new logs routed to that index for the rest of the quota period?",
+    "options": [
+      "They are dropped at intake, so they no longer reach Live Tail, archives, or log-based metrics.",
+      "They are not indexed but still appear in Live Tail, are archived, and feed log-based metrics.",
+      "They keep being indexed, and an event is generated to warn that the quota was exceeded."
+    ],
+    "answer": 1,
+    "explanation": "After an index's daily quota is reached, logs are no longer indexed but remain available in Live Tail, are sent to archives, and are used to generate metrics from logs.",
+    "notes": [
+      "Wrong: the quota only stops indexing; logs still flow through Live Tail, to archives, and into log-based metrics.",
+      "Correct: this matches the documented behavior once the daily quota is reached.",
+      "Wrong: the quota is a hard limit on indexing; an event is generated when it is reached, but indexing stops."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#set-daily-quota",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-006",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "medium",
+    "q": "During a traffic spike, a broad Live Tail query (`env:prod`) shows only some of the matching logs. What should the engineer do to see every matching log?",
+    "options": [
+      "Add more search filters to narrow the Live Tail query.",
+      "Pause Live Tail and wait for the skipped logs to replay.",
+      "Disable the exclusion filters on the production index."
+    ],
+    "answer": 0,
+    "explanation": "When too many matching logs flow in, Live Tail output is sampled (uniformly at random) for readability. Datadog recommends scoping the query down with additional filters to see every log.",
+    "notes": [
+      "Correct: a narrower query lowers the matching volume so Live Tail does not need to sample.",
+      "Wrong: sampled-out logs are not queued for replay in Live Tail.",
+      "Wrong: exclusion filters do not affect Live Tail; the sampling is a display limit for readability."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/live_tail/#live-tail-view",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-007",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "hard",
+    "q": "Which of these queries cannot be used in Live Tail?",
+    "options": [
+      "`service:web-store status:error`",
+      "`*:timeout`",
+      "`CIDR(@network.client.ip, 10.0.0.0/8)`"
+    ],
+    "answer": 1,
+    "explanation": "`*:search_term` is the full-text search syntax, which cannot be used in Live Tail (or in index, archive, pipeline, rehydration, or log-based metric filters). `CIDR()` and `key:value` queries work in Live Tail.",
+    "notes": [
+      "Wrong: plain `key:value` reserved-attribute queries work in Live Tail.",
+      "Correct: full-text search (`*:term`) is not supported in Live Tail.",
+      "Wrong: the docs state `CIDR()` works in Log Explorer, Live Tail, dashboards, monitors, and log configurations."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search_syntax/#full-text-search",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-008",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "medium",
+    "q": "A developer wants to filter Live Tail on a new attribute, `@order.region`, that has no facet yet. What is required first?",
+    "options": [
+      "Create a facet for `@order.region` and wait for new logs to populate it.",
+      "Add `@order.region` to an index filter so that it becomes searchable.",
+      "Nothing: Live Tail search does not need a facet."
+    ],
+    "answer": 2,
+    "explanation": "Facets are not needed for Live Tail search. Autocomplete relies on facets, but any input that matches incoming logs works.",
+    "notes": [
+      "Wrong: facets help autocomplete and analytics, but Live Tail search works without them.",
+      "Wrong: index filters route logs to indexes; they do not make attributes searchable in Live Tail.",
+      "Correct: the facets page lists Live Tail search among the features that do not need facets."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/facets/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-009",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "medium",
+    "q": "A role has the `logs_live_tail` permission and Logs Read Data with no restriction query. Its legacy Logs Read Index Data permission is scoped to only the `audit` index. What can members of this role do in Live Tail?",
+    "options": [
+      "Use Live Tail regardless of their index-scoped read access.",
+      "See in Live Tail only the logs that are routed to the `audit` index.",
+      "Nothing, because Live Tail also requires the `logs_write_pipelines` permission."
+    ],
+    "answer": 0,
+    "explanation": "`logs_live_tail` is a global permission that grants access to Live Tail regardless of the Logs Read Index Data permission.",
+    "notes": [
+      "Correct: the permission is global and independent of index-scoped read access.",
+      "Wrong: index scoping applies to indexed data, not to Live Tail access.",
+      "Wrong: `logs_write_pipelines` is for editing pipelines; it is not needed to use Live Tail."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/logs-rbac-permissions/#logs_live_tail",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-010",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "hard",
+    "q": "A user's role is restricted by the query `service:api`, and the role has the Live Tail permission. The user opens Live Tail with an empty query. Which logs does the user see?",
+    "options": [
+      "All ingested logs, because restriction queries apply to indexed logs only.",
+      "Only `service:api` logs.",
+      "No logs until the role also gets Logs Read Index Data on every index."
+    ],
+    "answer": 1,
+    "explanation": "Restriction queries (Logs Read Data) sit on top of the legacy permissions: a user restricted to `service:api` with Live Tail permission only sees `service:api` logs in Live Tail.",
+    "notes": [
+      "Wrong: restriction queries also limit what the user sees in Live Tail.",
+      "Correct: the RBAC docs use this exact case: the user only sees `service:api` logs in Live Tail.",
+      "Wrong: Live Tail permission is global and does not depend on index read access."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/logs-rbac-permissions/#legacy-permissions",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-011",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "hard",
+    "q": "Hosts in Jakarta write logs with local-time timestamps (UTC+7) and no offset, and a Date Remapper uses that attribute. The logs are ingested, but the team cannot find them in Live Tail. What is the likely reason?",
+    "options": [
+      "Live Tail rejects logs whose date attribute has no explicit timezone offset.",
+      "Live Tail only shows logs whose host has the `logs_live_tail` tag.",
+      "The timezone offset puts their timestamps outside Live Tail's 15-minute window."
+    ],
+    "answer": 2,
+    "explanation": "Logs only appear in Live Tail if their timestamps fall within its 15-minute period. Timestamps from a non-UTC local time can be shifted outside it; fix the date attribute so it reflects UTC (for example with a Grok date matcher and timezone).",
+    "notes": [
+      "Wrong: Live Tail does not reject logs over their date format; the shifted timestamp is what puts them outside its window.",
+      "Wrong: `logs_live_tail` is a role permission, not a host tag.",
+      "Correct: the Live Tail troubleshooting page points to timestamps outside the 15-minute window due to timezone offsets."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/live_tail/#check-log-timestamps",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-012",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "hard",
+    "q": "Card numbers were accidentally logged by a service for a few hours. While scoping where the data now lives in Datadog, how much of it persists through Live Tail?",
+    "options": [
+      "Nothing beyond the 50 logs cached in each viewer's browser.",
+      "Everything from the past 15 days, matching the default index retention.",
+      "The last 1,000 logs per query, kept for 24 hours."
+    ],
+    "answer": 0,
+    "explanation": "Datadog's guide on sensitive data notes that Live Tail has no persistence beyond the 50 logs cached in browsers, and broad queries can be heavily sampled. Indexes, archives, log-based metrics and monitor notifications are the places to check.",
+    "notes": [
+      "Correct: Live Tail keeps no history beyond the 50 logs cached in the browser.",
+      "Wrong: retention applies to indexes, not to Live Tail.",
+      "Wrong: Live Tail keeps no per-query store; the 24-hour limit belongs to Archive Search results."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/manage-sensitive-logs-data-access/#where-does-sensitive-data-live-in-datadog",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-013",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "medium",
+    "q": "Live Tail loads for everyone on the team except one engineer on the corporate VPN, whose Live Tail page shows no logs. Which host must their network allow?",
+    "options": [
+      "`agent-intake.logs.datadoghq.com`",
+      "`live.logs.datadoghq.com`",
+      "`stream.logs.datadoghq.com`"
+    ],
+    "answer": 1,
+    "explanation": "The Live Tail troubleshooting guide says to make sure the local or company network allows traffic from `live.logs.datadoghq.com`, and to test the path with `traceroute live.logs.datadoghq.com`.",
+    "notes": [
+      "Wrong: that is a log intake endpoint used by the Agent to send logs, not the Live Tail stream.",
+      "Correct: Live Tail needs traffic from `live.logs.datadoghq.com` to be allowed.",
+      "Wrong: this host name is not the documented Live Tail endpoint."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/live_tail/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-014",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "medium",
+    "q": "A team excludes 100% of `status:debug` logs from their index but wants a daily count of debug logs per service over the coming months. Which approach works?",
+    "options": [
+      "Group into Fields on `status:debug` in the Log Explorer, since exclusion filters do not affect analytics.",
+      "Run the aggregation in Live Tail, which keeps excluded logs for 15 days.",
+      "Generate a log-based metric from the debug logs."
+    ],
+    "answer": 2,
+    "explanation": "Log Explorer aggregations work on indexed logs only. For non-indexed logs Datadog suggests log-based metrics, temporarily disabling the exclusion filter, or rehydrating from archives.",
+    "notes": [
+      "Wrong: aggregations are supported for indexed logs only, so excluded logs are not counted.",
+      "Wrong: Live Tail has no aggregations and no retention.",
+      "Correct: log-based metrics are generated from ingested logs, including those excluded from indexes."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/analytics/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-015",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "easy",
+    "q": "A Log Explorer search combines a search query with which other element, set from the top right of the page?",
+    "options": [
+      "A time range",
+      "An index filter",
+      "A sampling rate"
+    ],
+    "answer": 0,
+    "explanation": "A Log Explorer search consists of a time range and a search query. The time range selector sits at the top right of the Log Explorer.",
+    "notes": [
+      "Correct: you pick the time window with the time range selector at the top right.",
+      "Wrong: index filters are configured on the Indexes page to route logs, not in the search.",
+      "Wrong: sampling rates belong to exclusion filters, not to Explorer searches."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/search/#search-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-016",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "medium",
+    "q": "An engineer types `since Jun 1` into the Log Explorer time picker. What kind of time frame does this create?",
+    "options": [
+      "Sliding: start and end both move forward with time.",
+      "Fixed: start and end are both frozen.",
+      "Growing: fixed start, with the end tracking now."
+    ],
+    "answer": 2,
+    "explanation": "`since {date}` is equivalent to `{date} to now`, a growing time frame with a fixed start that extends to the current time.",
+    "notes": [
+      "Wrong: sliding frames use syntax like `5h` or `3 mo`, where the start also moves.",
+      "Wrong: fixed frames freeze both ends, for example `Jan 1 - Jan 2`.",
+      "Correct: `since Jun 1` keeps June 1 as the start and grows to now."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/guide/custom_time_frames/#growing-time-frames",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-017",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "medium",
+    "q": "A user whose browser is set to UTC+7 types `9:00 am - 10:00 am` into the time picker. Which window is searched?",
+    "options": [
+      "9:00 to 10:00 UTC, because Datadog queries run in UTC.",
+      "9:00 to 10:00 in the browser's time zone (02:00 to 03:00 UTC).",
+      "9:00 to 10:00 in the time zone of each host that sent the logs."
+    ],
+    "answer": 1,
+    "explanation": "Queries run in UTC, but the query time frame is selected according to the browser's time zone, so the user's local 9-10 am is converted to 02:00-03:00 UTC.",
+    "notes": [
+      "Wrong: the query runs in UTC, but the typed times are read in the browser's time zone.",
+      "Correct: the time frame follows the browser's time zone.",
+      "Wrong: the time picker does not use each sending host's time zone."
+    ],
+    "ref": "https://docs.datadoghq.com/dashboards/guide/custom_time_frames/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-018",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "easy",
+    "q": "An index stores logs in the Flex Tier after its Standard retention ends. In the Log Explorer, how do you include those Flex logs in search results?",
+    "options": [
+      "Turn on Include Flex Logs next to the time picker.",
+      "Select `flex` in the Index facet.",
+      "Add `tier:flex` to the search query."
+    ],
+    "answer": 0,
+    "explanation": "The Log Explorer has an Include Flex Logs toggle, next to the time picker, that adds Flex Tier logs to search results.",
+    "notes": [
+      "Correct: the Include Flex Logs toggle sits next to the time picker.",
+      "Wrong: the Index facet scopes to indexes and historical views; there is no `flex` value to pick.",
+      "Wrong: `tier:flex` is not a documented search term for Flex logs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/flex_logs/#search-flex-logs-tier",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-019",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "medium",
+    "q": "An incident review needs the logs of one `user_id` from three weeks ago. Index retention is 15 days with no Flex Tier, and all logs are archived to Amazon S3. What gives quick access to them without re-indexing?",
+    "options": [
+      "Search the Log Explorer with the time range set to three weeks ago.",
+      "Pause Live Tail and scroll back three weeks.",
+      "Run an Archive Search on the S3 archive."
+    ],
+    "answer": 2,
+    "explanation": "Archive Search queries logs directly from archives without rehydrating them, streaming results in real time; up to 100,000 logs are kept for 24 hours. The docs use this exact case of logs older than a 15-day retention.",
+    "notes": [
+      "Wrong: logs older than the index retention are no longer searchable in the Log Explorer.",
+      "Wrong: Live Tail shows only logs as they arrive; it has no history to scroll back through.",
+      "Correct: Archive Search reads the archive directly, with no re-indexing needed."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/archive_search/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-live-020",
+    "topic": "Log Searching & Filtering",
+    "subtopic": "Live vs. Explorer",
+    "difficulty": "medium",
+    "q": "In a Pipeline Scanner session, an engineer clicks a log to see which pipelines and processors matched it, then edits a processor. What happens to the scanner's Live Tail, and how do they see logs processed by the edit?",
+    "options": [
+      "It keeps streaming, and the edit is reapplied to the logs already shown.",
+      "It pauses; click Play to see new logs processed by the updated pipelines.",
+      "The session ends; launch a new session to stream logs through the edit."
+    ],
+    "answer": 1,
+    "explanation": "Clicking a log in the Pipeline Scanner pauses its Live Tail. Edits do not change logs already processed; click Play to view new logs modified by the updated pipelines and processors.",
+    "notes": [
+      "Wrong: Live Tail pauses on click, and edits never change logs that were already processed.",
+      "Correct: Live Tail pauses when a log is selected, and Play resumes it with newly processed logs.",
+      "Wrong: the session keeps running for its 15 minutes; no relaunch is needed, just click Play."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipeline_scanner/#identify-pipelines-and-processors-modifying-a-log",
+    "verified": "2026-11"
+  }
+]

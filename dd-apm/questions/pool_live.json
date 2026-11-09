@@ -1,0 +1,422 @@
+[
+  {
+    "id": "ap-live-001",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "easy",
+    "q": "An engineer opens APM > Traces without changing any settings. Which data does the Trace Explorer search by default?",
+    "options": [
+      "All ingested spans from the last 15 minutes, in Live Search",
+      "Spans indexed by retention filters over the past 15 days",
+      "Traces kept by the intelligent retention filter over the past 30 days"
+    ],
+    "answer": 0,
+    "explanation": "Live Search is the default view on the Traces page. It shows all ingested spans over a rolling 15-minute window.",
+    "notes": [
+      "Correct: Live Search is the default and covers every ingested span for the last 15 minutes.",
+      "Wrong: indexed search is only used when you pick a time range longer than 15 minutes.",
+      "Wrong: intelligent-filter traces are part of indexed data, not the default Live view."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-002",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "easy",
+    "q": "An engineer is in Live Search and wants to look at spans from yesterday. How do they switch to searching retained spans?",
+    "options": [
+      "Turn off the Live toggle in the facet panel on the left",
+      "Set the time selector in the top right to a period longer than 15 minutes",
+      "Open APM > Retention Filters and click Search Indexed Spans"
+    ],
+    "answer": 1,
+    "explanation": "The time selector controls the mode. Choosing any time period greater than 15 minutes switches the Trace Explorer from live data to retained (indexed) data.",
+    "notes": [
+      "Wrong: the facet panel filters values; it has no Live toggle.",
+      "Correct: a time range longer than 15 minutes moves the search to indexed spans.",
+      "Wrong: the Retention Filters page manages filters; it is not where you search spans."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#indexed-spans-search-with-15-day-retention",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-003",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "medium",
+    "q": "Five minutes ago one customer started reporting failures. Their ID is stored as `customer_id` on a child span deep in the trace, and no retention filter targets that tag. What is the most reliable way to find their requests?",
+    "options": [
+      "Search indexed spans over the past hour, since the intelligent filter keeps every customer",
+      "Build a Trace Query, because only Trace Queries can match tags on child spans",
+      "Search `@customer_id` in Live Search, which matches any tag on any ingested span"
+    ],
+    "answer": 2,
+    "explanation": "Live Search matches the query against all ingested spans, on any span and any tag, for the last 15 minutes. Indexed search only finds spans that a retention filter kept.",
+    "notes": [
+      "Wrong: the intelligent filter keeps a representative sample, not every customer's spans.",
+      "Wrong: span queries in the Trace Explorer already match child spans; Trace Queries also only use retained traces.",
+      "Correct: within 15 minutes, Live Search covers 100% of ingested spans and any tag."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#filtering",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-004",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "medium",
+    "q": "A colleague shares a screenshot of the Trace Explorer showing the indicator \"Search - Only Indexed Data\". What does this tell you about their results?",
+    "options": [
+      "Only spans kept by retention filters are being searched",
+      "Only spans ingested in the last 15 minutes are being searched",
+      "Only spans with indexed facets, not raw attributes, are being searched"
+    ],
+    "answer": 0,
+    "explanation": "The Trace Explorer shows \"Search - Only Indexed Data\" when you search indexed spans, and \"Live Search - All ingested data\" when you are in Live mode.",
+    "notes": [
+      "Correct: this indicator means the search runs on spans indexed by retention filters.",
+      "Wrong: that describes Live mode, which shows the \"Live Search - All ingested data\" indicator.",
+      "Wrong: \"indexed\" refers to retained spans, not to which attributes have facets."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-005",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "medium",
+    "q": "The tag `feature_flag:beta-cart` only appears on spans that no retention filter indexes. An engineer searches `feature_flag:beta-cart` with the time range set to `Past 1 Day`. What do they get?",
+    "options": [
+      "Matching spans from the last 15 minutes only",
+      "No results",
+      "A 1% sample of matching spans from the whole day"
+    ],
+    "answer": 1,
+    "explanation": "With a range over 15 minutes the search runs on indexed spans only. If a tag exists only on spans not indexed by any retention filter, the search returns nothing, unlike Live Search.",
+    "notes": [
+      "Wrong: a 1-day range searches indexed data; it does not fall back to the live window.",
+      "Correct: no retention filter indexed those spans, so indexed search cannot find them.",
+      "Wrong: indexed search does not sample per query; it returns only spans a retention filter already kept."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#indexed-spans-search-with-15-day-retention",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-006",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "easy",
+    "q": "On 1 March a custom retention filter indexes a span from the `payments` service. Until roughly when can that span be found in the Trace Explorer?",
+    "options": [
+      "Until about 1 April, 30 days after indexing",
+      "Only until its 15-minute live window ends",
+      "Until about 16 March, 15 days after indexing"
+    ],
+    "answer": 2,
+    "explanation": "Spans indexed through a custom retention filter are kept for 15 days and stay searchable in the Trace Explorer, dashboards and monitors for that period.",
+    "notes": [
+      "Wrong: 30 days applies to spans kept by the intelligent retention filter, not custom filters.",
+      "Wrong: the 15-minute window applies to Live Search of ingested spans; indexing keeps the span longer.",
+      "Correct: custom retention filters keep indexed spans for 15 days."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#create-your-own-retention-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-007",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "medium",
+    "q": "In Live Search, an engineer builds a timeseries of checkout errors by region and wants to add it to a team dashboard. What should they do?",
+    "options": [
+      "Change the time range to over 15 minutes and export from the indexed timeseries view",
+      "Export the Live timeseries directly, since it covers 100% of ingested spans",
+      "Save the Live query as a saved view and add that view to the dashboard"
+    ],
+    "answer": 0,
+    "explanation": "Exporting to dashboards and monitors is only possible using retained spans. From the indexed timeseries view the query can be exported to a dashboard, monitor or notebook.",
+    "notes": [
+      "Correct: export works from the timeseries view on retained (indexed) spans.",
+      "Wrong: Live data cannot be exported to dashboards or monitors.",
+      "Wrong: saved views keep your explorer context; they are not dashboard widgets."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#live-search-for-15-minutes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-008",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "medium",
+    "q": "In the Live Explorer timeseries, an engineer tries to split span counts by both `service` and `availability-zone`. What limit applies?",
+    "options": [
+      "Live timeseries can be split by up to four dimensions",
+      "Live timeseries can be grouped by only one dimension",
+      "Live timeseries cannot be grouped at all"
+    ],
+    "answer": 1,
+    "explanation": "The Live Explorer (15 minutes) allows grouping by only one dimension. Timeseries on indexed spans can be split by up to three tags.",
+    "notes": [
+      "Wrong: four is the Group by limit for trace groups in the list view, not Live timeseries.",
+      "Correct: Live timeseries supports a single group-by dimension.",
+      "Wrong: one group-by dimension is allowed in Live mode."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/visualize/#timeseries",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-009",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "easy",
+    "q": "The Live Search list is scrolling too fast to read during an incident. How can the engineer freeze it?",
+    "options": [
+      "Set the rollup interval to `10min`",
+      "Switch the visualization to Top List",
+      "Click the Pause button at the top right of the screen"
+    ],
+    "answer": 2,
+    "explanation": "The Pause/Play button at the top right pauses or resumes the live stream. Selecting any span also pauses the stream.",
+    "notes": [
+      "Wrong: rollup applies to timeseries aggregation, not the live list stream.",
+      "Wrong: changing the visualization aggregates spans; it does not pause the list.",
+      "Correct: Pause/Play stops and restarts the live stream."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#live-search-for-15-minutes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-010",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "medium",
+    "q": "A service sends thousands of spans per second, and the Live Search list clearly shows only some of them. Which statement is true?",
+    "options": [
+      "Only the display is thinned; a search query still matches all ingested spans",
+      "Live Search keeps a 1% flat sample, so rare tags may not be found",
+      "Spans above the Agent's rate limit are held back until they are indexed"
+    ],
+    "answer": 0,
+    "explanation": "High-throughput streams show some spans for visual clarity, but you can search for all available spans in the query. Live Search shows ingested spans without sampling.",
+    "notes": [
+      "Correct: the display is thinned for readability; queries cover every ingested span.",
+      "Wrong: 1% flat sampling is part of the intelligent retention filter, not Live Search.",
+      "Wrong: Live Search shows spans as soon as the Agent sends them, before any indexing, and retention filters play no part in it."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#live-search-for-15-minutes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-011",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "medium",
+    "q": "On a high-traffic app, the Live Search list is full of internal spans. The team wants to see only the spans where requests enter each service. What should they do?",
+    "options": [
+      "Group the list by `service` with Group by",
+      "Select service entry spans in the box above the trace table",
+      "Use the `=>` operator to keep only direct parent spans"
+    ],
+    "answer": 1,
+    "explanation": "The box above the trace table lets you query service entry spans, root spans, or all spans. It only filters the list; other spans still appear in the flame graph.",
+    "notes": [
+      "Wrong: grouping aggregates spans per service but does not remove internal spans.",
+      "Correct: choosing service entry spans shows only each service's entry points.",
+      "Wrong: `=>` is a Trace Queries operator for parent-child relationships between span queries."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#filtering",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-012",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "hard",
+    "q": "The `Error Default` filter is disabled and no custom filter covers `service:billing`. A dashboard widget counting `service:billing status:error` spans shows data, but a Trace Analytics monitor with the same query never triggers. Why?",
+    "options": [
+      "Trace Analytics monitors evaluate only the last 15 minutes of Live data",
+      "Dashboards query ingested spans, while monitors query indexed spans",
+      "The spans come from the intelligent retention filter, which monitors exclude"
+    ],
+    "answer": 2,
+    "explanation": "Dashboards and notebooks use all indexed spans, including those kept by the intelligent retention filter. Trace Analytics monitors only evaluate spans kept by custom retention filters.",
+    "notes": [
+      "Wrong: Trace Analytics monitors evaluate indexed spans, not the Live 15-minute stream.",
+      "Wrong: dashboards also use indexed spans; exports from Live data are not possible.",
+      "Correct: intelligent-filter spans count in dashboards but are excluded from monitor evaluation."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#trace-search-and-analytics-on-indexed-spans",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-013",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "medium",
+    "q": "In indexed search, an engineer wants to see only the spans that diversity sampling kept. Which query filter should they add?",
+    "options": [
+      "`retained_by:diversity_sampling`",
+      "`@retention_reason:diversity`",
+      "`retained_by:intelligent_retention_filter`"
+    ],
+    "answer": 0,
+    "explanation": "Every retained span has a `retained_by` attribute. Spans captured by diversity sampling have `retained_by:diversity_sampling`.",
+    "notes": [
+      "Correct: this is the documented `retained_by` value for diversity sampling.",
+      "Wrong: `@retention_reason` refines flat-sampled spans with the values `rum` or `trace`.",
+      "Wrong: the intelligent filter's spans are tagged per mechanism (`diversity_sampling` or `flat_sampled`)."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#trace-search-and-analytics-on-indexed-spans",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-014",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "hard",
+    "q": "The retention filter list contains, in this order:\n\n1. `resource_name:\"POST /orders\"` at 10%\n2. `service:shop env:prod` at 100%\n\nEvery `POST /orders` span is from `service:shop env:prod`. Roughly what share of those spans can be found after 15 minutes?",
+    "options": [
+      "100%, because the highest matching retention rate wins",
+      "About 10%, because the first matching filter decides",
+      "About 10% plus 100% of the remainder, because both filters apply"
+    ],
+    "answer": 1,
+    "explanation": "Filter order changes indexing. A span that matches an earlier filter is either kept or dropped there, and later filters do not catch it.",
+    "notes": [
+      "Wrong: rates are not compared; the first matching filter in the list processes the span.",
+      "Correct: filter 1 keeps about 10% and drops the rest before filter 2 sees them.",
+      "Wrong: a span already processed by an upstream filter is not re-evaluated downstream."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#retention-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-015",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "easy",
+    "q": "A team adds a 100% retention filter for `service:search` hoping Live Search will show more of its spans. What effect does this have on Live Search?",
+    "options": [
+      "Live Search will show 100% of `service:search` spans instead of a sample",
+      "Live Search will keep `service:search` spans for 15 days instead of 15 minutes",
+      "None, because retention filters do not change which spans are ingested"
+    ],
+    "answer": 2,
+    "explanation": "Retention filters decide which ingested spans are indexed. They do not affect what the Agent sends to Datadog; ingestion is controlled with ingestion controls.",
+    "notes": [
+      "Wrong: Live Search already shows every ingested span without sampling.",
+      "Wrong: the Live window stays 15 minutes; the 15-day retention applies to indexed search.",
+      "Correct: retention filters act after ingestion, so Live Search is unchanged."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#retention-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-016",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "medium",
+    "q": "A product owner wants to track `@checkout.coupon` usage on a dashboard over the next six months. The spans are ingested but no retention filter indexes them. Which approach works?",
+    "options": [
+      "Generate a custom metric from spans in APM > Generate Metrics",
+      "Create a retention filter for the coupon spans",
+      "Pin a saved view of the Live Search query"
+    ],
+    "answer": 0,
+    "explanation": "Metrics generated from spans use all ingested spans, whether or not a retention filter indexes them, and are kept as custom metrics for 15 months.",
+    "notes": [
+      "Correct: span-based metrics are built from ingested spans and retained 15 months.",
+      "Wrong: spans indexed by a custom retention filter are kept only 15 days, far short of six months.",
+      "Wrong: Live Search only covers the last 15 minutes."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/generate_metrics/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-017",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "hard",
+    "q": "A span-level retention filter (no trace rate) indexes `service:api` spans. An engineer opens an `api` span indexed last week. Its trace also contained a child span from `service:inventory` that no retention filter indexed. What does the flame graph show?",
+    "options": [
+      "Only the `api` span, because unindexed spans are not stored after 15 minutes",
+      "The complete trace, including the `inventory` child span",
+      "The `api` span with a placeholder where the `inventory` span was"
+    ],
+    "answer": 1,
+    "explanation": "When you click an indexed span in the Trace Explorer you always see its complete trace context (all parent and child spans) in the flame graph or waterfall, whether or not those other spans were indexed. Only the indexed spans are searchable, though.",
+    "notes": [
+      "Wrong: the trace view shows the full trace context for an indexed span, not only the indexed span itself.",
+      "Correct: an indexed span always opens with its complete trace, including spans that were not indexed.",
+      "Wrong: unindexed spans in the trace are displayed normally; they are just not searchable on their own."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#create-your-own-retention-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-018",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "easy",
+    "q": "In Live Search, an engineer wants to filter on `cart.value`, which is not defined as a facet. What can they do?",
+    "options": [
+      "Nothing until they create a `cart.value` facet",
+      "Nothing, because only reserved attributes are searchable in Live mode",
+      "Click `cart.value` in the trace details panel to add it to the query"
+    ],
+    "answer": 2,
+    "explanation": "Live Search can filter on attributes that are not facets. You can click the attribute in the trace details panel or type it in the search bar.",
+    "notes": [
+      "Wrong: Live Search does not require a facet to filter on an attribute.",
+      "Wrong: any attribute or tag can be searched in Live mode, not only reserved attributes.",
+      "Correct: one click on the attribute in the trace panel adds it to the search."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#filtering",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-019",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "hard",
+    "q": "A custom retention filter keeps 100% of `service:checkout` spans with no Trace rate set. The spans show in indexed span search but not in Trace Queries. What change makes those traces available to Trace Queries?",
+    "options": [
+      "Set a Trace rate on the filter so complete traces are indexed",
+      "Move the filter above the default filters in the list",
+      "Enable the `Error Default` filter so checkout errors are kept as full traces"
+    ],
+    "answer": 0,
+    "explanation": "Without a trace rate, only matching spans are indexed (`retained_by:retention_filter`), and Trace Queries need every span of a trace. A trace rate indexes full traces, which Trace Queries can use.",
+    "notes": [
+      "Correct: a trace-level retention filter indexes whole traces, the data Trace Queries run on.",
+      "Wrong: filter order changes which filter processes a span, not whether whole traces are indexed.",
+      "Wrong: default filters such as `Error Default` are span-level filters (`retained_by:retention_filter`), so their spans are not in Trace Queries."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_pipeline/trace_retention/#retention-filter-types",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-live-020",
+    "topic": "Insight Discovery",
+    "subtopic": "Trace Live vs Retained Search",
+    "difficulty": "medium",
+    "q": "Ten minutes into an outage, the incident lead asks which customers are hit hardest. Which Live Search visualization answers this fastest?",
+    "options": [
+      "The Request Flow Map scoped to error spans",
+      "A top list of error spans grouped by the customer tag",
+      "None until 15 minutes pass, because aggregations need indexed spans"
+    ],
+    "answer": 1,
+    "explanation": "Besides timeseries, Live Search can show spans as a top list of the most impacted customers, availability zones or any other tag during an outage, all within the 15-minute live window.",
+    "notes": [
+      "Wrong: the Request Flow Map shows request paths between services, not a ranking of customers.",
+      "Correct: a Live top list ranks the most impacted customers by any tag.",
+      "Wrong: Live Search already aggregates ingested spans as timeseries and top lists."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/trace_explorer/#live-search-for-15-minutes",
+    "verified": "2026-11"
+  }
+]

@@ -1,0 +1,422 @@
+[
+  {
+    "id": "ap-dep-001",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "easy",
+    "q": "A team runs a traced service directly on a VM with `DD_ENV` and `DD_SERVICE` set, but the Service page shows no per-version graphs and Watchdog never analyzes their deployments. Which environment variable are they missing?",
+    "options": [
+      "`DD_DEPLOYMENT_ID`",
+      "`DD_RELEASE`",
+      "`DD_VERSION`"
+    ],
+    "answer": 2,
+    "explanation": "Deployment Tracking and Automatic Faulty Deployment Detection rely on the reserved `version` tag, which the SDK sets from `DD_VERSION`. Without it there is nothing to break down or compare by version.",
+    "notes": [
+      "Wrong: `DD_DEPLOYMENT_ID` is not a Unified Service Tagging variable.",
+      "Wrong: `DD_RELEASE` is not a Datadog SDK variable; the reserved tag is `version`.",
+      "Correct: `DD_VERSION` sets the reserved `version` tag on the service's spans and trace metrics."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#non-containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-002",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "easy",
+    "q": "In Kubernetes, which label on the pod template does the Datadog Agent map to the `version` tag for Unified Service Tagging?",
+    "options": [
+      "`tags.datadoghq.com/version`",
+      "`com.datadoghq.tags.version`",
+      "`app.kubernetes.io/version`"
+    ],
+    "answer": 0,
+    "explanation": "For Kubernetes, Unified Service Tagging uses the `tags.datadoghq.com/env`, `tags.datadoghq.com/service` and `tags.datadoghq.com/version` labels on the workload and pod template.",
+    "notes": [
+      "Correct: `tags.datadoghq.com/version` is the Kubernetes standard label for `version`.",
+      "Wrong: `com.datadoghq.tags.version` is the Docker (and ECS) container label.",
+      "Wrong: `app.kubernetes.io/version` is a generic Kubernetes recommended label, not the Datadog UST label."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-003",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "hard",
+    "q": "A containerized service runs with Agent 7.55 and does not set `DD_VERSION`. Its image tag is `2.3.0` and Git information is embedded in the build, with commit SHA `abcdef1234567`. Which `version` does Datadog assign to its APM data?",
+    "options": [
+      "`abcdef1234567`",
+      "`2.3.0_abcdef1`",
+      "`2.3.0`"
+    ],
+    "answer": 1,
+    "explanation": "With automatic version tagging (Agent 7.52.0+), when no version is set Datadog uses `{image_tag}_{first_7_digits_of_git_commit_sha}`. The image tag or SHA alone is used only when just one of them is available.",
+    "notes": [
+      "Wrong: the full commit SHA is never used; only its first 7 characters, and only alone when no image tag exists.",
+      "Correct: with both available, the version is the image tag plus the first 7 SHA characters.",
+      "Wrong: the image tag alone is used only when no Git commit SHA is available."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#automatic-version-tagging-for-apm-data-in-containerized-environments",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-004",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "medium",
+    "q": "A service instrumented with the OpenTelemetry SDK sets `DD_VERSION=4.1.0`, but its spans in Datadog have no `version` tag. What should the team set instead?",
+    "options": [
+      "`deployment.version=4.1.0` in `OTEL_RESOURCE_ATTRIBUTES`",
+      "`OTEL_SERVICE_VERSION=4.1.0` as a separate environment variable",
+      "`service.version=4.1.0` in `OTEL_RESOURCE_ATTRIBUTES`"
+    ],
+    "answer": 2,
+    "explanation": "Datadog-specific variables like `DD_VERSION` are not supported out of the box in OpenTelemetry configuration. The OTel resource attribute `service.version` maps to the Datadog `version` tag.",
+    "notes": [
+      "Wrong: `deployment.version` is not a mapped attribute; `deployment.environment.name` maps to `env`.",
+      "Wrong: the documented way is the `service.version` resource attribute, not a separate env var.",
+      "Correct: `service.version` maps to Datadog's `version` tag."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#opentelemetry",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-005",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "hard",
+    "q": "Service `checkout` runs with `DD_SERVICE=checkout` and `DD_VERSION=7.2`. Some of its spans are created with the service name `payments-gateway` to represent an external API. Which spans get the `version:7.2` tag?",
+    "options": [
+      "Only the spans that belong to `checkout`",
+      "All spans, including those named `payments-gateway`",
+      "Only the root span of each trace"
+    ],
+    "answer": 0,
+    "explanation": "`DD_VERSION` adds `version` to all spans under the SDK's own service (generally `DD_SERVICE`). Spans created with the name of an external service do not receive `version`.",
+    "notes": [
+      "Correct: only spans of the SDK's own service receive `version`.",
+      "Wrong: spans named after an external service are explicitly excluded.",
+      "Wrong: version is not limited to root spans; every span of the service gets it."
+    ],
+    "ref": "https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging/#non-containerized-environment",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-006",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "medium",
+    "q": "A service reports `version:2.4.1` correctly, but the Deployments section is missing from its Service page when viewing the past hour. What is the most likely reason?",
+    "options": [
+      "The `version` value must be a plain integer build number",
+      "Only one version reported during the selected time interval",
+      "Deployments appear only after a Deployment Gate has been evaluated"
+    ],
+    "answer": 1,
+    "explanation": "The version section appears only if more than one version is reporting during the selected time interval. Widening the time range to include the previous version makes it appear.",
+    "notes": [
+      "Wrong: any distinct string works as a version; semantic versions are fine.",
+      "Correct: the section needs more than one version in the selected time range.",
+      "Wrong: Deployment Gates are optional and not needed for the Deployments section."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/deployment_tracking/#versions-deployed",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-007",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "easy",
+    "q": "In the Deployments table on a Service page, version `v9` shows an Error Types value of 3. What does this mean?",
+    "options": [
+      "Three error types appear in `v9` that were absent from the previous version",
+      "Three Error Tracking issues were confirmed as caused by code changes shipped in `v9`",
+      "Three resources in `v9` exceeded their error-rate monitor threshold"
+    ],
+    "answer": 0,
+    "explanation": "The Error Types indicator counts error types in a version that did not appear in the immediately previous version. It does not prove the version introduced them; it is a starting point for investigation.",
+    "notes": [
+      "Correct: it counts error types new compared with the immediately previous version.",
+      "Wrong: the indicator does not attribute errors to commits; the docs say it does not mean the version necessarily introduced them.",
+      "Wrong: it is not related to monitors or thresholds."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/deployment_tracking/#versions-deployed",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-008",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "medium",
+    "q": "An engineer opens the version comparison page for today's release and wants to compare it with a release from several weeks ago instead of the previous one. Within what window can any two versions be compared?",
+    "options": [
+      "The past 15 days",
+      "The past 90 days",
+      "The past 30 days"
+    ],
+    "answer": 2,
+    "explanation": "By default the selected version is compared to the immediately previous version, but you can change it to compare any two versions within the past 30 days.",
+    "notes": [
+      "Wrong: 15 days is the retention of indexed spans, not the comparison window.",
+      "Wrong: the comparison window is 30 days, not 90.",
+      "Correct: any two versions within the past 30 days can be compared."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/deployment_tracking/#deployment-comparison",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-009",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "medium",
+    "q": "Twenty minutes after deploying `v3`, the Error Comparison section lists a rare `TimeoutError` as no longer appearing in `v3`. What should the team conclude?",
+    "options": [
+      "The fix is confirmed, because Error Comparison checks every trace of the previous version",
+      "It is not yet proof of a fix, because a rare error type may simply not have been observed yet",
+      "The error was dropped by a retention filter and must be re-enabled"
+    ],
+    "answer": 1,
+    "explanation": "Error comparison is based on observed error types. A rare error type might be listed as no longer appearing only because it has not been seen yet in the new version.",
+    "notes": [
+      "Wrong: the comparison reflects observed error types, so absence is not confirmation.",
+      "Correct: the docs warn that rare errors may show as gone only because they have not been seen yet.",
+      "Wrong: retention filters do not explain this; the caveat is about observation time."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/deployment_tracking/#error-comparison",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-010",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "easy",
+    "q": "On the version comparison page, how should you sort the Endpoint Comparison table to spot the endpoints whose latency or error rate changed the most?",
+    "options": [
+      "By Value",
+      "By % Change",
+      "By Requests"
+    ],
+    "answer": 1,
+    "explanation": "Sort by % Change to spot large changes in latency or error rates. Sorting by Value is for checking that the highest-throughput endpoints are still healthy.",
+    "notes": [
+      "Wrong: Value shows absolute numbers and is used to check the highest-throughput endpoints.",
+      "Correct: % Change surfaces the largest latency or error-rate shifts between versions.",
+      "Wrong: sorting by traffic does not highlight what changed between versions."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/deployment_tracking/#endpoint-comparison",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-011",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "medium",
+    "q": "A canary of `v5.0` runs on 5% of hosts next to stable `v4.9`. On the Service page, which Errors graph option best shows whether the canary fails a larger share of its requests than the stable version?",
+    "options": [
+      "Errors per Second",
+      "Total Errors by Version",
+      "% Error Rate by Version"
+    ],
+    "answer": 2,
+    "explanation": "% Error Rate by Version shows the percentage of requests resulting in errors for each version, so a small canary can be compared fairly with the stable version.",
+    "notes": [
+      "Wrong: Errors per Second is the overall service rate, not split by version.",
+      "Wrong: total error counts favor the version with more traffic, so a 5% canary looks better than it is.",
+      "Correct: a per-version error percentage normalizes for the canary's smaller traffic share."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/service_page/#errors",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-012",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "medium",
+    "q": "A team runs blue/green clusters, each tagged with its own `version`. The green cluster should be on standby. How can they confirm in APM that it is not receiving traffic?",
+    "options": [
+      "Look for requests on green's `version` in Requests by Version",
+      "Check whether the Watchdog faulty-deployment banner names green's `version`",
+      "Check the Deployment Gates Evaluations page for the green cluster"
+    ],
+    "answer": 0,
+    "explanation": "With `version` tags on each cluster, comparing requests and errors by version shows whether a cluster that is not supposed to receive traffic is receiving it.",
+    "notes": [
+      "Correct: requests broken down by version reveal traffic reaching the standby cluster.",
+      "Wrong: the banner flags a faulty active version (new errors or a higher error rate), not whether a cluster receives traffic.",
+      "Wrong: Deployment Gates record rule evaluations, not live traffic per cluster."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/services/deployment_tracking/#blue-and-green-deploys",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-013",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "medium",
+    "q": "When a new version of a service is deployed, what does Watchdog's Automatic Faulty Deployment Detection compare against previous versions?",
+    "options": [
+      "p99 latency against the same hour last week",
+      "New error types and increases in error rate",
+      "CPU time and allocated memory per resource from the profiler"
+    ],
+    "answer": 1,
+    "explanation": "Watchdog compares the new code version with previous versions to spot new types of errors or increases in error rates introduced in a deployment.",
+    "notes": [
+      "Wrong: week-over-week latency is not what this feature analyzes.",
+      "Correct: it looks for new error types and higher error rates than previous versions.",
+      "Wrong: profiler metrics appear on the comparison page but are not the detection signal."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/faulty_deployment_detection/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-014",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "easy",
+    "q": "How does the APM Service page show that Watchdog considers the currently active version faulty?",
+    "options": [
+      "A red Watchdog overlay on the Latency graph",
+      "A new issue opened in Error Tracking",
+      "A pink banner at the top of the page"
+    ],
+    "answer": 2,
+    "explanation": "A pink banner at the top of the service page indicates that the active version is faulty. View Details in the banner opens a panel with error-rate graphs, error type, endpoint and HTTP status code.",
+    "notes": [
+      "Wrong: Watchdog overlays on graphs mark anomalies, not faulty deployments.",
+      "Wrong: Error Tracking groups errors into issues; it is not how faulty deployments are flagged.",
+      "Correct: a faulty active version is shown with a pink banner on the service page."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/faulty_deployment_detection/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-015",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "easy",
+    "q": "A team wants to be alerted whenever Watchdog flags any potentially faulty deployment of their services. What should they set up?",
+    "options": [
+      "An Events monitor whose query includes `tags:deployment_analysis`",
+      "An APM monitor on the service's error rate metric grouped by `version`",
+      "A Deployment Gate with an APM Faulty Deployment Detection rule"
+    ],
+    "answer": 0,
+    "explanation": "Faulty deployments are added as events in the Event Explorer. On the New Monitors page, choose Events and include `tags:deployment_analysis` in the query.",
+    "notes": [
+      "Correct: an Events monitor on `tags:deployment_analysis` catches every faulty deployment Watchdog reports.",
+      "Wrong: a threshold monitor on error rate does not follow Watchdog's deployment analysis (for example, new error types).",
+      "Wrong: a gate is evaluated only when a pipeline requests it and returns `pass` or `fail` to that pipeline; it does not notify on every faulty deployment."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/faulty_deployment_detection/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-016",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "medium",
+    "q": "Each deployment is analyzed repeatedly by Faulty Deployment Detection. What recovery time does Datadog recommend for the faulty-deployment monitor so the same deployment does not re-alert?",
+    "options": [
+      "15 minutes",
+      "60 minutes",
+      "24 hours"
+    ],
+    "answer": 1,
+    "explanation": "Because each deployment is repeatedly analyzed, Datadog recommends a 60-minute recovery time on the monitor to prevent re-alerting on the same faulty deployment.",
+    "notes": [
+      "Wrong: 15 minutes is shorter than recommended and risks repeat alerts.",
+      "Correct: the docs recommend a recovery time of 60 minutes.",
+      "Wrong: 24 hours is not the documented value."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/faulty_deployment_detection/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-017",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "hard",
+    "q": "A brand-new service has had only two deployments so far. The second one introduced new errors, but Watchdog did not flag it as faulty. What is the most likely explanation?",
+    "options": [
+      "Faulty Deployment Detection needs the service to be registered in Software Catalog first",
+      "Faulty Deployment Detection only flags latency regressions, not errors",
+      "There were not enough previous deployments for Watchdog to build a baseline"
+    ],
+    "answer": 2,
+    "explanation": "One documented reason a deployment is not flagged is that there were not enough previous deployments in the recent history for Watchdog to establish a baseline.",
+    "notes": [
+      "Wrong: the docs do not require a Software Catalog entry; the requirement is the `version` tag.",
+      "Wrong: the feature is about new errors and error-rate increases.",
+      "Correct: with too little deployment history, Watchdog cannot establish a baseline."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/faulty_deployment_detection/#why-did-a-new-deployment-not-get-flagged-as-faulty-despite-having-errors",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-018",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "medium",
+    "q": "A Deployment Gate evaluation returns `fail` for a production rollout. What happens next?",
+    "options": [
+      "Datadog automatically rolls the service back to the previous `version`",
+      "The pipeline receives the result and decides whether to halt, roll back or alert",
+      "The Cluster Agent pauses the Kubernetes rollout until the gate passes"
+    ],
+    "answer": 1,
+    "explanation": "A gate reports whether a regression is detected but does not stop a deployment on its own. The deployment pipeline decides what to do with the result.",
+    "notes": [
+      "Wrong: Datadog does not roll back deployments; the pipeline does.",
+      "Correct: the pipeline acts on the gate result.",
+      "Wrong: the Agent does not control rollouts; gates are called from the pipeline."
+    ],
+    "ref": "https://docs.datadoghq.com/deployment_gates/#how-deployment-gates-work",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-019",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "hard",
+    "q": "A pipeline step runs the following command for a preconfigured gate that contains an APM Faulty Deployment Detection rule:\n`datadog-ci deployment gate --service cart --env prod --identifier default`\nWhat must be added for the rule to evaluate?",
+    "options": [
+      "`--version` with the version being deployed",
+      "`--monitor-ids` with the IDs of the service's monitors",
+      "`--duration` set to at least 900"
+    ],
+    "answer": 0,
+    "explanation": "The version is required when the gate has an APM Faulty Deployment Detection rule, because the rule analyzes the deployed version against previous ones. Rule settings such as duration live in the preconfigured gate.",
+    "notes": [
+      "Correct: FDD rules need the deployed version, for example `--version 1.0.1`.",
+      "Wrong: monitors are selected in Monitor rules, which this gate's FDD rule does not use.",
+      "Wrong: duration is part of the rule configuration stored in Datadog, not a required CLI flag."
+    ],
+    "ref": "https://docs.datadoghq.com/deployment_gates/setup/preconfigured/#evaluate-a-gate-from-your-pipeline",
+    "verified": "2026-11"
+  },
+  {
+    "id": "ap-dep-020",
+    "topic": "Insight Discovery",
+    "subtopic": "Deployment Tracking",
+    "difficulty": "medium",
+    "q": "A team onboards a new Deployment Gate in dry run mode. During a deployment, its monitor rule detects a monitor in `ALERT`. What does the pipeline receive?",
+    "options": [
+      "`fail`, because a rule in `ALERT` always blocks the deployment pipeline",
+      "No response until the gate is switched to active",
+      "`pass`, while the real `fail` is recorded on the Evaluations page"
+    ],
+    "answer": 2,
+    "explanation": "A dry run gate always returns `pass` to the pipeline, while its real result is recorded on the Deployment Gates Evaluations page. This lets teams check gate behavior before it can block a deployment.",
+    "notes": [
+      "Wrong: in a dry run gate the result never affects the deployment, so `fail` is not returned.",
+      "Wrong: dry run gates are evaluated and respond normally.",
+      "Correct: dry run returns `pass` and records the actual outcome in Datadog."
+    ],
+    "ref": "https://docs.datadoghq.com/deployment_gates/#evaluation-modes",
+    "verified": "2026-11"
+  }
+]

@@ -1,0 +1,527 @@
+[
+  {
+    "id": "lm-exp-001",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "easy",
+    "q": "An analyst is in the Log Explorer list view and chooses Export > Download as CSV for individual logs. What is the maximum number of logs that can be exported in one CSV?",
+    "options": [
+      "10,000 logs",
+      "100,000 logs",
+      "1,000,000 logs"
+    ],
+    "answer": 1,
+    "explanation": "The Log Explorer lets you export up to 100,000 individual logs at once as CSV. Patterns and Transactions have much lower limits (300 and 500).",
+    "notes": [
+      "Wrong: 10,000 is too low; the documented CSV limit for individual logs is 100,000.",
+      "Correct: CSV export supports up to 100,000 individual logs at once.",
+      "Wrong: 1,000,000 is ten times the documented CSV limit."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/export/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-002",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "A team created a new S3 log archive five minutes ago, and no archive files have appeared in the bucket yet. What does Datadog recommend?",
+    "options": [
+      "Wait about 15 minutes, then check that the archive filter matches logs in Live Tail",
+      "Recreate the archive, because the first upload should start within one minute",
+      "Start a rehydration from the archive to force pending logs into the bucket"
+    ],
+    "answer": 0,
+    "explanation": "After an archive is created or updated, it can take several minutes before the next upload is attempted, so Datadog says to check the bucket after 15 minutes. If it is still pending, check that the archive filter is valid and matches log events in Live Tail.",
+    "notes": [
+      "Correct: the docs say to check back after 15 minutes, then verify the filter against Live Tail if the archive stays pending.",
+      "Wrong: uploads can take several minutes to start and their frequency varies; recreating the archive is not the recommended step.",
+      "Wrong: rehydration reads from the archive; it does not push logs into it."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/#validation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-003",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "An auditor exported logs to CSV from the Log Explorer and noticed that multi-line stack traces were merged onto one line and some values now start with a single quote. They need the log content exactly as stored in Datadog. What should they do?",
+    "options": [
+      "Export the same query as a Saved View and share its link with the auditor",
+      "Download the CSV from the Transactions view, which skips CSV sanitization",
+      "Retrieve the logs with the Log Search API or from the Log Archives"
+    ],
+    "answer": 2,
+    "explanation": "Datadog sanitizes CSV exports for spreadsheet compatibility: it removes line breaks and prefixes formula characters with a single quote. To get logs without these changes, the docs point to the Log Search API or Log Archives.",
+    "notes": [
+      "Wrong: a Saved View only stores the query, visualization and facets; it does not deliver raw log content.",
+      "Wrong: every CSV export is sanitized, including Transactions exports (which are also capped at 500).",
+      "Correct: the Log Search API and Log Archives return logs without the CSV formatting changes."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/export/#csv-export-formatting",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-004",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "hard",
+    "q": "An admin creates a new log archive and leaves the Datadog tags advanced setting as it is. What happens to the tags on the logs written to that archive?",
+    "options": [
+      "Tags are stripped; only the log message and attributes are archived until tag inclusion is turned on",
+      "All log tags are included, which is on by default for new archives and makes the archive files larger",
+      "Only the reserved tags `env`, `service` and `version` are kept, to keep archive files small"
+    ],
+    "answer": 1,
+    "explanation": "Including all log tags in archives is activated by default on all new archives. The docs note that this increases the size of the resulting archives.",
+    "notes": [
+      "Wrong: tag inclusion is already on for every new archive; you would have to turn it off to drop tags.",
+      "Correct: new archives include all log tags by default, at the cost of larger archive files.",
+      "Wrong: there is no setting that keeps only unified service tags; the option includes all log tags."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/#datadog-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-005",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "easy",
+    "q": "During an incident review, an SRE wants one specific error log to stay readable in the postmortem document after the index retention of 15 days has passed. What should they do?",
+    "options": [
+      "Open the log in the side panel and select Save to notebook",
+      "Use Share Event in the log side panel to post the log link in Slack",
+      "Create a Saved View filtered on the log's ID"
+    ],
+    "answer": 0,
+    "explanation": "Logs saved to a notebook from the log side panel are displayed in a reader-friendly format, and this display stays in the notebook even after the log event ages out of retention.",
+    "notes": [
+      "Correct: Save to notebook keeps the log's display in the notebook even after the log ages out of retention.",
+      "Wrong: a shared link points back to the log in Datadog, which is gone once retention expires.",
+      "Wrong: a Saved View only re-runs a query; the log no longer matches anything once it has expired."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/export/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-006",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "easy",
+    "q": "A developer has refined a query in the Log Explorer and now wants to reuse it in a script that builds a weekly report through the Datadog API. Which Export option is meant for this?",
+    "options": [
+      "Share View",
+      "Export to Notebook",
+      "cURL command"
+    ],
+    "answer": 2,
+    "explanation": "The Export menu can produce a cURL command so you can test your Log Explorer query and then build custom reports with the Datadog Logs API.",
+    "notes": [
+      "Wrong: Share View sends a link to the current view to teammates by email, Slack and similar.",
+      "Wrong: a notebook widget is for reporting inside Datadog, not for API-based scripts.",
+      "Correct: the cURL command export lets you test the query and build custom reports with the Datadog APIs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/export/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-007",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "easy",
+    "q": "A team adds an index exclusion filter that drops 90% of `status:debug` logs from their index. They also have a log archive with the filter `*`. What happens to the excluded debug logs?",
+    "options": [
+      "They are still sent to the archive, because archives receive ingested logs whether indexed or not",
+      "They are dropped from the archive as well, because an archive only receives the logs that were stored in an index",
+      "They are archived only if the archive is placed before the index in the pipeline order"
+    ],
+    "answer": 0,
+    "explanation": "Archives forward all ingested logs, indexed or not, to your storage. Logs removed by exclusion filters are discarded from the index but are still archived.",
+    "notes": [
+      "Correct: archives receive all ingested logs, including logs excluded from indexing.",
+      "Wrong: archiving is not limited to indexed logs.",
+      "Wrong: there is no ordering between archives and indexes; archive order only matters between archives."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-008",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "An organization has two log archives in this order:\n\n1. `prod-archive` with filter `env:prod`\n2. `all-archive` with filter `*`\n\nWhere is a log tagged `env:prod` stored?",
+    "options": [
+      "In both archives, because it matches both filters",
+      "Only in `prod-archive`",
+      "Only in `all-archive`, because the catch-all filter takes priority"
+    ],
+    "answer": 1,
+    "explanation": "When multiple archives are defined, a log enters the first archive whose filter it matches. With `env:prod` first, production logs go only to that archive and all other logs go to the catch-all archive.",
+    "notes": [
+      "Wrong: a log is not copied into every matching archive; it goes to the first match only.",
+      "Correct: the first matching archive in the order wins, so `env:prod` logs land only in `prod-archive`.",
+      "Wrong: `*` has no special priority; it only catches logs that did not match an earlier archive."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/#multiple-archives",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-009",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "A team's S3 bucket uses Amazon S3 managed keys (SSE-S3) by default, but compliance now requires every log archive object to be encrypted with the team's own AWS KMS key. What should they configure in Datadog?",
+    "options": [
+      "Keep Default S3 Bucket-Level Encryption, because Datadog then encrypts the uploads with a Datadog-owned KMS key",
+      "Set the archive's Encryption Type to Amazon S3 managed keys, which uses the key stored with the bucket",
+      "Set the archive's Encryption Type to AWS Key Management Service and provide the customer-managed key (CMK) ARN"
+    ],
+    "answer": 2,
+    "explanation": "In the archive's advanced settings, the AWS Key Management Service encryption type forces server-side encryption with a customer-managed key from AWS KMS, overriding the bucket's default encryption. You must provide the CMK ARN.",
+    "notes": [
+      "Wrong: with Default S3 Bucket-Level Encryption, Datadog sends no encryption headers and the bucket's own default (here SSE-S3) applies. There is no Datadog-owned key.",
+      "Wrong: Amazon S3 managed keys forces SSE-S3, which is what the bucket already does, not a customer-managed KMS key.",
+      "Correct: the AWS Key Management Service option uploads every archive object with the customer-managed key whose ARN you provide, regardless of the bucket default."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/#server-side-encryption-sse-for-s3-archives",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-010",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "An archive uses the prefix `/datadog`. A compliance officer needs the archive files generated on May 15, 2026, between 14:00 and 15:00. Which path should they look in?",
+    "options": [
+      "`/datadog/dt=20260515/hour=14/`",
+      "`/datadog/2026/05/15/14/`",
+      "`/datadog/hour=14/dt=20260515/`"
+    ],
+    "answer": 0,
+    "explanation": "Archive files are stored under the prefix in a `dt=<YYYYMMDD>/hour=<HH>/` directory structure, which makes it easy to find archives by date.",
+    "notes": [
+      "Correct: archives use `dt=<YYYYMMDD>/hour=<HH>/` under the configured prefix.",
+      "Wrong: Datadog does not use a plain year/month/day/hour folder layout.",
+      "Wrong: the date directory (`dt=`) comes before the hour directory, not after it."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/#format-of-the-archives",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-011",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "hard",
+    "q": "A new S3 archive stays in a failing state. The IAM policy attached to the Datadog integration role contains:\n\n\"Action\": [\"s3:PutObject\", \"s3:GetObject\"],\n\"Resource\": [\"arn:aws:s3:::acme-log-archive\"]\n\nWhat is the most likely fix?",
+    "options": [
+      "Replace `s3:PutObject` with `s3:PutBucketPolicy` so Datadog can write to the bucket",
+      "Change the resource to `arn:aws:s3:::acme-log-archive/*`, because these actions apply to objects",
+      "Add `s3:ListAllMyBuckets` so Datadog can find the bucket by name"
+    ],
+    "answer": 1,
+    "explanation": "`s3:PutObject` and `s3:GetObject` apply to objects inside the bucket, so their resource must end with `/*`. `s3:PutObject` alone is enough to upload archives.",
+    "notes": [
+      "Wrong: `s3:PutObject` is the permission Datadog needs to upload archives; a bucket-policy permission is not required.",
+      "Correct: the resource for `s3:PutObject` and `s3:GetObject` must end with `/*`.",
+      "Wrong: the documented policy uses `s3:ListBucket` on the bucket ARN, not `s3:ListAllMyBuckets`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/#set-permissions",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-012",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "easy",
+    "q": "Which role must the Datadog app registration have on an Azure storage account so Datadog can write log archives to it?",
+    "options": [
+      "Storage Account Contributor",
+      "Storage Blob Data Reader",
+      "Storage Blob Data Contributor"
+    ],
+    "answer": 2,
+    "explanation": "In the storage account's Access Control (IAM), add a role assignment of Storage Blob Data Contributor for the Datadog app.",
+    "notes": [
+      "Wrong: the documented role for archiving is Storage Blob Data Contributor, not Storage Account Contributor.",
+      "Wrong: a Reader role cannot write archive files.",
+      "Correct: Storage Blob Data Contributor lets the Datadog app write to and read from the storage account."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/#set-permissions",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-013",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "A security team wants to add a retention policy (bucket lock) to the Google Cloud Storage bucket used as a Datadog log archive. What does Datadog recommend?",
+    "options": [
+      "Do not add one, because Datadog sometimes needs to rewrite the last data, typically after a timeout",
+      "Add one, as long as the Datadog service account has the Storage Object Viewer role",
+      "Add one, but only after switching the archive compression from zstd to gzip so files are never rewritten"
+    ],
+    "answer": 0,
+    "explanation": "The docs say not to add a retention policy to the GCS archive bucket because the last data needs to be rewritten in some rare cases, typically a timeout.",
+    "notes": [
+      "Correct: a retention policy would block the rare rewrites Datadog needs to make.",
+      "Wrong: Storage Object Viewer is a read role used for rehydration; it does not make a retention policy safe.",
+      "Wrong: compression format has nothing to do with retention policies."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/#create-a-storage-bucket",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-014",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "A team wants to use Archive Search on their S3 log archive. Which S3 storage class would they first have to move their archive files out of?",
+    "options": [
+      "S3 Standard-IA",
+      "S3 Glacier Deep Archive",
+      "S3 Glacier Instant Retrieval"
+    ],
+    "answer": 1,
+    "explanation": "Archive Search supports only S3 Standard, Standard-IA, One Zone-IA, Glacier Instant Retrieval, and Intelligent-Tiering with the asynchronous archive tiers disabled. Files in other classes, such as Glacier Deep Archive, must be moved first.",
+    "notes": [
+      "Wrong: S3 Standard-IA is a supported storage class.",
+      "Correct: Glacier Deep Archive is not in the supported list, so files must be moved to a supported class first.",
+      "Wrong: S3 Glacier Instant Retrieval is a supported storage class."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/archives/#storage-class",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-015",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "An engineer creates a historical view with the query `env:prod service:billing`, but it rehydrates nothing even though the archive holds billing logs for that period. What is the most likely cause?",
+    "options": [
+      "The historical view name contains uppercase letters",
+      "An index exclusion filter on `service:billing` blocks the rehydrated logs",
+      "The archive was not configured to include Datadog tags, so tag filters cannot match"
+    ],
+    "answer": 2,
+    "explanation": "If you use tags such as `env:prod` in a rehydration query, the logs must have been archived with their tags. Including tags is an advanced archive setting.",
+    "notes": [
+      "Wrong: an invalid name would prevent creating the view, not make it return no logs.",
+      "Wrong: index exclusion filters do not apply to historical views.",
+      "Correct: tag-based rehydration queries only match if the archive stores log tags."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/rehydrating/#rehydrating-logs-with-historical-views",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-016",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "hard",
+    "q": "A team prepares a historical view for `service:payments` logs over the last 30 days. The estimated scan size is huge, even though payments is a small share of total log volume. What is the most effective way to lower the scan size?",
+    "options": [
+      "Reduce the time range, because the query is applied only after all files for that period are downloaded",
+      "Add more filters to the query, such as `env:prod` and `status:error`, because each filter reduces the number of archive files read",
+      "Lower the log limit of the historical view, because the limit caps the volume scanned"
+    ],
+    "answer": 0,
+    "explanation": "Rehydration downloads all archive files for the selected time period and then applies the query, so scan size depends on total volume in the window. Reducing the date range is the most effective way to limit scan size and cloud transfer costs.",
+    "notes": [
+      "Correct: scan size is driven by the time window, so narrowing it is the most effective lever.",
+      "Wrong: query filters are applied after download, so they do not reduce the data scanned.",
+      "Wrong: the log limit only caps how many logs are rehydrated; the scan size covers all archive data for the selected time frame."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/rehydrating/#understanding-rehydration-scan-sizes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-017",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "easy",
+    "q": "An index `main` has an exclusion filter that drops `status:debug` logs. A team rehydrates debug logs from the archive into a historical view. What happens to those debug logs?",
+    "options": [
+      "They are dropped unless the exclusion filter on `main` is disabled first",
+      "They are rehydrated, because index exclusion filters do not apply to historical views",
+      "They are rehydrated, but the exclusion filter's sampling percentage is applied to them"
+    ],
+    "answer": 1,
+    "explanation": "Index exclusion filters do not apply to historical views, so you do not need to modify exclusion filters before rehydrating.",
+    "notes": [
+      "Wrong: there is no need to change exclusion filters before rehydrating.",
+      "Correct: historical views ignore index exclusion filters.",
+      "Wrong: exclusion filters, including their sampling percentage, do not apply to historical views."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/rehydrating/#historical-views",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-018",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "Which of these is a valid name for a new historical view?",
+    "options": [
+      "`Checkout-Incident-2026`",
+      "`2026-checkout-incident`",
+      "`checkout-incident-2026`"
+    ],
+    "answer": 2,
+    "explanation": "Historical view names must begin with a lowercase letter and can only contain lowercase letters, numbers, and the `-` character.",
+    "notes": [
+      "Wrong: uppercase letters are not allowed.",
+      "Wrong: the name must begin with a lowercase letter, not a number.",
+      "Correct: it starts with a lowercase letter and uses only lowercase letters, numbers and `-`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/rehydrating/#rehydrating-logs-with-historical-views",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-019",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "hard",
+    "q": "The `audit-archive` is restricted to the `Security` role, which has Logs Read Archives. Which user can create a historical view from `audit-archive`?",
+    "options": [
+      "Ana, in `Security`, whose roles also grant Logs Write Historical Views",
+      "Ben, in `Security`, who has Logs Read Archives but not Logs Write Historical Views",
+      "Cara, in `Support`, who has Logs Write Historical Views and Logs Read Archives, but not for this archive"
+    ],
+    "answer": 0,
+    "explanation": "Rehydrating needs the global Logs Write Historical Views permission plus Logs Read Archives on that specific archive. Only Ana has both for `audit-archive`.",
+    "notes": [
+      "Correct: Ana can read the archive through `Security` and has the rehydrate permission.",
+      "Wrong: Logs Read Archives alone shows the archive configuration but does not allow rehydration.",
+      "Wrong: the archive is restricted to `Security`, so Cara's Read Archives permission does not cover it."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/logs-rbac-permissions/#logs_write_historical_view",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-020",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "Halfway through a large rehydration, an engineer notices a typo in the indexing query and cancels the historical view. What happens?",
+    "options": [
+      "All logs indexed so far are deleted and the scan is not billed",
+      "Logs already indexed stay queryable until the view's retention ends, and scanned and indexed logs are still billed",
+      "Logs already indexed stay queryable, but only the indexed logs are billed because the scan was not completed"
+    ],
+    "answer": 1,
+    "explanation": "When you cancel an ongoing rehydration, logs already indexed remain queryable until the end of the selected retention period, and all scanned and indexed logs are still billed.",
+    "notes": [
+      "Wrong: canceling does not delete the logs already rehydrated or waive billing.",
+      "Correct: rehydrated logs stay until retention ends, and both scanning and indexing are billed.",
+      "Wrong: the docs say all scanned and indexed logs are billed."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/rehydrating/#canceling-ongoing-historical-views",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-021",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "An investigator runs Archive Search in Search mode for a `user_id` from three weeks ago. They now want to chart the results on a dashboard. What must they do?",
+    "options": [
+      "Nothing; Search mode results are queryable from dashboards for 24 hours",
+      "Export the Archive Search results page as a CSV and upload it to a dashboard",
+      "Rehydrate the results, which they can still do within the 24-hour window after the search"
+    ],
+    "answer": 2,
+    "explanation": "Archive Search results (up to 100,000 logs, kept 24 hours) are only available on the dedicated results page and cannot be aggregated or used elsewhere. Rehydrating the results, before launch or within the 24-hour window, makes them available across Datadog.",
+    "notes": [
+      "Wrong: Search mode results are only available on the Archive Search results page.",
+      "Wrong: the documented way to use Archive Search results elsewhere in Datadog is to rehydrate them.",
+      "Correct: rehydrating results makes them available in Log Explorer, Dashboards and Notebooks."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/archive_search/#view-and-retain-results",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-022",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "A custom destination for log forwarding becomes unreachable during a maintenance window. How does Datadog handle the logs it cannot forward?",
+    "options": [
+      "It retries for 2 hours with exponential backoff, starting after a 1-minute delay",
+      "It retries every 10 minutes for up to 24 hours, then drops any logs that still could not be delivered",
+      "It does not retry; the failed logs are written to the archive instead"
+    ],
+    "answer": 0,
+    "explanation": "On a failed forwarding attempt, Datadog retries periodically for 2 hours using exponential backoff. The first retry is after 1 minute, and delays grow to a maximum of 8 to 12 minutes.",
+    "notes": [
+      "Correct: retries last 2 hours with exponential backoff, the first after 1 minute.",
+      "Wrong: about 10 minutes is the maximum delay between retries, and the retry period is 2 hours, not 24.",
+      "Wrong: forwarding does retry, and archiving is a separate feature."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/forwarding_custom_destinations/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-023",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "hard",
+    "q": "A team sets up a Splunk custom destination with the endpoint `https://acme.splunkcloud.com:8088` and a valid HEC token, but Splunk does not accept the forwarded events. Which Splunk-side setting does Datadog require for this destination?",
+    "options": [
+      "The HEC endpoint path `/services/collector/event` added to the endpoint field",
+      "Indexer acknowledgment disabled on the HEC token",
+      "Indexer acknowledgment enabled on the HEC token, so Datadog's retries can confirm delivery"
+    ],
+    "answer": 1,
+    "explanation": "For Splunk destinations, Datadog requires indexer acknowledgment to be disabled. Datadog appends `/services/collector/event` to the endpoint automatically and authenticates with the Splunk HEC token.",
+    "notes": [
+      "Wrong: Datadog appends `/services/collector/event` to the endpoint automatically.",
+      "Correct: the docs state that indexer acknowledgment needs to be disabled.",
+      "Wrong: Datadog retries failed forwards on its own; indexer acknowledgment must be disabled, not enabled."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/forwarding_custom_destinations/#set-up-log-forwarding-to-custom-destinations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-024",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "easy",
+    "q": "A user creating an HTTP custom destination enters `http://logs.example.com:8080/ingest` as the endpoint, and Datadog will not accept it. Why?",
+    "options": [
+      "HTTP destinations only accept port 443",
+      "The endpoint must end with `/api/v2/logs`",
+      "The endpoint must start with `https://`"
+    ],
+    "answer": 2,
+    "explanation": "For HTTP, Splunk and Elasticsearch destinations, the endpoint must start with `https://`.",
+    "notes": [
+      "Wrong: the documented rule is the `https://` scheme; the 443/8088 port limit applies only to GovCloud sites.",
+      "Wrong: there is no required path; `/api/v2/logs` is Datadog's own intake path.",
+      "Correct: custom destination endpoints must start with `https://`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/forwarding_custom_destinations/#set-up-log-forwarding-to-custom-destinations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-exp-025",
+    "topic": "Log Utilization",
+    "subtopic": "Exporting",
+    "difficulty": "medium",
+    "q": "A script calls `POST /api/v2/logs/events/search` with `\"page\": {\"limit\": 1000}`, but the query matches 5,000 logs. How does the script get the next 1,000 logs?",
+    "options": [
+      "Raise `page.limit` to 5000 so every log comes back in one response",
+      "Resend the same query with `page.cursor` set to the `meta.page.after` value from the previous response",
+      "Resend the same query with `page.offset` set to 1000 so the API skips the logs it already returned"
+    ],
+    "answer": 1,
+    "explanation": "The search API returns at most 1,000 logs per call. To get the next page, resend the query with the `cursor` parameter set to the `after` value from the previous response, until `data` comes back empty.",
+    "notes": [
+      "Wrong: 1,000 is the maximum page limit, so longer lists need pagination.",
+      "Correct: cursor pagination uses `meta.page.after` as the next `page.cursor`.",
+      "Wrong: the v2 Logs Search API paginates with a cursor, not an offset."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/access-your-log-data-programmatically/#pagination",
+    "verified": "2026-11"
+  }
+]

@@ -1,0 +1,632 @@
+[
+  {
+    "id": "lm-filt-001",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "easy",
+    "q": "An Agent log config contains this rule:\n\nlog_processing_rules:\n  - type: exclude_at_match\n    name: drop_probes\n    pattern: GET /health\n\nWhat happens to the line `10.0.0.5 - GET /healthz 200 3ms`?",
+    "options": [
+      "It is sent to Datadog with the matching text replaced by a placeholder.",
+      "It is dropped by the Agent and never sent to Datadog.",
+      "It is sent to Datadog but excluded from all indexes."
+    ],
+    "answer": 1,
+    "explanation": "`exclude_at_match` drops any log whose message contains the pattern, so the Agent does not send it. `GET /health` is contained in `GET /healthz`, so the line is excluded.",
+    "notes": [
+      "Wrong: replacing matched text is what `mask_sequences` does, not `exclude_at_match`.",
+      "Correct: the pattern is contained in the message, so the log is excluded at the Agent and not sent.",
+      "Wrong: index exclusion filters act inside Datadog; this Agent rule stops the log before it is sent."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#exclude-at-match",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-002",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "A file source has two rules:\n\nlog_processing_rules:\n  - type: include_at_match\n    name: only_checkout\n    pattern: checkout\n  - type: include_at_match\n    name: only_errors\n    pattern: ERROR\n\nWhich of these lines does the Agent send to Datadog?",
+    "options": [
+      "`ERROR payment declined for order 881`",
+      "`INFO checkout started for order 881`",
+      "`ERROR checkout timed out for order 881`"
+    ],
+    "answer": 2,
+    "explanation": "When several `include_at_match` rules are defined, all of their patterns must match for the log to be included. Only the line containing both `checkout` and `ERROR` passes.",
+    "notes": [
+      "Wrong: it matches `ERROR` but not `checkout`, so the first rule filters it out.",
+      "Wrong: it matches `checkout` but not `ERROR`, so the second rule filters it out.",
+      "Correct: it contains both patterns, which is required when multiple `include_at_match` rules exist."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#include-at-match",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-003",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "A team wants the Agent to send only lines that contain either `WARN` or `ERROR`. How should they configure it?",
+    "options": [
+      "One `include_at_match` rule with `pattern: WARN|ERROR`.",
+      "Two `include_at_match` rules, one with `pattern: WARN` and one with `pattern: ERROR`.",
+      "One `include_at_match` rule with `pattern: [WARN, ERROR]` as a YAML list."
+    ],
+    "answer": 0,
+    "explanation": "To match one of several patterns, the docs say to define them in a single expression with alternation, such as `abc|123`. Multiple `include_at_match` rules are combined so that all must match.",
+    "notes": [
+      "Correct: a single regex with `|` includes logs matching either word.",
+      "Wrong: with two `include_at_match` rules a log must match both patterns, so a line needs `WARN` and `ERROR`.",
+      "Wrong: `pattern` takes one regex string, not a YAML list."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#include-at-match",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-004",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "easy",
+    "q": "In a `mask_sequences` processing rule, which parameter sets the text that replaces the matched sensitive data?",
+    "options": [
+      "`replace_placeholder`",
+      "`replacement_text`",
+      "`mask_value`"
+    ],
+    "answer": 0,
+    "explanation": "`mask_sequences` replaces all matched groups with the value of the `replace_placeholder` parameter.",
+    "notes": [
+      "Correct: `replace_placeholder` holds the replacement string for `mask_sequences`.",
+      "Wrong: \"Replacement text\" is a field in the Sensitive Data Scanner UI, not an Agent rule key.",
+      "Wrong: `mask_value` is not an Agent processing rule parameter."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#scrub-sensitive-data-from-your-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-005",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "hard",
+    "q": "An Agent v7.50 host has this rule:\n\n- type: mask_sequences\n  name: keep_last_four\n  pattern: (card=)\\d{12}(\\d{4})\n  replace_placeholder: \"${1}XXXX${2}\"\n\nWhat does Datadog receive for the line `card=4111111111111111 status=ok`?",
+    "options": [
+      "`${1}XXXX${2} status=ok`",
+      "`XXXX status=ok`",
+      "`card=XXXX1111 status=ok`"
+    ],
+    "answer": 2,
+    "explanation": "Since Agent 7.17, `replace_placeholder` can expand capture group references such as `$1` and `${2}`. Group 1 is `card=` and group 2 is the last four digits, so the whole match is replaced by `card=XXXX1111`.",
+    "notes": [
+      "Wrong: on Agent 7.17+ the references are expanded, not sent as literal text.",
+      "Wrong: this ignores the capture group references, which put `card=` and the last four digits back.",
+      "Correct: `${1}` expands to `card=` and `${2}` to `1111`, around the literal `XXXX`."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#scrub-sensitive-data-from-your-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-006",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "easy",
+    "q": "An engineer wants one masking rule to apply to every log collected by an Agent, without editing each integration. Where does it go in `datadog.yaml`?",
+    "options": [
+      "Under a top-level `log_processing_rules:` key.",
+      "Under `logs_config:` as `processing_rules:`.",
+      "Under `logs_config:` as `log_processing_rules:`."
+    ],
+    "answer": 1,
+    "explanation": "Global processing rules are defined in the Agent main configuration file with `logs_config.processing_rules`. The `log_processing_rules` parameter is used in integration configurations.",
+    "notes": [
+      "Wrong: `log_processing_rules` is the per-integration key inside a `logs:` entry, not a global key.",
+      "Correct: `logs_config.processing_rules` defines global rules in `datadog.yaml`.",
+      "Wrong: this mixes the two keys; the global one is `processing_rules` under `logs_config`."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#global-processing-rules",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-007",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "A containerized Agent is configured only through environment variables. Which variable defines global log processing rules?",
+    "options": [
+      "`DD_LOG_PROCESSING_RULES`",
+      "`DD_LOGS_PROCESSING_RULES`",
+      "`DD_LOGS_CONFIG_PROCESSING_RULES`"
+    ],
+    "answer": 2,
+    "explanation": "The environment variable for global processing rules is `DD_LOGS_CONFIG_PROCESSING_RULES`, set to a JSON array of rules. It maps to `logs_config.processing_rules`.",
+    "notes": [
+      "Wrong: this name does not follow the `logs_config` mapping and is not read by the Agent.",
+      "Wrong: it is missing the `CONFIG` part of `logs_config.processing_rules`.",
+      "Correct: `DD_LOGS_CONFIG_PROCESSING_RULES` takes a JSON array of rules and applies them globally."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#global-processing-rules",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-008",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "hard",
+    "q": "`datadog.yaml` has a global `mask_sequences` rule for email addresses. The `payments` integration config has its own `log_processing_rules` with only an `exclude_at_match` rule for health checks. Are emails masked in `payments` logs?",
+    "options": [
+      "No. Integration-specific rules completely override the global rules for that integration.",
+      "Yes. Global rules run first, then the integration rules run on the result.",
+      "No. Global rules apply only to container logs, not to integration log configs."
+    ],
+    "answer": 0,
+    "explanation": "The docs state that integration-specific rules completely override global rules for that integration. The email mask must be added to the `payments` rules as well.",
+    "notes": [
+      "Correct: once an integration defines its own rules, the global rules do not apply to it.",
+      "Wrong: global and integration rules are not chained or merged; the integration rules replace the global ones.",
+      "Wrong: global rules apply to all logs the Agent collects; they are skipped here only because the integration defines its own rules."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#multi-line-log-aggregation-faq",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-009",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "hard",
+    "q": "A file source has these rules, in this order:\n\n- type: mask_sequences\n  name: mask_email\n  pattern: \\w+@acme\\.com\n  replace_placeholder: \"[EMAIL]\"\n- type: exclude_at_match\n  name: drop_acme\n  pattern: acme\\.com\n\nWhat happens to the line `login ok for bob@acme.com`?",
+    "options": [
+      "It is dropped, because exclusion rules are evaluated before masking rules.",
+      "It is sent as `login ok for [EMAIL]`.",
+      "It is sent unchanged, because a rule that matches stops later rules."
+    ],
+    "answer": 1,
+    "explanation": "Processing rules are applied sequentially, and each rule is applied to the result of the previous one. After masking, the message no longer contains `acme.com`, so the exclude rule does not match.",
+    "notes": [
+      "Wrong: there is no type-based priority; rules run in the order they are listed.",
+      "Correct: the mask runs first, so the exclude rule sees `[EMAIL]` and lets the log through.",
+      "Wrong: every rule runs on the output of the previous one; a match does not stop processing."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-010",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "easy",
+    "q": "Which regular expression syntax must Agent log processing rule patterns follow?",
+    "options": [
+      "Perl Compatible Regular Expressions (PCRE)",
+      "Golang regexp syntax",
+      "Java `java.util.regex` syntax"
+    ],
+    "answer": 1,
+    "explanation": "Processing rule patterns must conform to Golang regexp syntax. PCRE (with limits) is used by Sensitive Data Scanner custom rules in Datadog, not by Agent rules.",
+    "notes": [
+      "Wrong: PCRE is the syntax for Sensitive Data Scanner custom rules, not Agent processing rules.",
+      "Correct: Agent processing rule patterns use Golang regexp syntax.",
+      "Wrong: the Agent is written in Go and does not use Java regex."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-011",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "A Kubernetes pod uses an `ad.datadoghq.com/app.logs` annotation to mask the phone pattern `\\d{3}-\\d{4}`. How must the pattern be written inside the annotation JSON?",
+    "options": [
+      "`\"pattern\": \"\\\\d{3}-\\\\d{4}\"`",
+      "`\"pattern\": \"\\d{3}-\\d{4}\"`",
+      "`\"pattern\": \"/\\d{3}-\\d{4}/\"`"
+    ],
+    "answer": 0,
+    "explanation": "In pod annotations and Docker labels, regex backslashes must be escaped, so `\\d` becomes `\\\\d`. The value is JSON, which also forbids trailing commas and comments.",
+    "notes": [
+      "Correct: each backslash is doubled because the annotation value is a JSON string.",
+      "Wrong: `\\d` is not a valid JSON escape, so the annotation value is not valid JSON and the regex is not passed as intended.",
+      "Wrong: Go regex patterns take no slash delimiters, and the backslashes are still unescaped."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#filter-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-012",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "easy",
+    "q": "A team wants the Agent to drop log lines that it had to truncate instead of sending partial logs. Which processing rule type does this?",
+    "options": [
+      "`mask_sequences` with an empty `replace_placeholder`",
+      "`drop_truncated`",
+      "`exclude_truncated`"
+    ],
+    "answer": 2,
+    "explanation": "The `exclude_truncated` rule excludes truncated logs and does not send them to Datadog. It needs no pattern and is available starting with Agent v7.69.",
+    "notes": [
+      "Wrong: `mask_sequences` replaces matched text and still sends the log; it does not drop truncated logs.",
+      "Wrong: `drop_truncated` is not a processing rule type.",
+      "Correct: `exclude_truncated` drops truncated logs (Agent v7.69+)."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#exclude-truncated",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-013",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "After an engineer adds a malformed rule under `logs_config.processing_rules` and restarts the Agent, no logs arrive from that host. What is the expected behavior, and how should they troubleshoot?",
+    "options": [
+      "The Agent does not start the log collector; run the Agent `status` subcommand.",
+      "The Agent skips the bad rule and sends all logs unfiltered; check Live Tail.",
+      "The Agent keeps logs in a local buffer until the rule is fixed; run the `flare` subcommand."
+    ],
+    "answer": 0,
+    "explanation": "If the global processing rules have a format issue, the Datadog Agent does not start the log collector. The docs say to run the Agent `status` subcommand to troubleshoot.",
+    "notes": [
+      "Correct: a format issue in global rules stops the log collector from starting; `status` shows the problem.",
+      "Wrong: the Agent does not skip the bad rule, so logs are not sent unfiltered.",
+      "Wrong: the docs describe no buffering until the rule is fixed; the log collector simply does not start."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#global-processing-rules",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-014",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "A Java app writes plain-text logs. Each event starts with a timestamp such as `2026-11-02 10:15:30,123`, and stack trace lines start with whitespace and `at`. The stack frames arrive as separate logs. Which rule fixes this?",
+    "options": [
+      "`type: multi_line` with a pattern that matches the indented `at` lines.",
+      "`type: multi_line` with a pattern that matches the leading timestamp.",
+      "`type: include_at_match` with a pattern that matches the leading timestamp."
+    ],
+    "answer": 1,
+    "explanation": "A `multi_line` rule aggregates lines into one entry until the pattern is detected again, so the pattern must identify the start of a new log. The regex must match at the beginning of a log, not mid-line.",
+    "notes": [
+      "Wrong: the pattern marks where a new log begins; matching stack frames would start a new log at each frame.",
+      "Correct: matching the timestamp marks each new event, and the following lines are aggregated into it.",
+      "Wrong: `include_at_match` would drop every stack frame line that lacks a timestamp instead of joining them."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/advanced_log_collection/#manually-aggregate-multi-line-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-015",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "A host runs Agent 7.83, where auto multi-line detection is on by default. One file source writes one-line logs that start with a timestamp, and the team wants auto multi-line off only for that source. What should they do?",
+    "options": [
+      "Set `logs_config.auto_multi_line_detection: false` in `datadog.yaml`.",
+      "Set `multi_line: false` in that source's `log_processing_rules`.",
+      "Set `auto_multi_line_detection: false` in that source's `logs:` entry."
+    ],
+    "answer": 2,
+    "explanation": "Auto multi-line detection is enabled by default starting with Agent 7.82.0. It can be enabled or disabled for a specific integration by setting `auto_multi_line_detection` in that `logs:` entry.",
+    "notes": [
+      "Wrong: the `logs_config` setting turns the feature off for every source on the Agent.",
+      "Wrong: `multi_line` is a rule `type` that takes a pattern, not a boolean switch; the per-source key is `auto_multi_line_detection`.",
+      "Correct: the per-source `auto_multi_line_detection: false` overrides the default for that source only."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/auto_multiline_detection/#enable-multi-line-aggregation-per-integration",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-016",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "With default auto multi-line detection, only lines that begin with a datetime start a new log. Which first line is NOT detected as a datetime?",
+    "options": [
+      "`2024/05/16 19:46:15 worker started`",
+      "`Jun 14 15:16:01 worker started`",
+      "`12:30:20 worker started`"
+    ],
+    "answer": 2,
+    "explanation": "The datetime must be in the first 60 bytes and include both a date and a time component. A time alone, such as `12:30:20`, does not have enough context to be detected.",
+    "notes": [
+      "Wrong: it has both a date and a time, so it is detected.",
+      "Wrong: `Jun 14 15:16:01` has a month, day and time, and is listed as a valid format.",
+      "Correct: it has no date component, so it is not detected as a datetime."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/auto_multiline_detection/#supported-datetime-formats",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-017",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "An engineer adds this to `datadog.yaml`:\n\nlogs_config:\n  auto_multi_line_detection_custom_samples:\n    - sample: \"SEVERE Main main Exception occurred\"\n\nHow does the Agent decide that a log line matches this sample?",
+    "options": [
+      "The line must start with the exact sample string, compared character by character.",
+      "Both are tokenized (first 60 bytes of the line); 75% of tokens matching marks the line.",
+      "It compiles the sample into a regex and marks the line when the timestamp match score is above 0.5."
+    ],
+    "answer": 1,
+    "explanation": "Custom samples tokenize the first 60 bytes of a log line and the sample (words, numbers, whitespace, special characters, datetime parts). If 75% of the log's tokens match the sample's, the log is marked for aggregation.",
+    "notes": [
+      "Wrong: samples use token matching, not an exact string prefix comparison.",
+      "Correct: token comparison over the first 60 bytes with a 75% match marks the line.",
+      "Wrong: 0.5 is the default `timestamp_detector_match_threshold`, which is not how samples match; regex is a separate `regex:` option."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/auto_multiline_detection/#how-custom-samples-work",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-018",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "With auto multi-line detection on, lines that start with `[AUDIT]` must always be sent as standalone logs and never joined with other lines. Which label should the custom sample for `[AUDIT]` use?",
+    "options": [
+      "`no_aggregate`",
+      "`start_group`",
+      "`aggregate`"
+    ],
+    "answer": 0,
+    "explanation": "The `no_aggregate` label declares logs that are never part of aggregation: it flushes any buffered multi-line log and sends the line on its own.",
+    "notes": [
+      "Correct: `no_aggregate` lines are never part of aggregation and are flushed immediately.",
+      "Wrong: `start_group` begins a new multi-line log, so following lines would be added to it.",
+      "Wrong: `aggregate` adds the line to the existing multi-line log."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/auto_multiline_detection/#labels",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-019",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "hard",
+    "q": "After upgrading to Agent 7.83, an `exclude_at_match` rule with pattern `\"level\": \"debug\"` stops dropping pretty-printed JSON debug logs. What is the most likely cause?",
+    "options": [
+      "Processing rules no longer apply to JSON logs once auto multi-line detection is on.",
+      "JSON aggregation compacts the JSON before processing rules run, so there is no space after the colon.",
+      "JSON detection labels the logs `no_aggregate`, which skips all processing rules."
+    ],
+    "answer": 1,
+    "explanation": "In Agent 7.67+, pretty-printed JSON is aggregated into a single compacted line, and this runs before `log_processing_rules`. Patterns that expect `\"key\": \"value\"` must be updated to `\"key\":\"value\"`, or JSON aggregation disabled.",
+    "notes": [
+      "Wrong: processing rules still run; they just see the compacted text.",
+      "Correct: the compacted JSON reads `\"level\":\"debug\"`, so the pattern with a space no longer matches.",
+      "Wrong: the `no_aggregate` label only affects multi-line aggregation, not processing rules."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/auto_multiline_detection/#json-aggregation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-020",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "easy",
+    "q": "A team wants to search the Log Explorer for logs that the Agent truncated. Which `datadog.yaml` setting adds a `truncated` tag to those logs?",
+    "options": [
+      "`logs_config.tag_truncated_logs: true`",
+      "`logs_config.auto_multi_line.tag_aggregated_json: true`",
+      "`logs_config.exclude_truncated: true`"
+    ],
+    "answer": 0,
+    "explanation": "Setting `logs_config.tag_truncated_logs: true` adds a `truncated` tag showing the truncation source, such as `single_line` or `multi_line`.",
+    "notes": [
+      "Correct: `tag_truncated_logs` tags truncated logs so you can search for them.",
+      "Wrong: `tag_aggregated_json` tags aggregated JSON logs (`aggregated_json:true`), not truncated ones.",
+      "Wrong: `exclude_truncated` is a processing rule type that drops truncated logs, not a tagging setting."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/auto_multiline_detection/#monitoring-and-debugging",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-021",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "A compliance policy says national ID numbers must never leave the company's hosts. Logs are collected with the Datadog Agent. Which control meets this policy?",
+    "options": [
+      "A Sensitive Data Scanner rule with the Redact action on the logs scanning group.",
+      "An index exclusion filter that matches logs containing ID numbers.",
+      "A `mask_sequences` processing rule in the Agent configuration."
+    ],
+    "answer": 2,
+    "explanation": "If sensitive data is prohibited from leaving your environment, the docs say to add scrubbing rules at source collection, such as Agent `mask_sequences` rules. Sensitive Data Scanner in the cloud redacts only after the data reaches the Datadog backend.",
+    "notes": [
+      "Wrong: with Sensitive Data Scanner in the cloud, data leaves your environment before it is redacted.",
+      "Wrong: exclusion filters apply after ingestion, so the data has already reached Datadog.",
+      "Correct: the Agent masks the data on the host, so it never leaves in clear text."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/manage-sensitive-logs-data-access/#stop-sending-sensitive-data-to-datadog",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-022",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "easy",
+    "q": "Which Sensitive Data Scanner action hides matched values in logs but lets users with the `Data Scanner Unmask` permission reveal them in Datadog?",
+    "options": [
+      "Mask",
+      "Hash",
+      "Partially redact"
+    ],
+    "answer": 0,
+    "explanation": "The Mask action obfuscates matching values, and users with the `Data Scanner Unmask` permission can de-obfuscate and view them. Redact, partially redact, and hash are irreversible.",
+    "notes": [
+      "Correct: Mask is the reversible action for users with the Unmask permission.",
+      "Wrong: Hash replaces the match with a non-reversible identifier.",
+      "Wrong: Partially redact is irreversible and cannot be unmasked."
+    ],
+    "ref": "https://docs.datadoghq.com/security/sensitive_data_scanner/setup/telemetry_data/#mask-action",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-023",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "hard",
+    "q": "A security engineer creates a Sensitive Data Scanner scanning group for `service:billing` with a 50% sampling rate. When adding a credit card library rule, the Redact and Hash actions cannot be selected. Why?",
+    "options": [
+      "Only the Datadog Admin role can choose obfuscating actions.",
+      "Library rules only support tagging; Redact and Hash need a custom regex rule.",
+      "Sampling is on for the group; obfuscation needs all matching data scanned."
+    ],
+    "answer": 2,
+    "explanation": "When a scanning group has sampling enabled, you cannot select actions that obfuscate data (redact, partially redact, hash). Disable sampling to obfuscate matches.",
+    "notes": [
+      "Wrong: users with `data_scanner_write` on a custom role can set up rules and their actions.",
+      "Wrong: library rules support the same actions on match as custom rules.",
+      "Correct: obfuscating actions are unavailable while the group samples data."
+    ],
+    "ref": "https://docs.datadoghq.com/security/sensitive_data_scanner/setup/telemetry_data/#add-a-scanning-group",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-024",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "On Tuesday a team enables a Sensitive Data Scanner rule that redacts card numbers. Logs indexed on Monday still show card numbers in the Log Explorer. What explains this?",
+    "options": [
+      "Toggling the scanning group off and on is needed to rescan existing logs.",
+      "Scanning rules only apply to data that arrives after the rule is defined.",
+      "Indexed logs are only redacted once they are rehydrated from the archive."
+    ],
+    "answer": 1,
+    "explanation": "Rules that you add or update affect only data coming into Datadog after the rule was defined. Logs already indexed must be handled separately, for example with a restriction query or Logs Data Deletion.",
+    "notes": [
+      "Wrong: toggling a group does not trigger a scan of data that was already indexed.",
+      "Correct: rules affect only data coming into Datadog after the rule was defined, so earlier indexed logs keep the data.",
+      "Wrong: Sensitive Data Scanner does not re-scan rehydrated logs."
+    ],
+    "ref": "https://docs.datadoghq.com/security/sensitive_data_scanner/setup/telemetry_data/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-025",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "Logs matching `service:billing version:1.4.2` contain customer data and are still within retention. The team wants them hidden from the Log Explorer, dashboards and Live Tail for most users until they age out. What should they configure?",
+    "options": [
+      "An index exclusion filter on `service:billing version:1.4.2`.",
+      "A Sensitive Data Scanner scanning group filtered on `service:billing version:1.4.2`.",
+      "A restriction query on the Data Access page, applied to the relevant roles."
+    ],
+    "answer": 2,
+    "explanation": "A restriction query defined on the Data Access configuration page and applied to roles makes matching logs un-queryable in the Explorer, Dashboards and Live Tail, including logs already indexed.",
+    "notes": [
+      "Wrong: an exclusion filter only stops new logs from being indexed; logs already indexed stay queryable.",
+      "Wrong: scanning rules apply only to new data, so indexed logs are not changed.",
+      "Correct: a restriction query hides matching logs, old and new, from roles it is applied to."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/manage-sensitive-logs-data-access/#make-sensitive-logs-un-queryable-in-datadog-until-they-age-out",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-026",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "hard",
+    "q": "An organization deletes leaked logs with Logs Data Deletion. Which statement is true?",
+    "options": [
+      "The deletion cannot be canceled once the confirmation text is entered.",
+      "Metrics generated from the deleted logs are not deleted.",
+      "Any user with the Logs Write Processors permission can enable the feature."
+    ],
+    "answer": 1,
+    "explanation": "Data derived from deleted logs, such as metrics generated from logs, is not deleted. A request stays recoverable and can be canceled for 10 days, and only an Organization Admin can enable the feature.",
+    "notes": [
+      "Wrong: a deletion request can be canceled up to 10 days after submission.",
+      "Correct: derived data such as log-based metrics remains after deletion.",
+      "Wrong: only Organization Admins can enable it; deleting requires the Logs Delete Data permission."
+    ],
+    "ref": "https://docs.datadoghq.com/account_management/delete_data/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-027",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "A team wants to stop indexing noisy `2xx` nginx access logs but still build a log-based metric that counts them and keep them in the archive. What should they use?",
+    "options": [
+      "An index exclusion filter matching the `2xx` logs.",
+      "An `exclude_at_match` rule in the Agent's nginx config.",
+      "A global `exclude_at_match` rule in `datadog.yaml`."
+    ],
+    "answer": 0,
+    "explanation": "Logs removed by an index exclusion filter are still ingested, so they flow to Live Tail, can generate metrics and can be archived. Logs dropped at the Agent are never sent to Datadog.",
+    "notes": [
+      "Correct: excluded logs are not indexed but remain available for metrics and archives.",
+      "Wrong: Agent exclusion stops the logs from being sent, so no metric or archive can use them.",
+      "Wrong: a global Agent rule also drops the logs before they reach Datadog."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/indexes/#exclusion-filters",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-028",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "A Sensitive Data Scanner rule must redact customer emails that appear in a log tag (`customer_email:...`). What is the documented approach?",
+    "options": [
+      "Add `@tags` to the rule's Specific Attributes list so tag values are scanned too.",
+      "Remap the tag to an attribute without preserving the source, then scan that attribute.",
+      "Set the rule to scan the Entire Event, which includes tags."
+    ],
+    "answer": 1,
+    "explanation": "To redact sensitive data in tags, remap the tag to an attribute, disable Preserve source attribute so the tag is not kept, and then add a rule that scans that attribute.",
+    "notes": [
+      "Wrong: the `@` prefix is not supported in that field, and tags are handled by remapping first.",
+      "Correct: remap the tag to an attribute without keeping the source, then redact the attribute.",
+      "Wrong: for logs the scan covers the message and attribute values; the docs say tags must first be remapped to an attribute."
+    ],
+    "ref": "https://docs.datadoghq.com/security/sensitive_data_scanner/setup/telemetry_data/#redact-sensitive-data-in-tags",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-029",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "medium",
+    "q": "After adding the common credit card `mask_sequences` rule, a team sees trace IDs masked and logs no longer link to traces. What change do the docs suggest?",
+    "options": [
+      "Use the version of the credit card pattern wrapped in `\\b` word boundaries.",
+      "Move the rule to the global `processing_rules` so it runs after trace ID parsing.",
+      "Change the rule type to `exclude_at_match` so only logs with cards are dropped."
+    ],
+    "answer": 0,
+    "explanation": "The common credit card regex can match trace IDs and interfere with connecting logs and traces. The docs give an alternative pattern wrapped in `\\b` word boundaries for that case.",
+    "notes": [
+      "Correct: the `\\b`-bounded variant avoids matching trace IDs inside longer strings.",
+      "Wrong: moving the rule to global scope does not change what the regex matches.",
+      "Wrong: this drops logs instead of masking card numbers, and the regex would still match trace IDs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/commonly-used-log-processing-rules/#credit-card-numbers",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-filt-030",
+    "topic": "Log Collection",
+    "subtopic": "Log Filtering & Obfuscation",
+    "difficulty": "easy",
+    "q": "On a Kubernetes cluster, the team wants to stop collecting logs from containers running the `debug-sidecar` image while still collecting their metrics. Which Agent setting should they use?",
+    "options": [
+      "`DD_CONTAINER_EXCLUDE=\"image:debug-sidecar\"`",
+      "`DD_LOGS_CONFIG_PROCESSING_RULES` with an `exclude_at_match` pattern `debug-sidecar`",
+      "`DD_CONTAINER_EXCLUDE_LOGS=\"image:debug-sidecar\"`"
+    ],
+    "answer": 2,
+    "explanation": "`DD_CONTAINER_EXCLUDE_LOGS` is a blocklist of containers whose logs are excluded, matched on `image:`, `name:` or `kube_namespace:`. `DD_CONTAINER_EXCLUDE` excludes both logs and metrics.",
+    "notes": [
+      "Wrong: `DD_CONTAINER_EXCLUDE` also stops metric collection for those containers.",
+      "Wrong: processing rules match the log message, not the container image name.",
+      "Correct: it excludes only the logs from matching containers."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/guide/container-discovery-management/#environment-variables",
+    "verified": "2026-11"
+  }
+]

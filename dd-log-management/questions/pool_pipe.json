@@ -1,0 +1,1052 @@
+[
+  {
+    "id": "lm-pipe-001",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "A log arrives in Datadog and its attributes match the filters of two different pipelines. How is it processed?",
+    "options": [
+      "Only the first matching pipeline in the list processes it; every later pipeline is skipped, even if its filter also matches.",
+      "It runs through every processor of the first matching pipeline, then is tested against the next pipelines, so both can process it.",
+      "Both pipelines process it in parallel, and Datadog then merges the two resulting versions of the log into one."
+    ],
+    "answer": 1,
+    "explanation": "Every log is tested against every pipeline filter. When it matches, all of that pipeline's processors run in order before the log moves on to the next pipeline.",
+    "notes": [
+      "Wrong: a match does not stop processing; the log continues to the following pipelines.",
+      "Correct: processors run sequentially inside a matching pipeline, then the log is tested against the next pipeline filters.",
+      "Wrong: processing is sequential in pipeline order, not parallel with a merge."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-002",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "An engineer creates a pipeline with the filter `@http.status_code:500`. The first processor of that same pipeline is the Grok parser that extracts `http.status_code` from the raw message. No logs ever enter the pipeline. Why?",
+    "options": [
+      "The pipeline filter is evaluated before the pipeline's processors run, so the attribute does not exist yet when the filter is checked.",
+      "Pipeline filters only accept reserved attributes such as `source`, `service` or `host`, never custom attributes like status codes.",
+      "A Grok parser must live in a nested pipeline before any of the attributes it extracts can be referenced in a pipeline filter."
+    ],
+    "answer": 0,
+    "explanation": "Pipeline filtering is applied before any of the pipeline's processors, so you cannot filter on an attribute that is extracted in the pipeline itself. Filter on something already present (for example `source`) instead.",
+    "notes": [
+      "Correct: the filter runs first, and the attribute is only created later by the pipeline's own Grok parser.",
+      "Wrong: pipeline filters use normal search syntax and can target custom attributes that already exist on the log.",
+      "Wrong: nesting is not required; the issue is ordering, not where the parser lives."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#create-a-pipeline",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-003",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "A team wants to change one parsing rule inside the out-of-the-box NGINX integration pipeline. What is the supported approach?",
+    "options": [
+      "Edit the rule directly in the integration pipeline after enabling edit mode.",
+      "Ask Datadog Support to update the integration pipeline for the organization.",
+      "Clone the integration pipeline and edit the clone."
+    ],
+    "answer": 2,
+    "explanation": "Integration pipelines are read-only. To change their processing, clone the pipeline and edit the clone.",
+    "notes": [
+      "Wrong: integration pipelines are read-only; there is no edit mode for them.",
+      "Wrong: no support request is needed; cloning is the documented self-service path.",
+      "Correct: clone the read-only integration pipeline, then edit the copy."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#integration-pipelines",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-004",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "An admin no longer wants the Redis integration pipeline to process logs. What can they do with that integration pipeline?",
+    "options": [
+      "Delete it from the pipeline list like any custom pipeline.",
+      "Disable it; integration pipelines cannot be deleted.",
+      "Move it into a nested position under a custom pipeline so it stops running."
+    ],
+    "answer": 1,
+    "explanation": "Integration pipelines cannot be deleted, only disabled.",
+    "notes": [
+      "Wrong: unlike custom pipelines, integration pipelines cannot be deleted.",
+      "Correct: integration pipelines can only be disabled, not deleted.",
+      "Wrong: pipelines cannot be moved into read-only pipelines, and nesting is not a way to switch processing off."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#integration-pipelines",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-005",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A team starts shipping PostgreSQL logs and wants the PostgreSQL integration pipeline to be installed. What triggers the installation?",
+    "options": [
+      "Installing the PostgreSQL integration tile in Datadog is enough to install the pipeline, even if no logs have arrived yet.",
+      "Cloning the PostgreSQL pipeline from the Pipeline Library into the pipeline list, which installs the integration version.",
+      "Setting the log `source` to the integration's source value; the pipeline installs when the first log with that source arrives."
+    ],
+    "answer": 2,
+    "explanation": "Datadog recommends configuring the corresponding log `source`. After Datadog receives the first log with this source, the integration pipeline installation is triggered automatically.",
+    "notes": [
+      "Wrong: installation is triggered by receiving the first log with the matching source.",
+      "Wrong: cloning makes an editable copy; it is not how the integration pipeline itself is installed.",
+      "Correct: the first log carrying the matching `source` automatically installs the integration pipeline."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#integration-pipeline-library",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-006",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "Which statement about nested pipelines is correct?",
+    "options": [
+      "A top-level pipeline can hold processors and nested pipelines, but a nested pipeline can hold only processors.",
+      "Nested pipelines can contain further nested pipelines, up to three levels deep below a top-level pipeline.",
+      "A pipeline that contains nested pipelines cannot also hold processors of its own at the top level."
+    ],
+    "answer": 0,
+    "explanation": "A pipeline can contain nested pipelines and processors, whereas a nested pipeline can only contain processors.",
+    "notes": [
+      "Correct: only one level of nesting is allowed, and nested pipelines contain processors only.",
+      "Wrong: a nested pipeline cannot contain another pipeline.",
+      "Wrong: a top-level pipeline can mix nested pipelines and processors."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#nested-pipelines",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-007",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "hard",
+    "q": "Pipeline A already contains two nested pipelines. An engineer tries to use Move to so that pipeline A becomes a nested pipeline inside pipeline B. What happens?",
+    "options": [
+      "The move succeeds, and the nested pipelines inside A are automatically flattened into ordinary processors.",
+      "The move succeeds only if pipeline B has no processors of its own and is not an integration pipeline.",
+      "It is not allowed: a pipeline containing nested pipelines can only be moved to another top-level position."
+    ],
+    "answer": 2,
+    "explanation": "Pipelines containing nested pipelines can only be moved to other top-level positions; they cannot be moved into another pipeline.",
+    "notes": [
+      "Wrong: Datadog does not flatten nested pipelines into processors; the move is blocked.",
+      "Wrong: the restriction depends on A containing nested pipelines, not on B's processors.",
+      "Correct: such a pipeline can only be reordered among top-level positions."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#manage-your-pipelines",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-008",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "For optimal Log Management performance, what is the maximum number of processors Datadog recommends per pipeline?",
+    "options": [
+      "10",
+      "20",
+      "50"
+    ],
+    "answer": 1,
+    "explanation": "Datadog recommends using at most 20 processors per pipeline (and at most 10 parsing rules in a Grok processor).",
+    "notes": [
+      "Wrong: 10 is the recommended maximum of parsing rules in a Grok parser, not processors per pipeline.",
+      "Correct: the best practice is at most 20 processors per pipeline.",
+      "Wrong: 50 is not the documented recommendation (50 is the Array Map element limit)."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-009",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "A Grok parser keeps growing as developers add new log formats. What is Datadog's best-practice limit on parsing rules in a single Grok parser?",
+    "options": [
+      "10 parsing rules",
+      "5 parsing rules",
+      "25 parsing rules"
+    ],
+    "answer": 0,
+    "explanation": "As a best practice, limit a Grok parser to 10 parsing rules. Datadog may disable underperforming parsing rules.",
+    "notes": [
+      "Correct: the recommendation is at most 10 parsing rules per Grok parser.",
+      "Wrong: 5 is the number of high-volume patterns used for samples (and the API samples limit), not the rule limit.",
+      "Wrong: 25 is above the documented best practice."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/grok_parser/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-010",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "hard",
+    "q": "When configuring a Grok parser in the UI, which statement about log samples is correct?",
+    "options": [
+      "Samples are pulled from the 10 most recent logs that reached the pipeline, and you can add up to 5 samples of your own.",
+      "Samples come from the five highest-volume log patterns matching the pipeline filter; up to 10 samples of 5000 characters each.",
+      "Samples are pulled at random from all indexed logs in the org, and each sample can be at most 1000 characters long."
+    ],
+    "answer": 1,
+    "explanation": "Datadog pulls sample logs from the five highest-volume log patterns matching your pipeline filter. You can add samples up to 10 total, 5000 characters each.",
+    "notes": [
+      "Wrong: samples come from high-volume patterns, not the most recent logs, and the total is 10.",
+      "Correct: five highest-volume patterns are the source; up to 10 samples of 5000 characters each.",
+      "Wrong: samples are tied to the pipeline filter, and the per-sample limit is 5000 characters."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/grok_parser/#setup",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-011",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "In the Grok parser preview, a sample shows the result \"Match with a warning\". What does this mean?",
+    "options": [
+      "The rule matches only part of the log, so the remaining text is dropped.",
+      "Two different rules matched the same sample, so only the first one is used.",
+      "A rule matches the sample but extracts no fields."
+    ],
+    "answer": 2,
+    "explanation": "Each sample shows Match (a rule matches and extracts fields), Match with a warning (a rule matches but extracts no fields), or No Match.",
+    "notes": [
+      "Wrong: a Grok rule must match the whole log entry; partial matches are No Match.",
+      "Wrong: only the first matching rule ever applies; that is not reported as a warning.",
+      "Correct: the warning means the rule matched but produced no attributes."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/grok_parser/#setup",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-012",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A Grok parser has three parsing rules, and a given log line could be matched by both the second and the third rule. Which result do you get?",
+    "options": [
+      "The second rule, because the first rule that matches from top to bottom is used.",
+      "The third rule, because rules lower in the list override the earlier matching ones.",
+      "Both rules, with the attributes they extract merged into one result."
+    ],
+    "answer": 0,
+    "explanation": "Only one rule can match a given log: the first one that matches, from top to bottom, does the parsing.",
+    "notes": [
+      "Correct: rules are tried top to bottom and the first match wins.",
+      "Wrong: later rules do not override; evaluation stops at the first match.",
+      "Wrong: only one rule can match any given log, so there is no merge."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-013",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A developer wants to validate only the timestamp first, then add the other attributes one at a time. They write this rule:\n\nMyRule %{date(\"yyyy-MM-dd HH:mm:ss\"):date}\n\nThe preview shows No Match against a full log line. Which documented technique keeps the date matcher and makes the draft rule match while the rest of the line is not parsed yet?",
+    "options": [
+      "Replace the `date` matcher with `data` so the rule covers the whole line.",
+      "Move the rule into Helper Rules so it can match part of a line.",
+      "Append `.*` to the rule so it matches whatever follows the date."
+    ],
+    "answer": 2,
+    "explanation": "A parsing rule must match the entire log entry. The documented star trick is to end the draft rule with `.*` so it matches anything after the parsed part, then add attributes one at a time.",
+    "notes": [
+      "Wrong: `%{data:date}` would swallow the whole line into `date` as text, so the timestamp would no longer be parsed as a date.",
+      "Wrong: helper rules define reusable tokens; they don't relax the full-line match requirement.",
+      "Correct: `.*` at the end lets the rule match the full line while you validate one attribute at a time."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-parsing-best-practice/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-014",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "hard",
+    "q": "Which Grok parsing rule name is valid?",
+    "options": [
+      "`_access.log`",
+      "`access-log v2`",
+      "`access.log_v2`"
+    ],
+    "answer": 2,
+    "explanation": "Rule names must contain only alphanumeric characters, `_` and `.`, and must start with an alphanumeric character. Names must also be unique within the parser.",
+    "notes": [
+      "Wrong: the name starts with `_`, but it must start with an alphanumeric character.",
+      "Wrong: hyphens and spaces are not allowed in rule names.",
+      "Correct: it starts with a letter and uses only letters, digits, `.` and `_`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-015",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "In a Grok rule, a team wants to match the logger name between two pipes but NOT store it as an attribute. Which pattern does that?",
+    "options": [
+      "`%{notSpace}`",
+      "`%{notSpace:ignore:nullIf}`",
+      "`%{notSpace::drop}`"
+    ],
+    "answer": 0,
+    "explanation": "In `%{MATCHER:EXTRACT:FILTER}` the extract part is optional. Leaving it out matches the text without extracting it, which is the documented way to skip parts of a message.",
+    "notes": [
+      "Correct: a matcher without an extract name matches the text but creates no attribute.",
+      "Wrong: this would still create an `ignore` attribute, and `nullIf` needs a value argument.",
+      "Wrong: `drop` is not a Grok filter."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-parsing-best-practice/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-016",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A custom rule uses `%{notSpace:http.useragent}` to capture this quoted value:\n\n\"Mozilla/5.0 (Windows NT 5.1; rv:52.0) Gecko/20100101 Firefox/52.0\"\n\nThe rule fails on real logs. What is the cause?",
+    "options": [
+      "`notSpace` cannot be used for attributes under the reserved `http` namespace, so the extracted value is discarded at intake.",
+      "`notSpace` stops at the first space, but the user agent contains spaces; use a matcher such as `regex(\"[^\\\"]*\")` instead.",
+      "`notSpace` only matches letters, digits and underscores, so the `/`, `.` and `(` characters in the user agent break the match."
+    ],
+    "answer": 1,
+    "explanation": "`notSpace` matches any string until the next space. A user agent contains spaces, so the documented fix is a matcher such as `regex(\"[^\\\"]*\")`.",
+    "notes": [
+      "Wrong: matchers are independent of the attribute name.",
+      "Correct: `notSpace` ends at the first space, which a user agent always contains.",
+      "Wrong: `notSpace` accepts any non-space characters; it is `word` that is limited to letters, digits and `_`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/faq/how-to-investigate-a-log-parsing-issue/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-017",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "A log contains `duration=12.75`. Which Grok matcher extracts the value as a double-precision number?",
+    "options": [
+      "`integer`",
+      "`word`",
+      "`number`"
+    ],
+    "answer": 2,
+    "explanation": "`number` matches a decimal floating point number and parses it as a double. `integer` only matches integers.",
+    "notes": [
+      "Wrong: `integer` would fail on a decimal value.",
+      "Wrong: `word` matches letters, digits and `_` only and stores a string.",
+      "Correct: `number` parses decimal values as double precision numbers."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#matcher-and-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-018",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "A log looks correct in Live Tail, but an engineer cannot tell which of the many pipelines changed its `service` attribute. Which tool shows the pipelines and processors that modified similar logs?",
+    "options": [
+      "Pipeline Scanner",
+      "Log Patterns",
+      "Watchdog Insights"
+    ],
+    "answer": 0,
+    "explanation": "Pipeline Scanner traces specific logs in real time and identifies which pipelines and processing rules made changes to their fields.",
+    "notes": [
+      "Correct: Pipeline Scanner annotates matching logs with the pipelines and processors they go through.",
+      "Wrong: Patterns group similar logs by message structure; they don't show processing steps.",
+      "Wrong: Watchdog Insights surfaces anomalies and outliers, not pipeline modifications."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipeline_scanner/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-019",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "hard",
+    "q": "This log should be parsed with the `keyvalue` filter:\n\nurl=https://shop.example.com/cart user=ana\n\nWith `%{data::keyvalue}` the `url` value is not extracted correctly. Which rule fixes it?",
+    "options": [
+      "`rule %{data::keyvalue(\"/:\")}`",
+      "`rule %{data::keyvalue(\"=\",\"/:\")}`",
+      "`rule %{data::keyvalue(\"=\",\"\",\"/:\")}`"
+    ],
+    "answer": 1,
+    "explanation": "The second `keyvalue` argument is the character allow list, which adds characters such as `/` and `:` to the default allowed value characters. The first argument stays `=` as the separator.",
+    "notes": [
+      "Wrong: this sets the key/value separator to `/:`, not the allow list.",
+      "Correct: separator `=` plus allow list `/:` lets URL characters appear in values.",
+      "Wrong: the third argument is the quoting string, not the allow list."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#key-value-or-logfmt",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-020",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A Grok rule extracts `%{date(\"dd/MMM/yyyy:HH:mm:ss Z\"):event_time}` successfully, but the log's displayed timestamp is still the intake time. What is missing?",
+    "options": [
+      "A Log Date Remapper that uses `event_time` as the official date.",
+      "The `json` filter, so the date is converted to a timestamp object.",
+      "An Attribute Remapper that renames `event_time` to `date`."
+    ],
+    "answer": 0,
+    "explanation": "Parsing a date does not set it as the log's official date. Add a Log Date Remapper in a subsequent processor.",
+    "notes": [
+      "Correct: the Log Date Remapper is what sets the official timestamp from the parsed attribute.",
+      "Wrong: the date matcher already produces an epoch value; `json` parses JSON text.",
+      "Wrong: the generic Attribute Remapper cannot remap the reserved `date` attribute; it requires the Log Date Remapper."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#parsing-dates",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-021",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "Servers in Paris write local timestamps without an offset, such as `Thu Jun 16 08:29:03 2016`. Logs appear shifted in Datadog. How should the Grok rule be changed?",
+    "options": [
+      "Add the `scale` filter to the date matcher so the parsed value is shifted by the Paris offset.",
+      "Change the matcher to `numberExt` so the timestamp is read as an epoch value instead of text.",
+      "Pass a timezone to the date matcher, for example `%{date(\"EEE MMM dd HH:mm:ss yyyy\",\"Europe/Paris\"):date}`."
+    ],
+    "answer": 2,
+    "explanation": "Use the `timezone` parameter of the date matcher when timestamps are not in UTC. TZ database IDs such as `Europe/Paris` are supported.",
+    "notes": [
+      "Wrong: `scale` multiplies numeric values; it is not a timezone tool.",
+      "Wrong: the value is a text date, not a number.",
+      "Correct: the date matcher's second argument sets the source timezone."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#parsing-dates",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-022",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "Auto-Processing is enabled in an organization, but it never processes any logs. The org has a custom pipeline whose filter is `*`. What explains this?",
+    "options": [
+      "Auto-Processing only works on logs that already have a `service` tag set by a pipeline.",
+      "Auto-Processing only handles logs that match no pipeline filter, and `*` matches every log.",
+      "Auto-Processing requires every custom pipeline to be disabled first."
+    ],
+    "answer": 1,
+    "explanation": "Auto-Processing only handles logs that don't match the filter of any integration or custom pipeline. A pipeline filter of `*` matches every log, so Auto-Processing processes nothing; narrow that filter.",
+    "notes": [
+      "Wrong: entries are per source and service pair, but no pipeline tagging is needed.",
+      "Correct: a catch-all `*` filter leaves no unmatched logs for Auto-Processing.",
+      "Wrong: other pipelines can stay enabled; only logs they match are skipped by Auto-Processing."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#auto-processing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-023",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "This log has a plain-text prefix followed by a JSON object:\n\nSep 06 09:13:38 vm1 app[123]: {\"method\":\"GET\",\"status_code\":200}\n\nWhich Grok filter turns the trailing JSON into attributes?",
+    "options": [
+      "`keyvalue`",
+      "`json`",
+      "`querystring`"
+    ],
+    "answer": 1,
+    "explanation": "Use the `json` filter (for example `%{data::json}`) to parse a JSON object nested after a raw text prefix.",
+    "notes": [
+      "Wrong: `keyvalue` parses `key=value` style pairs, not JSON objects.",
+      "Correct: `%{data::json}` parses properly formatted JSON after the prefix.",
+      "Wrong: `querystring` extracts key-value pairs from a URL query string."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#nested-json",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-024",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "hard",
+    "q": "A log line holds three tab-separated values. Which Grok rule parses it into `key1`, `key2` and `key3`?",
+    "options": [
+      "`%{data::csv(\"key1,key2,key3\",\"tab\")}`",
+      "`%{data::csv(\"key1,key2,key3\")}`",
+      "`%{data::keyvalue(\"tab\")}`"
+    ],
+    "answer": 0,
+    "explanation": "The `csv` filter's separator defaults to `,`. Use `tab` as the separator to represent the tab character for TSV lines.",
+    "notes": [
+      "Correct: `csv` with `tab` as separator parses TSV values into the listed headers.",
+      "Wrong: without a separator argument `csv` splits on commas.",
+      "Wrong: `keyvalue` needs keys in the log itself; this would set the key/value separator, not parse positional columns."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#parsing-csv",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-025",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "Several parsing rules in one Grok parser repeat the same pattern `%{word:user.name} id:%{integer:user.id}`. Where should this shared pattern be defined so each rule can reference it, for example as `%{user}`?",
+    "options": [
+      "In a separate Grok parser placed earlier in the pipeline.",
+      "In the Extract from field of Advanced Settings.",
+      "In the Helper Rules field of Advanced Settings."
+    ],
+    "answer": 2,
+    "explanation": "Helper rules let you define tokens that are reused across parsing rules in the same Grok parser. In the API they are `grok.support_rules`.",
+    "notes": [
+      "Wrong: another parser cannot supply tokens to this parser's rules.",
+      "Wrong: Extract from chooses which attribute is parsed instead of `message`.",
+      "Correct: Helper Rules define reusable tokens such as `user`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#using-helper-rules-to-reuse-common-patterns",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-026",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "A log has a `command.line` attribute containing `key=value` text that should be parsed. By default the Grok parser reads `message`. What should be changed?",
+    "options": [
+      "Define `command.line` in the Helper Rules field of the Grok parser's Advanced Settings.",
+      "Set Extract from to `command.line` in the Grok parser's Advanced Settings.",
+      "Change the pipeline filter to `@command.line:*`, since the Grok parser reads the attribute the filter targets."
+    ],
+    "answer": 1,
+    "explanation": "Use the Extract from field in Advanced Settings to apply the Grok parser to a given text attribute instead of the default `message` attribute.",
+    "notes": [
+      "Wrong: Helper Rules define reusable tokens for parsing rules; they do not choose which attribute is parsed.",
+      "Correct: Extract from points the Grok parser at a specific text attribute instead of `message`.",
+      "Wrong: the pipeline filter only decides which logs enter the pipeline; the parser still reads `message` unless Extract from is set."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#parsing-a-specific-text-attribute",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-027",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "hard",
+    "q": "A user builds a calculated field in the Log Explorer with Grok-style parsing (query-time). Which matcher can they use there?",
+    "options": [
+      "`ipOrHost`",
+      "`notSpace`",
+      "`date`"
+    ],
+    "answer": 1,
+    "explanation": "Query-time Grok parsing supports only the matchers `data`, `integer`, `notSpace`, `number` and `word` (filters `number` and `integer`). Everything else is ingest-time only.",
+    "notes": [
+      "Wrong: `ipOrHost` is an ingest-time-only matcher.",
+      "Correct: `notSpace` is one of the five matchers available at query time.",
+      "Wrong: `date` is only available in the ingest-time Grok Parser."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/parsing/#matcher-and-filter",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-028",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A forwarder sends JSON logs where the machine name is in an attribute called `server_name`. How can this attribute become the log's `host`?",
+    "options": [
+      "Add an Attribute Remapper with `server_name` as source and `host` as target.",
+      "Add a Service Remapper on `server_name`, which also sets the host.",
+      "Add `server_name` to the host attributes in Preprocessing for JSON logs."
+    ],
+    "answer": 2,
+    "explanation": "Preprocessing JSON logs is the only way to define one of your log attributes as `host`. The generic remapper cannot remap `host`.",
+    "notes": [
+      "Wrong: the `host` attribute cannot be remapped with the Attribute Remapper.",
+      "Wrong: a Service Remapper sets `service` only.",
+      "Correct: JSON preprocessing is the only way to set a custom attribute as `host`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#preprocessing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-029",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "hard",
+    "q": "In Kubernetes, an application writes JSON logs that contain a `hostname` field with the pod name. Logs collected by the Agent are missing their expected host-level tags. What is the cause?",
+    "options": [
+      "The `hostname` JSON attribute overrides the Agent hostname, so the log is not attributed to the correct host; clearing it fixes this.",
+      "The Agent drops host-level tags whenever a JSON log contains more than one reserved attribute, such as `hostname` and `service`.",
+      "Host-level tags are only attached after a Host Remapper processor runs on the log in a pipeline, which these logs never reach."
+    ],
+    "answer": 0,
+    "explanation": "If a JSON log ingested by the Agent contains `host`, `hostname` or `syslog.hostname`, that value overrides the Agent hostname and the log does not inherit the correct host-level tags. Datadog recommends clearing these attributes.",
+    "notes": [
+      "Correct: `hostname` is a reserved host attribute in preprocessing and overrides the Agent's host value.",
+      "Wrong: there is no such rule about counting reserved attributes.",
+      "Wrong: there is no Host Remapper processor; host comes from the Agent or JSON preprocessing."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#preprocessing",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-030",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "A JSON log contains `\"level\": \"warn\"` and no `status` attribute. With the default JSON preprocessing, what happens?",
+    "options": [
+      "`level` is ignored and the log status defaults to info.",
+      "`level` is used as the log's official status.",
+      "`level` is converted into a tag but not into the status."
+    ],
+    "answer": 1,
+    "explanation": "Default JSON preprocessing reads `status`, `severity`, `level` and `syslog.severity` as the official status attribute.",
+    "notes": [
+      "Wrong: `level` is in the default status attribute list.",
+      "Correct: `level` is one of the reserved status attributes.",
+      "Wrong: preprocessing maps it to the status, not to a tag."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#status-attribute",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-031",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "hard",
+    "q": "JSON logs carry `timestamp` as epoch seconds (for example `1730000000`), and Datadog does not use it as the log date. What is the documented fix?",
+    "options": [
+      "Add a Grok parser with the `integerExt` matcher on `timestamp` so the value is read as an epoch and becomes the official log date.",
+      "Add a Log Date Remapper on `timestamp`; the remapper detects epoch seconds automatically and converts them to milliseconds first.",
+      "Remove `timestamp` from JSON preprocessing, multiply it by 1000 with an Arithmetic processor, then remap the result with a Log Date Remapper."
+    ],
+    "answer": 2,
+    "explanation": "Recognized formats are ISO8601, UNIX milliseconds epoch and RFC3164. For other epoch units, remove the attribute from preprocessing, convert to milliseconds with the arithmetic processor (x1000) and remap the result with the log date remapper.",
+    "notes": [
+      "Wrong: the value is already an attribute; the problem is its unit, not extraction.",
+      "Wrong: the remapper only accepts the recognized formats, and UNIX epoch must be in milliseconds.",
+      "Correct: convert seconds to milliseconds, then set the new attribute as the official date."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/#unable-to-parse-timestamp-key-from-json-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-032",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "One pipeline contains two Log Date Remappers that both match a log: the first uses `start_time`, the second uses `end_time`. Which value becomes the official date?",
+    "options": [
+      "`start_time`, because remappers for reserved attributes keep the first value that was set.",
+      "`end_time`, because for date remappers the last one in pipeline order is used.",
+      "Neither; conflicting date remappers cancel out and the log keeps its intake time."
+    ],
+    "answer": 1,
+    "explanation": "If multiple log date remappers are applied to a log within the pipeline, the last one according to the pipeline's order is taken into account. This is the exception to the first-write-wins rule of the other reserved-attribute remappers.",
+    "notes": [
+      "Wrong: first-write-wins applies to status, service, message, trace and span remappers, not the date remapper.",
+      "Correct: the last date remapper in order wins.",
+      "Wrong: there is no fallback; the last remapper's value is used."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/log_date_remapper/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-033",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A Log Status Remapper reads an attribute whose value is `FATAL`. Which status does the log get?",
+    "options": [
+      "emergency (0)",
+      "critical (2)",
+      "error (3)"
+    ],
+    "answer": 0,
+    "explanation": "Strings beginning with `emerg` or `f` (case-insensitive) map to emerg (0).",
+    "notes": [
+      "Correct: values starting with `f` map to emerg.",
+      "Wrong: critical is for strings beginning with `c`.",
+      "Wrong: error is for strings beginning with `err`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/log_status_remapper/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-034",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "While creating a pipeline, an engineer adds the tag `team:payments` in the optional tags field. What effect does this tag have?",
+    "options": [
+      "Every log processed by the pipeline gets the `team:payments` tag added to it.",
+      "It only helps filter and search pipelines on the Pipelines page; logs are not changed.",
+      "Only logs that already carry `team:payments` are allowed to enter the pipeline."
+    ],
+    "answer": 1,
+    "explanation": "Pipeline tags and descriptions indicate a pipeline's purpose and ownership. Pipeline tags do not affect logs, but can be used to filter and search within the Pipelines page.",
+    "notes": [
+      "Wrong: pipeline tags are not written to logs; adding tags to logs would need a processor such as a remapper.",
+      "Correct: pipeline tags are metadata for finding and organizing pipelines only.",
+      "Wrong: the pipeline filter query decides which logs enter the pipeline, not the pipeline's tags."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#create-a-pipeline",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-035",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "An engineer tries to use the generic Attribute Remapper to map `log_severity` to `status`. Why is this the wrong processor?",
+    "options": [
+      "The Attribute Remapper only works on log tags, so it cannot read the `log_severity` attribute.",
+      "`status` must be set during Agent collection and cannot be changed in pipelines.",
+      "`status` is a reserved attribute that requires the dedicated Log Status Remapper."
+    ],
+    "answer": 2,
+    "explanation": "The Remapper processor cannot remap Datadog reserved attributes. `status` requires the Log Status Remapper (likewise `message`, `service`, `date`, `trace_id`, `span_id` have dedicated remappers).",
+    "notes": [
+      "Wrong: the Attribute Remapper works on attributes and tags.",
+      "Wrong: status can be set in pipelines with the Log Status Remapper.",
+      "Correct: reserved attributes need their dedicated remappers."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/remapper/#reserved-attributes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-036",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "hard",
+    "q": "An Attribute Remapper is created through the API with only `type`, `sources: [\"usr_email\"]` and `target: \"usr.email\"` set. Which default behavior applies?",
+    "options": [
+      "The source `usr_email` is kept, and an existing `usr.email` value is overwritten.",
+      "The source `usr_email` is removed after remapping, and an existing `usr.email` value is not overwritten.",
+      "The source `usr_email` is kept, and an existing `usr.email` value is not overwritten."
+    ],
+    "answer": 1,
+    "explanation": "`preserve_source` defaults to `false`, so the remapped source is removed. `override_on_conflict` defaults to `false`, so a target that is already set is not overridden.",
+    "notes": [
+      "Wrong: both defaults are `false`: the source is not preserved and the target is not overridden.",
+      "Correct: `preserve_source: false` and `override_on_conflict: false` are the defaults.",
+      "Wrong: the source is removed by default because `preserve_source` defaults to `false`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/remapper/#api",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-037",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A Category processor writes `http.status_category` with these categories in order:\n\n1. `OK` -> `@http.status_code:[200 TO 299]`\n2. `Server error` -> `@http.status_code:[500 TO 599]`\n3. `Any status` -> `@http.status_code:*`\n\nWhat value does a log with status code 503 get?",
+    "options": [
+      "`Server error`",
+      "`Any status`",
+      "Both values, as an array"
+    ],
+    "answer": 0,
+    "explanation": "Once a log matches one of the category queries, the processor stops, so order matters. A 503 log first matches the second category.",
+    "notes": [
+      "Correct: the first matching category in order is applied, then processing stops.",
+      "Wrong: the third query also matches, but it is never evaluated after a match.",
+      "Wrong: the target gets a single category name, not a list."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/category_processor/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-038",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "An Arithmetic processor computes `request_bytes + response_bytes` into `total_bytes`. Some logs have no `response_bytes`. With default settings, what happens to those logs?",
+    "options": [
+      "`total_bytes` is set to the value of `request_bytes` only, ignoring the missing term.",
+      "`total_bytes` is set to 0 because missing attributes count as zero.",
+      "The calculation is skipped and `total_bytes` is not created."
+    ],
+    "answer": 2,
+    "explanation": "By default a calculation is skipped if an attribute is missing. Select Replace missing attribute by 0 (`is_replace_missing: true`) to populate missing values with 0.",
+    "notes": [
+      "Wrong: that would only happen with Replace missing attribute by 0 enabled.",
+      "Wrong: the result is not set to 0; the whole calculation is skipped.",
+      "Correct: missing attributes skip the calculation unless the replace-by-0 option is on."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/arithmetic_processor/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-039",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "Which processor extracts the host, path, port, scheme and query parameters from `http.url` into `http.url_details` by default?",
+    "options": [
+      "URL parser",
+      "String builder processor",
+      "Lookup processor"
+    ],
+    "answer": 0,
+    "explanation": "The URL parser extracts query parameters and other URL components. Its default source is `http.url` and default target is `http.url_details`.",
+    "notes": [
+      "Correct: the URL parser's defaults are `http.url` and `http.url_details`.",
+      "Wrong: the string builder composes a new string from a template; it does not split URLs.",
+      "Wrong: the lookup processor maps a value to another value from a table."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/url_parser/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-040",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A String Builder processor uses the template `Call %{http}` on logs where `http` contains `method`, `url` and `status_code`. What is the problem?",
+    "options": [
+      "`http` is an object, which cannot be used in a template block; reference leaf attributes such as `%{http.method}`.",
+      "Template blocks must use the `${attribute}` syntax, so `%{http}` is read as raw text instead of being replaced by a value.",
+      "The resulting string exceeds the 64-character limit for string builder results, so the processor skips the operation."
+    ],
+    "answer": 0,
+    "explanation": "Objects cannot be used in a block (`%{http}` fails), whereas `%{http.method}` returns the value. Template results are limited to 256 characters.",
+    "notes": [
+      "Correct: blocks accept attribute values or arrays of values, not objects.",
+      "Wrong: blocks use the `%{attribute_path}` syntax.",
+      "Wrong: the documented limit is 256 characters, and this template is short."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/string_builder_processor/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-041",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "A security team wants to normalize logs from several sources to the Open Cybersecurity Schema Framework for Cloud SIEM. Which processor is built for this?",
+    "options": [
+      "Category processor",
+      "OCSF processor",
+      "Threat Intel processor"
+    ],
+    "answer": 1,
+    "explanation": "The OCSF processor normalizes security logs by remapping log attributes to OCSF schema classes and attributes, including ENUM attributes.",
+    "notes": [
+      "Wrong: the category processor adds a value based on search queries; it does not map to a schema.",
+      "Correct: the OCSF processor maps attributes to OCSF classes.",
+      "Wrong: the Threat Intel processor enriches logs from an IoC table."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/ocsf_processor/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-042",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "A legacy app writes the trace ID inside the plain-text message, for example `trace=1234567890 user login ok`. How can these logs be correlated with APM traces in a pipeline?",
+    "options": [
+      "Add a Span Remapper on the `message` attribute so the trace ID is read directly from the text.",
+      "Add a Category processor whose query matches `trace=*` and whose target is the `trace_id` attribute.",
+      "Parse the ID into an attribute with a Grok parser, then add a Trace Remapper on that attribute."
+    ],
+    "answer": 2,
+    "explanation": "The Trace Remapper is typically used on a trace ID within a log message that first needs to be parsed with a Grok Parser.",
+    "notes": [
+      "Wrong: the span remapper sets the span ID, and it needs a parsed attribute, not the whole message.",
+      "Wrong: category values come from fixed names, and `trace_id` requires the dedicated trace remapper.",
+      "Correct: extract the ID with Grok, then remap it with the Trace Remapper."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/trace_remapper/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-043",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "With its default settings, which attribute does the GeoIP parser read and where does it write the location?",
+    "options": [
+      "Reads `network.client.ip`, writes `network.client.geoip`",
+      "Reads `network.client.ip`, writes `network.client.location`",
+      "Reads `http.remote_addr`, writes `network.client.geoip`"
+    ],
+    "answer": 0,
+    "explanation": "The GeoIP parser's default source is `network.client.ip` and its default target is `network.client.geoip`.",
+    "notes": [
+      "Correct: `network.client.ip` to `network.client.geoip` are the defaults.",
+      "Wrong: the source is right, but the default target is `network.client.geoip`.",
+      "Wrong: the target is right, but the default source is `network.client.ip`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/geoip_parser/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-044",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "IIS logs contain URL-encoded user agents such as `Mozilla/5.0+(Windows+NT+10.0...)`. The User-Agent parser produces poor results. What should be changed?",
+    "options": [
+      "Enable the option that tells the parser the source is URL-encoded (`is_encoded: true`) so it decodes before parsing.",
+      "Add a Decoder processor set to `base64` before the User-Agent parser so the encoded user agent is turned back into plain text.",
+      "Point the parser at `http.useragent_details` as its source attribute, since that is where IIS stores the decoded value."
+    ],
+    "answer": 0,
+    "explanation": "If your logs contain encoded user agents (for example IIS logs), configure the User-Agent parser to decode the URL before parsing (`is_encoded`, default `false`).",
+    "notes": [
+      "Correct: the parser has a built-in URL-decode option for encoded user agents.",
+      "Wrong: URL encoding is not Base64; the Decoder handles Base64 and Hex.",
+      "Wrong: `http.useragent_details` is the default target, not the source."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/user_agent_parser/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-045",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A team maps 40,000 internal customer IDs to customer names with Lookup processors, and the manual mapping tables are getting too large. What should they use?",
+    "options": [
+      "A Category processor with one category per customer.",
+      "Several Lookup processors, each with a separate 100Kb manual mapping table.",
+      "A Lookup processor backed by a Reference Table."
+    ],
+    "answer": 2,
+    "explanation": "The manual mapping table limit is 100Kb, and it applies across all Lookup Processors on the platform. Reference Tables support larger file sizes.",
+    "notes": [
+      "Wrong: a category per customer is impractical and still not a lookup.",
+      "Wrong: the 100Kb limit applies across all Lookup Processors, so splitting doesn't help.",
+      "Correct: a Reference Table supports much larger lookups."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/lookup_processor/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-046",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "AWS WAF logs hold headers as `httpRequest.headers: [{\"name\":\"Referrer\",\"value\":\"https://example.com\"}, ...]`. A team wants only the Referrer value in a new `referrer` attribute. Which processor operation fits?",
+    "options": [
+      "Array processor with the `length` operation on `httpRequest.headers`, target `referrer`",
+      "Array processor with the `select` operation, filter `name:Referrer`, extracting `value`",
+      "Array processor with the `append` operation, appending `httpRequest.headers` to `referrer`"
+    ],
+    "answer": 1,
+    "explanation": "The array processor's select operation extracts a value from the first array element matching a condition, for example filter `name:Referrer` and value to extract `value`.",
+    "notes": [
+      "Wrong: `length` counts the elements of the array.",
+      "Correct: `select` picks the matching element and reads its `value`.",
+      "Wrong: `append` adds a value to the end of an array."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/array_processor/#select-value-from-matching-element",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-047",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A Decoder processor is set to `base64` on `encoded.cmd`, but some logs contain invalid Base64. What happens to those logs?",
+    "options": [
+      "The processor skips the transformation and the log stays unchanged.",
+      "The log is dropped by the pipeline and counted as a processing failure.",
+      "The target attribute is set to an error string describing the invalid input."
+    ],
+    "answer": 0,
+    "explanation": "If decoding fails because of invalid input, the Decoder processor skips the transformation and the log remains unchanged.",
+    "notes": [
+      "Correct: failed decoding leaves the log unchanged.",
+      "Wrong: processors do not drop logs.",
+      "Wrong: no error value is written; the transformation is skipped."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/decoder_processor/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-048",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "medium",
+    "q": "A team adds an Exclude Attribute processor to remove a large `http.response.body` attribute, hoping to lower their log ingestion bill. What is the result?",
+    "options": [
+      "Ingestion cost drops, because the bytes removed by the processor are subtracted from the ingested volume that is billed.",
+      "The attribute is dropped from indexes, archives and forwarded logs, but ingestion cost is unchanged since metering happens first.",
+      "The processor is rejected, because the Exclude Attribute processor can only remove tags, not attributes, from a log."
+    ],
+    "answer": 1,
+    "explanation": "The Exclude Attribute processor removes attributes during pipeline processing before logs reach indexes, archives or forwarding destinations. It does not reduce ingestion costs because metering occurs before pipeline processing.",
+    "notes": [
+      "Wrong: ingestion is metered before the processor runs.",
+      "Correct: it cleans the log downstream but doesn't change ingestion metering.",
+      "Wrong: it removes attributes only, not tags."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/processors/exclude_attribute_processor/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-049",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "hard",
+    "q": "Which statement about Pipeline Scanner sessions is correct?",
+    "options": [
+      "A session tags matching logs for 60 minutes, you can run up to 5 sessions at once, and there is no daily or hourly cap.",
+      "A session runs until you stop it manually, and its query can be edited at any time while the session is running.",
+      "A session tags matching logs for 15 minutes, with at most 3 concurrent sessions and 12 per 12-hour sliding window."
+    ],
+    "answer": 2,
+    "explanation": "After you click Launch this session, matching logs are tagged for the next 15 minutes. Limits are 3 concurrent sessions and 12 sessions over a 12-hour sliding window, and the query cannot be changed after the session starts.",
+    "notes": [
+      "Wrong: sessions last 15 minutes, and the concurrent limit is 3.",
+      "Wrong: sessions last 15 minutes and the query is fixed once started.",
+      "Correct: 15 minutes per session, 3 concurrent, 12 per 12-hour sliding window."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipeline_scanner/#limitations",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-pipe-050",
+    "topic": "Log Collection",
+    "subtopic": "Processors & Pipelines",
+    "difficulty": "easy",
+    "q": "An in-house app sends logs with `source:billing-engine`. Datadog has no integration for this source, and the logs arrive as unparsed text. What should the team do?",
+    "options": [
+      "Create a custom pipeline filtered on `source:billing-engine` and add processors such as a Grok parser.",
+      "Change the source to a value that has an integration so that integration's pipeline parses the logs instead.",
+      "Add a Log Message Remapper on `message` so the plain text is split into separate attributes."
+    ],
+    "answer": 0,
+    "explanation": "Pipelines can be applied to any type of log. For a source without an integration, create a custom pipeline whose filter targets that source and add the processors you need.",
+    "notes": [
+      "Correct: a custom pipeline filtered on the source lets you parse and enrich these logs.",
+      "Wrong: integration pipelines support that technology's default format; another app's format would not parse correctly.",
+      "Wrong: a message remapper only chooses which attribute is the official message; it does not parse text into attributes."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/pipelines/#create-a-pipeline",
+    "verified": "2026-11"
+  }
+]

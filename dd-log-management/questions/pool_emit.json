@@ -1,0 +1,527 @@
+[
+  {
+    "id": "lm-emit-001",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "easy",
+    "q": "A team runs a Python service on a Linux VM with the Datadog Agent installed. Which log emission pattern do Datadog's language log collection pages describe as the standard setup?",
+    "options": [
+      "Configure the logger to write to a local file and have the Agent tail that file.",
+      "Have the application open a TCP connection and stream each log line to the Datadog intake.",
+      "Load the browser logs SDK in the service and send logs with a client token."
+    ],
+    "answer": 0,
+    "explanation": "Each language page (Python, Java, Node.js, Go, Ruby, PHP) starts the same way: log to a file and tail that file with the Datadog Agent. The Agent then handles transport, retries and enrichment.",
+    "notes": [
+      "Correct: write to a file, then add a `type: file` log config so the Agent tails it.",
+      "Wrong: Datadog does not support sending logs over TCP directly to the intake; direct sending is only an exception and uses HTTP.",
+      "Wrong: the browser logs SDK is for web pages running in a browser, not backend services."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/python/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-002",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "easy",
+    "q": "A Java application logs in plain text. Each `NullPointerException` shows up in the Log Explorer as several separate log events, one per stack frame line. What logger-side change do the docs recommend?",
+    "options": [
+      "Raise `logs_config.batch_wait` so the Agent groups lines into one batch.",
+      "Configure the logging library (for example Logback or Log4j 2) to output JSON.",
+      "Set `start_position: beginning` on the Agent's Java log config."
+    ],
+    "answer": 1,
+    "explanation": "Plain-text Java stack traces are split across lines, so one exception becomes many events. Logging in JSON wraps the stack trace in a single log event and lets Datadog extract all attributes without custom parsing rules.",
+    "notes": [
+      "Wrong: `batch_wait` only controls how long the Agent waits to fill an HTTPS batch; it does not merge lines into one event.",
+      "Correct: JSON output keeps the stack trace inside one event and exposes MDC attributes.",
+      "Wrong: `start_position` only sets where the Agent starts reading a file."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/java/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-003",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "easy",
+    "q": "A Ruby on Rails app writes many lines per request (Started GET..., Rendered..., Completed 200...). Which library do the Datadog docs use to turn this into one JSON line per request?",
+    "options": [
+      "logrus",
+      "Monolog",
+      "Lograge"
+    ],
+    "answer": 2,
+    "explanation": "The Ruby on Rails log collection page uses Lograge with `config.lograge.formatter = Lograge::Formatters::Json.new` to produce one structured JSON event per request, which is then written to a file the Agent tails.",
+    "notes": [
+      "Wrong: logrus is the Go library used on the Go log collection page.",
+      "Wrong: Monolog is the PHP library used on the PHP log collection page.",
+      "Correct: Lograge condenses Rails request logs into single JSON lines."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/ruby/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-004",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "An application writes to a file the Agent tails. Every log appears in Datadog except the most recent line, which the app writes without a trailing line break. Why?",
+    "options": [
+      "The Agent waits for a line terminator (`\\n` or `\\r\\n`) before it sends a line.",
+      "The Agent holds back the last line of every file and sends it only after logrotate rotates the file.",
+      "The Agent flushes lines in batches and sends the final one only once `open_files_limit` is reached."
+    ],
+    "answer": 0,
+    "explanation": "The custom log collection docs state that a log line must end with a newline character, `\\n` or `\\r\\n`. Otherwise the Agent waits indefinitely and does not send the line.",
+    "notes": [
+      "Correct: without a line terminator the Agent treats the line as incomplete and never ships it.",
+      "Wrong: rotation does not control when lines are sent; the newline does.",
+      "Wrong: `open_files_limit` caps how many files are tailed at once; it has nothing to do with when lines are sent."
+    ],
+    "ref": "https://docs.datadoghq.com/agent/logs/#custom-log-collection",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-005",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "Your organization is on the EU1 Datadog site (`app.datadoghq.eu`). A custom forwarder will POST logs directly to Datadog with the v2 API. Which URL should it use?",
+    "options": [
+      "`https://api.datadoghq.eu/api/v2/logs/events`",
+      "`https://http-intake.logs.datadoghq.eu/api/v2/logs`",
+      "`https://agent-intake.logs.datadoghq.eu/api/v2/logs`"
+    ],
+    "answer": 1,
+    "explanation": "The Send logs endpoint is `https://http-intake.logs.<site>/api/v2/logs`; for EU1 that is `http-intake.logs.datadoghq.eu`.",
+    "notes": [
+      "Wrong: `api.datadoghq.eu/api/v2/logs/events` is the endpoint for searching logs, not sending them.",
+      "Correct: the HTTP intake host `http-intake.logs.datadoghq.eu` with path `/api/v2/logs`.",
+      "Wrong: `agent-intake.logs` hosts belong to the old Agent TCP intake, not the v2 HTTP API."
+    ],
+    "ref": "https://docs.datadoghq.com/api/latest/logs/#send-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-006",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "easy",
+    "q": "A script batches logs into a JSON array and sends each array in one request to the Logs HTTP API. What is the most entries one array can hold?",
+    "options": [
+      "100",
+      "500",
+      "1000"
+    ],
+    "answer": 2,
+    "explanation": "The Send logs API allows at most 1000 entries in an array when sending several logs at once, within a 5MB payload limit.",
+    "notes": [
+      "Wrong: 100 is far below the documented array limit (and is the per-log tag limit).",
+      "Wrong: 500 is not a documented limit for the logs intake.",
+      "Correct: the maximum array size is 1000 entries per request."
+    ],
+    "ref": "https://docs.datadoghq.com/api/latest/logs/#send-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-007",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "hard",
+    "q": "A client sends a request to the Logs HTTP API holding 50 logs. One of them is 1.4MB; the whole payload is under 5MB. What happens?",
+    "options": [
+      "The API processes all 50 logs, truncates only the 1.4MB log to 1MB, and returns a 2xx.",
+      "The API rejects the entire request with `413 Payload too large`, so none of the 50 logs are stored.",
+      "The API splits the 1.4MB log into two separate events and returns a 2xx for the request."
+    ],
+    "answer": 0,
+    "explanation": "Single logs are limited to 1MB, but oversized logs are accepted and truncated. For a multi-log request, the API processes every log, truncates only those larger than 1MB, and returns a 2xx.",
+    "notes": [
+      "Correct: only the oversized log is truncated, and the request still succeeds.",
+      "Wrong: a log over 1MB does not fail the request; `413` relates to the payload limit (5MB).",
+      "Wrong: the API truncates oversized logs to 1MB; it does not split them into several events."
+    ],
+    "ref": "https://docs.datadoghq.com/api/latest/logs/#send-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-008",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "easy",
+    "q": "A developer tests the Logs HTTP API with `curl`. Which HTTP header carries the credential the intake needs?",
+    "options": [
+      "`DD-APPLICATION-KEY: <application key>`",
+      "`DD-API-KEY: <API key>`",
+      "`DD-CLIENT-TOKEN: <client token>`"
+    ],
+    "answer": 1,
+    "explanation": "The Send logs examples authenticate with the `DD-API-KEY` header holding a Datadog API key. Application keys are for reading data through the API, and client tokens are for browser and mobile SDKs.",
+    "notes": [
+      "Wrong: application keys are not what the logs intake checks for sending logs.",
+      "Correct: sending logs requires a Datadog API key in the `DD-API-KEY` header.",
+      "Wrong: client tokens are used by browser and mobile SDKs, not by the HTTP intake API in a curl call."
+    ],
+    "ref": "https://docs.datadoghq.com/api/latest/logs/#send-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-009",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "A team wants to backfill application logs from three days ago through the HTTP API, keeping their original timestamps. They are not in any Preview program. What should they expect?",
+    "options": [
+      "They are accepted and indexed with their original timestamps, like any other log.",
+      "They are accepted, but each timestamp is reset to the time Datadog ingested it.",
+      "They are dropped: submitted timestamps can be at most 18 hours old."
+    ],
+    "answer": 2,
+    "explanation": "Logs with a timestamp more than 18 hours in the past are dropped at intake (a Preview extends the window to 7 days). The `datadog.estimated_usage.logs.drop_count` metric shows which `service` and `source` are affected.",
+    "notes": [
+      "Wrong: three days is beyond the 18-hour limit for submitted timestamps.",
+      "Wrong: Datadog does not rewrite old timestamps to the ingestion time; out-of-range logs are dropped.",
+      "Correct: the 18-hour window applies, so three-day-old logs are dropped."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/troubleshooting/#missing-logs---timestamp-outside-of-the-ingestion-window",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-010",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "hard",
+    "q": "A custom log forwarder posts to `/api/v2/logs`. For which response code do the docs say the request should be retried after some time?",
+    "options": [
+      "`400 Bad request`",
+      "`413 Payload too large`",
+      "`429 Too Many Requests`"
+    ],
+    "answer": 2,
+    "explanation": "The v2 Send logs API lists `408`, `429`, `500` and `503` as responses where the request should be retried after some time. `400` and `413` mean the request itself must be fixed.",
+    "notes": [
+      "Wrong: `400` means the payload is malformed; resending the same request will fail again.",
+      "Wrong: `413` means the payload is too large; split it instead of retrying as is.",
+      "Correct: `429` means rate limited, so the forwarder should back off and retry."
+    ],
+    "ref": "https://docs.datadoghq.com/api/latest/logs/#send-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-011",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "A Node.js app runs on a platform where the Datadog Agent cannot be installed. Which approach does the Node.js log collection page document for sending its logs?",
+    "options": [
+      "Use Winston's HTTP transport to post logs to `http-intake.logs.<site>/api/v2/logs`.",
+      "Use the Winston File transport and point DogStatsD at the file so it forwards each new line.",
+      "Install `@datadog/browser-logs` on the server and send the logs with an organization client token."
+    ],
+    "answer": 0,
+    "explanation": "The Node.js page's Agentless logging section uses Winston's `transports.Http` to send logs straight to the Datadog Log API. Datadog still recommends the Agent when possible because it provides native connection management.",
+    "notes": [
+      "Correct: Winston's HTTP transport sends logs straight to the logs intake.",
+      "Wrong: DogStatsD receives metrics, events and service checks; it does not tail log files.",
+      "Wrong: the browser logs SDK is meant for web pages, and server code should not use a client token for this."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/nodejs/#agentless-logging",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-012",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "hard",
+    "q": "A .NET service is already traced with Datadog APM automatic instrumentation. The team wants to send its Serilog logs to Datadog without an Agent and without code changes. Which setting does this, and what is the trade-off?",
+    "options": [
+      "`DD_LOGS_INJECTION=true`; logs gain trace IDs but still need an Agent tailing a file to reach Datadog.",
+      "`DD_LOGS_DIRECT_SUBMISSION_INTEGRATIONS=Serilog`; logs skip Agent features such as sensitive data scrubbing.",
+      "`DD_LOGS_ENABLED=true` in the app's environment; logs travel with the traces and keep Agent-side scrubbing."
+    ],
+    "answer": 1,
+    "explanation": "Agentless logging with APM is enabled by `DD_LOGS_DIRECT_SUBMISSION_INTEGRATIONS` (with `DD_API_KEY` and `DD_SITE`). Because logs bypass the Agent, they do not benefit from Agent features like sensitive data scrubbing, so file-tail logging is still recommended where possible.",
+    "notes": [
+      "Wrong: `DD_LOGS_INJECTION` adds trace and span IDs to logs; it does not send them anywhere.",
+      "Correct: direct submission sends logs to the intake from the tracer, without Agent-side processing.",
+      "Wrong: `DD_LOGS_ENABLED` turns on log collection in the Agent, not in the .NET tracer, and nothing sent without the Agent gets Agent-side scrubbing."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/csharp/#agentless-logging-with-apm",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-013",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "easy",
+    "q": "Why must the browser logs SDK be set up with a client token instead of a Datadog API key?",
+    "options": [
+      "An API key in front-end code would be exposed to every visitor.",
+      "API keys cannot send logs over HTTPS from a browser, while client tokens can.",
+      "Client tokens let the SDK read logs back from Datadog to show them in the page."
+    ],
+    "answer": 0,
+    "explanation": "For security reasons, API keys cannot be used in the browser logs SDK because they would be exposed client-side in the JavaScript code. Client tokens are created under Organization Settings > Client Tokens.",
+    "notes": [
+      "Correct: client tokens exist because browser code is public.",
+      "Wrong: API keys are used over HTTPS all the time (for example by the Agent); the issue is exposure.",
+      "Wrong: the SDK only sends logs; client tokens do not grant read access."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/javascript/#step-1---create-a-client-token",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-014",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "A web team needs the browser logs SDK to capture JavaScript errors that happen while the page is still loading, before most scripts run. They accept some impact on page load. Which install method fits?",
+    "options": [
+      "NPM, bundled with the application code",
+      "CDN async, added to the `<head>` of each page",
+      "CDN sync, added to the `<head>` of each page"
+    ],
+    "answer": 2,
+    "explanation": "The CDN sync method loads the SDK first, so it collects all errors, at the cost of possible page-load impact. NPM and CDN async do not slow page load but may miss errors and console logs that happen before the SDK is initialized.",
+    "notes": [
+      "Wrong: with NPM the SDK may not capture errors that occur before it is initialized.",
+      "Wrong: CDN async loads in the background and can also miss early errors.",
+      "Correct: synchronous loading makes the SDK available before other code runs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/javascript/#step-2---install-the-logs-browser-sdk",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-015",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "A front-end team uses the browser logs SDK and wants to stop network-error logs with HTTP status 404 from ever leaving the browser, while keeping all other logs. What should they use?",
+    "options": [
+      "`datadogLogs.logger.setHandler('silent')` on the default logger",
+      "A `beforeSend` callback that returns `false` for those logs",
+      "An index exclusion filter on `@http.status_code:404`"
+    ],
+    "answer": 1,
+    "explanation": "The `beforeSend` callback, set in `datadogLogs.init()`, sees every log before it is sent and can change it or discard it by returning `false`. The docs use discarding 404 network errors as their example.",
+    "notes": [
+      "Wrong: `setHandler('silent')` stops the logger from sending anything, not just 404s.",
+      "Wrong: an exclusion filter acts after ingestion in Datadog, so the logs still leave the browser.",
+      "Correct: returning `false` from `beforeSend` drops that log in the browser."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/javascript/#discard-specific-logs",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-016",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "The `/var/log/secure` file on a host is readable only by root, so the Agent cannot tail it. The security team will not change the file's permissions. Which approach does Datadog's guide offer for this case?",
+    "options": [
+      "Let a root-level shipper such as Rsyslog read the file and forward the logs.",
+      "Run the Datadog Agent service as root so it can read every file under `/var/log`.",
+      "Switch the Agent to TCP transport with `force_use_tcp: true` so it can open protected files."
+    ],
+    "answer": 0,
+    "explanation": "For files with heightened read permissions, the guide lists three options: give the Agent root (strongly not recommended), change the permissions (`755` on directories, `644` on files), or have an open-source shipper with root access, such as Rsyslog, send the logs to Datadog or to a local Agent. With permissions fixed and root ruled out, the shipper is the remaining option.",
+    "notes": [
+      "Correct: a root-level shipper such as Rsyslog, Syslog-ng or NXlog can read the file and forward it to Datadog or to a local Agent.",
+      "Wrong: the guide marks giving the Agent root access as not recommended; Datadog strongly recommends against it.",
+      "Wrong: transport only affects how logs are sent to Datadog, not which files the Agent can read."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/custom-log-file-with-heightened-read-permissions/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-017",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "hard",
+    "q": "A browser log sent by `datadogLogs.logger.info()` arrives in Datadog with several attributes. Which one is added by the Datadog backend rather than by the SDK itself?",
+    "options": [
+      "`view.referrer`",
+      "`session_id`",
+      "`network.client.ip`"
+    ],
+    "answer": 2,
+    "explanation": "The SDK adds `date`, `view.url`, `view.referrer` and `session_id` by default. The Datadog backend then adds fields such as `http.useragent` and `network.client.ip`.",
+    "notes": [
+      "Wrong: `view.referrer` is collected by the SDK in the browser.",
+      "Wrong: `session_id` is added by the SDK.",
+      "Correct: the client IP (with geoip) is added on the Datadog backend."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_collection/javascript/#results",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-018",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "easy",
+    "q": "A new microservice will run in Kubernetes with the Datadog Agent deployed as a DaemonSet. How should the service emit its logs so the Agent can collect them with the least setup?",
+    "options": [
+      "Write logs to a file inside the container's own filesystem.",
+      "Write logs to `stdout` and `stderr`.",
+      "Send logs over syslog to TCP port 10514 on the node."
+    ],
+    "answer": 1,
+    "explanation": "Datadog recommends that containerized applications use `stdout` and `stderr`. Kubernetes stores these streams as files under `/var/log/pods`, which the Agent collects and tags with container metadata.",
+    "notes": [
+      "Wrong: a file inside the container is invisible to the Agent unless a shared volume and a `type: file` annotation are added.",
+      "Correct: output streams are collected automatically and tagged with Kubernetes metadata.",
+      "Wrong: nothing listens for syslog on the node unless you configure an Agent `type: tcp` or `type: udp` listener, which is more setup than writing to the output streams."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/kubernetes/log/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-019",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "A Docker container writes informational messages to `stderr`. No pipeline or remapper changes the status. What status do these logs get by default?",
+    "options": [
+      "Error",
+      "Info",
+      "Warning"
+    ],
+    "answer": 0,
+    "explanation": "The Docker log collection docs note that logs coming from container `stderr` have a default status of `Error`. Remap the status in a pipeline, or write informational output to `stdout`, to avoid false errors.",
+    "notes": [
+      "Correct: `stderr` output defaults to Error.",
+      "Wrong: the docs give container `stderr` logs a default status of Error, not Info.",
+      "Wrong: no default maps `stderr` to Warning; the documented default is Error."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/docker/log/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-020",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "A containerized Datadog Agent runs with `DD_LOGS_ENABLED=true` but collects no container logs, because no container has Autodiscovery log labels. Which extra environment variable makes it collect logs from every container?",
+    "options": [
+      "`DD_LOGS_CONFIG_USE_HTTP=true`",
+      "`DD_CONTAINER_EXCLUDE=\"name:datadog-agent\"`",
+      "`DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true`"
+    ],
+    "answer": 2,
+    "explanation": "`DD_LOGS_ENABLED=true` turns on log collection, but the Agent still needs log configs. `DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true` adds a configuration that collects logs from all containers.",
+    "notes": [
+      "Wrong: `DD_LOGS_CONFIG_USE_HTTP` sets the transport to Datadog, not which containers are collected.",
+      "Wrong: `DD_CONTAINER_EXCLUDE` only stops the Agent collecting its own logs and metrics.",
+      "Correct: collect-all enables log collection for every container."
+    ],
+    "ref": "https://docs.datadoghq.com/containers/docker/log/#installation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-021",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "An engineer adds a `type: journald` log config and restarts the Agent. The status shows the journald source, but no logs and no error appear. What fix do the docs point to?",
+    "options": [
+      "Set `start_position: forceBeginning` so the Agent re-reads the whole journal from its start.",
+      "Add the Agent user to the `systemd-journal` group (`usermod -a -G systemd-journal dd-agent`).",
+      "Change `path` to `/var/log/syslog`, which is where journald stores its journal by default."
+    ],
+    "answer": 1,
+    "explanation": "Journal files are owned and readable by the `systemd-journal` group, so the Agent user must be in that group. With wrong permissions, journald sends an empty payload, so no explicit error is raised.",
+    "notes": [
+      "Wrong: the problem is read permission, not the start position.",
+      "Correct: group membership gives the Agent read access to the journal.",
+      "Wrong: the journald integration reads from `/var/log/journal` and `/run/log/journal` by default, not `/var/log/syslog`."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/log-collection-troubleshooting-guide/#permission-issue-and-journald",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-022",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "A Windows admin wants the Agent to collect the `Security` event log channel as Datadog logs. Which entry goes under `logs:` in `win32_event_log.d/conf.yaml`?",
+    "options": [
+      "`type: windows_event` with `channel_path: Security`",
+      "`type: windows_event` with `path: Security`",
+      "`type: file` with `log_file: [Security]`"
+    ],
+    "answer": 0,
+    "explanation": "Windows Event Logs collected as logs use `type: windows_event` and `channel_path`. For the Security channel, the Agent user must also be in the `Event Log Readers` group.",
+    "notes": [
+      "Correct: `channel_path` names the channel for log collection.",
+      "Wrong: `path` is the key for collecting the channel as Datadog Events under `instances:`, not as logs.",
+      "Wrong: `log_file` belongs to the deprecated WMI legacy event mode, and Windows events are not tailed as `type: file`."
+    ],
+    "ref": "https://docs.datadoghq.com/integrations/win32_event_log/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-023",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "hard",
+    "q": "A batch process keeps writing to its old log file for about three minutes after logrotate renames it. Logs written in the last two minutes of that period never reach Datadog. Which Agent setting addresses this?",
+    "options": [
+      "Raise `logs_config.open_files_limit` so the Agent can keep more files open.",
+      "Raise `logs_config.close_timeout` above the default 60 seconds.",
+      "Set `start_position: forceEnd` on the file config so tailing restarts at the end."
+    ],
+    "answer": 1,
+    "explanation": "After a rotation, the Agent keeps tailing the old file in parallel with the new one, but closes the rotated file 60 seconds after detecting the rotation. Anything written later is lost unless `logs_config.close_timeout` (or `DD_LOGS_CONFIG_CLOSE_TIMEOUT`) is increased.",
+    "notes": [
+      "Wrong: `open_files_limit` caps how many files are tailed at once; the old file is closed by a timeout, not by that cap.",
+      "Correct: a longer `close_timeout` keeps the rotated file open long enough.",
+      "Wrong: `forceEnd` makes the Agent skip existing content, which would lose even more data."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/mechanisms-ensure-logs-not-lost/#log-rotate",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-024",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "On Linux, the Agent loses read access to Apache logs every time logrotate creates a new file in `/var/log/apache`. Which command makes files created later in that directory inherit read access for the `dd-agent` user?",
+    "options": [
+      "`setfacl -R -m u:dd-agent:rx /var/log/apache`",
+      "`getfacl -R /var/log/apache`",
+      "`setfacl -R -d -m u:dd-agent:rx /var/log/apache`"
+    ],
+    "answer": 2,
+    "explanation": "The `-d` flag sets a default ACL, which applies to files created in the directory afterwards, including files logrotate creates. A plain `setfacl -R -m` only changes files that already exist, so the guide runs both.",
+    "notes": [
+      "Wrong: without `-d` the ACL covers only the directory and existing files, not files created later.",
+      "Wrong: `getfacl` only displays ACLs; it changes nothing.",
+      "Correct: the default ACL (`-d`) is inherited by new files, including rotated ones."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/guide/setting-file-permissions-for-rotating-logs/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-emit-025",
+    "topic": "Logging Fundamentals",
+    "subtopic": "Log Emission",
+    "difficulty": "medium",
+    "q": "A Java service runs an old Datadog Java tracer (before 0.74.0) and writes JSON logs, but `dd.trace_id` and `dd.span_id` never appear in them. What enables automatic trace ID injection?",
+    "options": [
+      "Set `DD_LOGS_ENABLED=true` in the application's environment.",
+      "Set `DD_LOGS_INJECTION=true` (or `-Ddd.logs.injection=true`).",
+      "Set `DD_TRACE_SAMPLE_RATE=1` so every request is traced."
+    ],
+    "answer": 1,
+    "explanation": "Java tracer 0.74.0 and later inject trace correlation IDs into JSON logs automatically. Earlier versions need `dd.logs.injection=true` as a system property or `DD_LOGS_INJECTION=true`.",
+    "notes": [
+      "Wrong: `DD_LOGS_ENABLED` turns on log collection in the Agent; it does not change what the tracer writes into logs.",
+      "Correct: logs injection makes the tracer add trace and span IDs to the MDC.",
+      "Wrong: sampling controls which traces are kept, not whether IDs are injected into logs."
+    ],
+    "ref": "https://docs.datadoghq.com/tracing/other_telemetry/connect_logs_and_traces/java/",
+    "verified": "2026-11"
+  }
+]

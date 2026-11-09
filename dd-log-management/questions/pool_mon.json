@@ -1,0 +1,632 @@
+[
+  {
+    "id": "lm-mon-001",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "Which logs does a Datadog log monitor evaluate?",
+    "options": [
+      "Every ingested log, including logs removed by index exclusion filters",
+      "Indexed logs only",
+      "Logs stored in the configured log archives"
+    ],
+    "answer": 1,
+    "explanation": "The log monitor documentation states that a logs monitor only evaluates indexed logs. Logs that are excluded from indexes or only sit in archives are not part of the evaluation.",
+    "notes": [
+      "Wrong: excluded logs are ingested but not indexed, so a log monitor never sees them.",
+      "Correct: log monitors evaluate indexed logs only.",
+      "Wrong: archives are long-term storage outside Datadog; monitors do not query them."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-002",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "To cut costs, a team moved its `audit` logs into an index configured as Flex Tier only. The logs still appear in the Log Explorer, but the log monitor that watched them no longer evaluates them. Why?",
+    "options": [
+      "Log monitors support only Standard Tier logs, not Flex Tier logs.",
+      "Flex Tier logs can be monitored only after an evaluation delay of at least 15 minutes is set.",
+      "Flex Tier logs can be monitored only when the monitor is grouped by `index`."
+    ],
+    "answer": 0,
+    "explanation": "Flex Tier logs can be shown in the Log Explorer but are not supported for monitors; only Standard Tier logs are. Moving an index to Flex only makes its logs unavailable to monitors.",
+    "notes": [
+      "Correct: monitors only support Standard Tier logs, so Flex-only logs cannot be monitored.",
+      "Wrong: evaluation delay shifts the evaluated window; it does not make Flex logs available to monitors.",
+      "Wrong: no grouping option enables monitors on Flex Tier logs."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#define-the-search-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-003",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "What is the maximum rolling time window you can set on a log monitor?",
+    "options": [
+      "1 month",
+      "24 hours",
+      "2 days"
+    ],
+    "answer": 2,
+    "explanation": "Log monitors have a maximum rolling time window of 2 days. Windows of up to 1 month are available to metric monitors.",
+    "notes": [
+      "Wrong: 1 month is the custom window limit for metric monitors, not log monitors.",
+      "Wrong: 24 hours is shorter than the real limit.",
+      "Correct: the documented maximum rolling window for log monitors is 2 days."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-004",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "Starting from the main navigation, how do you create a new log monitor from scratch?",
+    "options": [
+      "Monitors > New Monitor > Logs",
+      "Logs > Configuration > Indexes > New Monitor",
+      "Logs > Generate Metrics > + New Metric > Create Monitor"
+    ],
+    "answer": 0,
+    "explanation": "Log monitors are created from Monitors > New Monitor, then selecting the Logs monitor type.",
+    "notes": [
+      "Correct: Monitors > New Monitor > Logs opens the log monitor editor.",
+      "Wrong: the Indexes page manages filters, retention and quotas; it has no monitor creation button.",
+      "Wrong: Generate Metrics creates log-based metrics, not log monitors."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#monitor-creation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-005",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "An engineer has refined a query in the Log Explorer and wants to alert on it without rebuilding the query by hand. What should they do?",
+    "options": [
+      "Use the Export menu to generate a new metric, because log monitors cannot be built from Explorer queries.",
+      "Save the query as a Saved View; Saved Views send alerts when their result count changes.",
+      "Use the Export menu to turn the current view into a monitor."
+    ],
+    "answer": 2,
+    "explanation": "The Log Explorer can export the current exploration as a monitor that triggers alerts on predefined thresholds. Saved Views and log-based metrics serve other purposes.",
+    "notes": [
+      "Wrong: Generate new metric creates a log-based metric for long-term KPIs; log monitors can be created from the Explorer.",
+      "Wrong: Saved Views are investigation starting points and do not alert.",
+      "Correct: exporting the view as a monitor carries the query into a new log monitor."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/explorer/export/",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-006",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "A platform team keeps one copy of the same log monitor per microservice and is approaching the default limit on log monitors. What is the default limit, and what does Datadog suggest?",
+    "options": [
+      "1000 log monitors per account; consolidate them with multi alert monitors.",
+      "500 log monitors per index; split services across more indexes.",
+      "1000 log monitors per account; switch every monitor to Simple Alert."
+    ],
+    "answer": 0,
+    "explanation": "There is a default limit of 1000 log monitors per account. Datadog suggests using multi alerts (one grouped monitor that alerts per group) or contacting Support.",
+    "notes": [
+      "Correct: the limit is 1000 per account, and multi alerts replace many per-service copies with one monitor.",
+      "Wrong: the limit is per account, not per index, and adding indexes does not raise it.",
+      "Wrong: the number is right, but Simple Alert does not reduce the number of monitors; multi alert is the suggested approach."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#monitor-creation",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-007",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A security team builds a log monitor on `service:auth \"login failed\"` and selects the attribute `@usr.email` (not a measure) in the query. What value does the monitor compare against the threshold?",
+    "options": [
+      "The number of logs that contain a `usr.email` attribute",
+      "The number of unique `usr.email` values in the matching logs",
+      "The sum of the numeric values stored in `usr.email`"
+    ],
+    "answer": 1,
+    "explanation": "When an attribute or facet is selected, the log monitor alerts over the unique value count of that attribute, for example the number of distinct user emails.",
+    "notes": [
+      "Wrong: a plain log count is used when no attribute or measure is selected.",
+      "Correct: selecting an attribute makes the monitor alert on its unique value count.",
+      "Wrong: numeric aggregations such as sum apply to measures, and an email is not numeric."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#define-the-search-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-008",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A log monitor tracks the measure `@duration` for `service:checkout`. Which aggregation can be selected for this measure in the monitor?",
+    "options": [
+      "`stddev`",
+      "`last`",
+      "`pc99`"
+    ],
+    "answer": 2,
+    "explanation": "When monitoring a measure, you pick one aggregation from `min`, `avg`, `sum`, `median`, `pc75`, `pc90`, `pc95`, `pc98`, `pc99` or `max`.",
+    "notes": [
+      "Wrong: standard deviation is not in the list of log monitor measure aggregations.",
+      "Wrong: `last` is not one of the log monitor measure aggregations.",
+      "Correct: `pc99` (99th percentile) is one of the supported aggregations."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#define-the-search-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-009",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A log monitor is grouped by two facets, `service` and `@http.status_code`. What is the maximum number of top values per facet the monitor can evaluate?",
+    "options": [
+      "5 top values per facet, for at most 25 groups",
+      "30 top values per facet, for at most 900 groups",
+      "50 top values per facet, for at most 2500 groups"
+    ],
+    "answer": 1,
+    "explanation": "With 2 facets, a log monitor evaluates up to 30 top values per facet, for at most 900 groups. The total limit is 1000 top values whatever the number of facets.",
+    "notes": [
+      "Wrong: 5 top values per facet is the limit when grouping by 4 facets.",
+      "Correct: with 2 facets the limit is 30 top values per facet (900 groups at most).",
+      "Wrong: 2500 groups would exceed the total limit of 1000 top values."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#define-the-search-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-010",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "hard",
+    "q": "A log monitor managed through the API counts `status:error` logs grouped by `service` and `host`. The team wants one notification per `service`, not one per `service` and `host` pair, while keeping both dimensions in the query. Which monitor option does this?",
+    "options": [
+      "`\"notify_by\": [\"service\"]`",
+      "`\"groupby_simple_monitor\": true`",
+      "`\"notification_preset_name\": \"hide_handles\"`"
+    ],
+    "answer": 0,
+    "explanation": "`notify_by` lists the tags that control alert granularity for a grouped monitor and must be a subset of the query's group-by tags. Dimensions left out, such as `host`, become sub groups instead of separate notifications.",
+    "notes": [
+      "Correct: `notify_by` set to `[\"service\"]` sends one notification per service.",
+      "Wrong: `groupby_simple_monitor` is deprecated and would turn the monitor into a single simple alert, not one per service.",
+      "Wrong: `notification_preset_name` only controls extra content such as the query and handles in the message."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/guide/monitor_api_options/#common-options",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-011",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "A log monitor counts `status:error` logs grouped by `service`. The on-call team wants a separate alert for each service that crosses the threshold. Which alert grouping strategy should they use?",
+    "options": [
+      "Simple Alert",
+      "Composite Alert",
+      "Multi Alert"
+    ],
+    "answer": 2,
+    "explanation": "Multi Alert applies the alert to each group and generates an alerting event for every group that meets the conditions. Simple Alert aggregates all sources into a single alert.",
+    "notes": [
+      "Wrong: Simple Alert aggregates over all reporting sources and sends one alert.",
+      "Wrong: composite monitors combine several monitors; they are not a grouping strategy of a log monitor.",
+      "Correct: Multi Alert sends one alert per group, here per service."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#define-the-search-query",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-012",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "You want a log monitor to notify you when every group matching `source:nginx` has stopped sending logs. Which alert condition does the documentation recommend?",
+    "options": [
+      "`below 1`",
+      "`below or equal to 1`",
+      "`not equal to 1`"
+    ],
+    "answer": 0,
+    "explanation": "To be notified when all groups matching a query have stopped sending logs, set the condition to `below 1`. This triggers when no logs match the query in the time frame across all groups.",
+    "notes": [
+      "Correct: `below 1` alerts only when no logs match the query in the time frame.",
+      "Wrong: this also alerts when exactly one log matches, so it does not mean the logs stopped.",
+      "Wrong: this would also alert for counts such as 2 or 500, not only when logs stop."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#no-data-and-below-alerts",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-013",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "hard",
+    "q": "A log monitor counts `env:prod` logs, is grouped by `service`, and alerts `below 1`. The `payments` service stopped logging completely an hour ago while all other services kept logging, yet no alert fired. What change detects `payments` going silent?",
+    "options": [
+      "Raise the condition to `below 10` so that low-volume groups are caught.",
+      "Add a monitor scoped to `service:payments` that alerts `below 1`.",
+      "Switch the existing monitor to Simple Alert and keep the `env:prod` query."
+    ],
+    "answer": 1,
+    "explanation": "With a group-by and a `below` condition, a log monitor triggers only if a group has logs and its count is below the threshold, or if no group has any logs. A monitor scoped to `service:payments` with `below 1` triggers when that one service sends no logs.",
+    "notes": [
+      "Wrong: a group with no logs at all still does not trigger, whatever the threshold.",
+      "Correct: scoping the query to the one service makes 'no logs' apply to the whole monitor, so `below 1` fires.",
+      "Wrong: the aggregated count across all prod services stays above 1 because the other services keep logging."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#no-data-and-below-alerts",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-014",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A log count monitor alerts when `service:billing status:error` is above 100 over 5 minutes, and its missing-data option was left at the default. It went into `ALERT` during an incident. Later the service goes quiet and no logs match the query at all. What status does the monitor show?",
+    "options": [
+      "`NO DATA`, and a notification is sent",
+      "`ALERT`, because the last known status is kept",
+      "`OK`, because the empty result is evaluated as zero"
+    ],
+    "answer": 2,
+    "explanation": "By default, count queries evaluate missing data as zero, while other query types such as measures keep the last known status. Zero is compared to the `> 100` threshold, which is not met, so the monitor goes to `OK`.",
+    "notes": [
+      "Wrong: Show NO DATA and notify must be chosen explicitly; it is not the default for count queries.",
+      "Wrong: Show last known status is the default for other query types such as measures, not for counts.",
+      "Correct: count queries evaluate missing data as zero, and 0 is not above 100."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/configuration/#no-data",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-015",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A team defines its log monitors as code. For a monitor on `service:ingest`, they want the status to become `NO DATA` and a notification to be sent when the query returns no data. Which `on_missing_data` value should they use?",
+    "options": [
+      "`show_no_data`",
+      "`show_and_notify_no_data`",
+      "`resolve`"
+    ],
+    "answer": 1,
+    "explanation": "For Logs and the other event-based monitor types, `on_missing_data` accepts `default`, `show_no_data`, `show_and_notify_no_data` or `resolve`. Only `show_and_notify_no_data` both sets `NO DATA` and notifies.",
+    "notes": [
+      "Wrong: `show_no_data` sets the status to `NO DATA` but does not send a notification.",
+      "Correct: `show_and_notify_no_data` sets `NO DATA` and sends a notification.",
+      "Wrong: `resolve` resolves the monitor to `OK` when data is missing."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/guide/monitor_api_options/#options-for-apm-trace-analytics-audit-trail-ci-error-tracking-event-logs-and-rum-monitors",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-016",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A multi alert log monitor is grouped by `container_id`. Containers are replaced often, and groups for dead containers stay in the monitor status. By default, how long does a group that stopped reporting stay before it is dropped, and what custom range can be set for log monitors?",
+    "options": [
+      "24 hours by default; custom values from 1 hour to 72 hours",
+      "48 hours by default; custom values from 10 minutes to 24 hours",
+      "7 days by default; custom values from 1 day to 30 days"
+    ],
+    "answer": 0,
+    "explanation": "By default a group keeps its status for 24 hours after data stops. Multi alert monitors that support the On missing data option, such as Logs monitors, accept a custom group retention between 1 hour and 72 hours.",
+    "notes": [
+      "Correct: the default is 24 hours, and log monitors accept 1 to 72 hours.",
+      "Wrong: 48 hours applies to host monitors and service checks that notify on no data, and the range is wrong.",
+      "Wrong: neither the default nor the range matches the documented values."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/configuration/#group-retention-time",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-017",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "hard",
+    "q": "A log monitor evaluates the last 15 minutes and has an evaluation delay of 600 seconds. At 10:00, which window of data does it evaluate?",
+    "options": [
+      "09:45 to 10:00",
+      "09:35 to 09:50",
+      "09:50 to 10:05"
+    ],
+    "answer": 1,
+    "explanation": "Evaluation delay shifts the evaluated window back by N seconds. A 600-second (10-minute) delay with a 15-minute window at 10:00 evaluates 09:35 to 09:50.",
+    "notes": [
+      "Wrong: this is the window with no evaluation delay.",
+      "Correct: the 15-minute window ends 10 minutes before 10:00, so it covers 09:35 to 09:50.",
+      "Wrong: a delay moves the window into the past, never into the future."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/configuration/#evaluation-delay",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-018",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A multi alert log monitor is grouped by `@http.status_code`. The notification must show the `error.message` attribute from a log that matched the query. Which variable should be used?",
+    "options": [
+      "`{{@error.message.name}}`",
+      "`{{log.tags.[error.message]}}`",
+      "`{{log.attributes.[error.message]}}`"
+    ],
+    "answer": 2,
+    "explanation": "Matching attribute variables for log monitors use `{{log.attributes.key}}` without the `@` prefix, and keys that contain periods go in brackets, for example `{{log.attributes.[error.message]}}`.",
+    "notes": [
+      "Wrong: `{{@facet.name}}` returns a group-by facet value, and the monitor is not grouped by `@error.message`.",
+      "Wrong: `{{log.tags.key}}` reads tags, but `error.message` is an attribute.",
+      "Correct: `{{log.attributes.[error.message]}}` renders the attribute from a matching log."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/notify/variables/#matching-attributetag-variables",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-019",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "Which variable adds a link to the Log Explorer, scoped on the logs that match the monitor query, to a log monitor notification?",
+    "options": [
+      "`{{log.link}}`",
+      "`{{log.url}}`",
+      "`{{log.explorer}}`"
+    ],
+    "answer": 0,
+    "explanation": "`{{log.link}}` enriches the notification with a link to the Log Explorer scoped on the events matching the query. `link` is one of the reserved log attributes.",
+    "notes": [
+      "Correct: `{{log.link}}` is the documented Explorer link variable for log monitors.",
+      "Wrong: `url` is not a reserved log variable.",
+      "Wrong: `explorer` is not a reserved log variable."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/notify/variables/#explorer-link",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-020",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A log monitor message routes alerts with:\n\n{{#is_match \"log.attributes.team\" \"payments\"}} @pagerduty-payments {{/is_match}}\n\nSome alerts never reach PagerDuty even though the team owns them. What is the most likely cause?",
+    "options": [
+      "`is_match` only works on numeric values, so string attributes never match.",
+      "The selected log did not contain the `team` attribute, so the variable rendered empty.",
+      "Attribute variables are only populated in recovery notifications."
+    ],
+    "answer": 1,
+    "explanation": "If the selected event does not include the attribute or tag key, the variable renders empty in the notification. Datadog advises against routing with `{{#is_match}}` on these variables to avoid missed notifications.",
+    "notes": [
+      "Wrong: `is_match` searches for a substring; numeric values are converted to strings, not the other way round.",
+      "Correct: a missing attribute renders empty, so the `is_match` block is skipped.",
+      "Wrong: attribute variables are filled for alert notifications too."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/notify/variables/#important-notes",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-021",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A log monitor message is:\n\n{{#is_alert}}\nTimeouts are spiking on checkout.\n{{/is_alert}}\n@pagerduty-checkout\n\nWhen will PagerDuty be notified?",
+    "options": [
+      "Only when the monitor enters the `ALERT` state",
+      "Never, because a handle must be inside a conditional block",
+      "On every monitor state transition, including recovery"
+    ],
+    "answer": 2,
+    "explanation": "Text or handles placed outside conditional variables are invoked with every monitor state transition. Only content inside a block depends on the matching transition.",
+    "notes": [
+      "Wrong: the handle would need to be inside the `{{#is_alert}}` block to notify only on alert.",
+      "Wrong: handles outside conditional blocks are valid and are notified.",
+      "Correct: a handle outside any conditional block is notified on every transition."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/notify/variables/#examples",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-022",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A log monitor has both warning and alert thresholds. The team wants a message block that is sent only when the monitor goes from `WARNING` back to `OK`. Which conditional variable fits?",
+    "options": [
+      "`{{#is_warning_recovery}}`",
+      "`{{#is_recovery}}`",
+      "`{{#is_alert_to_warning}}`"
+    ],
+    "answer": 0,
+    "explanation": "`{{#is_warning_recovery}}` displays its content when the monitor recovers from `WARNING` to `OK`.",
+    "notes": [
+      "Correct: `is_warning_recovery` matches only the `WARNING` to `OK` transition.",
+      "Wrong: `is_recovery` matches recovery from `ALERT`, `WARNING`, `UNKNOWN` or `NO DATA`, which is broader than needed.",
+      "Wrong: `is_alert_to_warning` matches a transition from `ALERT` to `WARNING`."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/notify/variables/#conditional-variables",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-023",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "A log monitor message ends with this line:\n\nCheckout errors are spiking@slack-checkout-alerts\n\nThe Slack integration and channel are set up, but the channel never receives the alert. What is the fix?",
+    "options": [
+      "Add a space between `spiking` and `@slack-checkout-alerts`.",
+      "Replace `@slack-checkout-alerts` with `#slack-checkout-alerts`, the Slack channel prefix.",
+      "Move the handle into an `{{#is_alert}}` block, because handles outside conditional blocks are ignored."
+    ],
+    "answer": 0,
+    "explanation": "An @notification must have a space between it and the last character before it, for example `Disk space is low @ops-team@company.com`. Integration handles use the `@<INTEGRATION_NAME>-<VALUES>` format, such as `@slack-...`.",
+    "notes": [
+      "Correct: without a space before it, the handle is not recognized as an @notification.",
+      "Wrong: Datadog integration handles start with `@`, as in `@slack-<CHANNEL>`; `#` is not a notification prefix.",
+      "Wrong: handles outside conditional blocks are valid and are notified on every state transition."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/notify/#notification-recipients",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-024",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A log monitor on `service:queue status:error` has been in `ALERT` for three hours. Error logs are still arriving, and the team wants a reminder every hour until someone fixes the issue. What should they configure?",
+    "options": [
+      "Auto resolve after 1 hour",
+      "An evaluation delay of 3600 seconds",
+      "Renotification with a 60-minute interval"
+    ],
+    "answer": 2,
+    "explanation": "Renotify reminds the team that a problem is not solved, at a configured interval and for chosen states. Auto resolve only works when data stops reporting, so it would not act while errors keep arriving.",
+    "notes": [
+      "Wrong: monitors do not auto-resolve from `ALERT` while data is still reporting, and resolving is not a reminder.",
+      "Wrong: evaluation delay only shifts which data is evaluated; it sends no reminders.",
+      "Correct: renotify with a 60-minute interval resends the notification while the alert persists."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/notify/#renotify",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-025",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "An ungrouped Simple-Alert log count monitor includes log samples in its Slack alerts. The team notices that the recovery messages contain no samples. What explains this?",
+    "options": [
+      "Log samples are only supported for email notifications.",
+      "Samples are not displayed for recovery notifications.",
+      "Samples require the monitor to be grouped as a Multi Alert."
+    ],
+    "answer": 1,
+    "explanation": "Log samples can be added to alert notifications sent to Slack, Jira, webhooks, Microsoft Teams, PagerDuty and email, but samples are not displayed for recovery notifications.",
+    "notes": [
+      "Wrong: samples are supported for Slack and other channels, not only email.",
+      "Correct: this is expected behaviour; recovery notifications never include samples.",
+      "Wrong: ungrouped Simple-Alert log count monitors can include up to 10 log samples."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#log-samples-and-breaching-values-toplist",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-026",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "hard",
+    "q": "A log count monitor is grouped by `@http.url_details.path` but configured as Simple Alert. What can be added to its notification message when it triggers?",
+    "options": [
+      "Up to 10 log samples",
+      "Up to 100 log samples",
+      "Up to 10 facet or measure values (top breaching values)"
+    ],
+    "answer": 2,
+    "explanation": "For a grouped Simple-Alert log count monitor, up to 10 facet or measure values can be added to the notification. Log samples are used for ungrouped Simple-Alert and grouped Multi Alert log count monitors.",
+    "notes": [
+      "Wrong: log samples apply to ungrouped Simple-Alert or grouped Multi Alert log count monitors.",
+      "Wrong: the maximum is 10 items, never 100.",
+      "Correct: grouped Simple-Alert monitors get a top list of up to 10 breaching values."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/types/log/#log-samples-and-breaching-values-toplist",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-027",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "An exclusion filter keeps only 5% of `service:web status:info` access logs in the index. The team still needs an alert on the total number of requests, including the logs that are not indexed. What should they do?",
+    "options": [
+      "Create a log monitor on `service:web status:info` and multiply the threshold by 20.",
+      "Generate a log-based metric that counts these logs and alert on it with a metric monitor.",
+      "Create a log monitor and enable Show NO DATA so excluded logs are counted."
+    ],
+    "answer": 1,
+    "explanation": "Log-based metrics are computed from the entire ingest stream, so they include logs dropped by exclusion filters. A metric monitor on that metric alerts on the full volume, while log monitors only see indexed logs.",
+    "notes": [
+      "Wrong: log monitors only evaluate indexed logs, and scaling a sampled count is an estimate, not the total.",
+      "Correct: a log-based metric counts all ingested logs, and a metric monitor can alert on it.",
+      "Wrong: missing-data settings do not make a log monitor read non-indexed logs."
+    ],
+    "ref": "https://docs.datadoghq.com/logs/log_configuration/logs_to_metrics/#overview",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-028",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "easy",
+    "q": "Watchdog surfaces log anomalies as Insights in the Log Explorer. Which anomaly is considered severe enough to appear in the Watchdog Alert Explorer and trigger a Watchdog monitor?",
+    "options": [
+      "A new pattern of `warn` logs from one service that appeared and faded within 3 minutes",
+      "A sharp rise in error logs lasting 15 minutes on a low-noise service",
+      "Any increase in `info` logs compared with the previous 24 hours of history"
+    ],
+    "answer": 1,
+    "explanation": "A severe log anomaly contains error logs, lasts at least 10 minutes, shows a significant increase, and has a low noise score. Only severe anomalies reach the Watchdog Alert Explorer and can be alerted on with a Watchdog monitor.",
+    "notes": [
+      "Wrong: it has no error logs and is shorter than the 10-minute minimum.",
+      "Correct: it meets all the severity criteria.",
+      "Wrong: Watchdog looks at warning and error logs, and severe anomalies must contain errors."
+    ],
+    "ref": "https://docs.datadoghq.com/watchdog/alerts/#watchdog-alerts-coverage",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-029",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "medium",
+    "q": "A monitor message must contain a Log Explorer link covering 10 minutes before and after the alert:\n\nhttps://app.datadoghq.com/logs?from_ts={{eval \"X-10*60*1000\"}}&to_ts={{eval \"X+10*60*1000\"}}&live=false\n\nWhich template variable should replace X?",
+    "options": [
+      "`triggered_duration_sec`",
+      "`last_triggered_at`",
+      "`last_triggered_at_epoch`"
+    ],
+    "answer": 2,
+    "explanation": "`{{last_triggered_at_epoch}}` returns the last trigger time in epoch milliseconds, so adding or subtracting `10*60*1000` builds a time-scoped Log Explorer link.",
+    "notes": [
+      "Wrong: this is the number of seconds the monitor has been triggered, not a timestamp.",
+      "Wrong: this returns a UTC date and time string, which cannot be used in millisecond arithmetic.",
+      "Correct: the epoch milliseconds value works with `from_ts` and `to_ts`."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/notify/variables/#dynamic-links",
+    "verified": "2026-11"
+  },
+  {
+    "id": "lm-mon-030",
+    "topic": "Log Utilization",
+    "subtopic": "Monitors & Alerting",
+    "difficulty": "hard",
+    "q": "A log monitor alerts when the error count is above 100 and has an alert recovery threshold of 80. After alerting, the count falls to 90 and stays there. What happens?",
+    "options": [
+      "The monitor stays in `ALERT` until the count is 80 or lower.",
+      "The monitor recovers, because 90 is no longer above 100.",
+      "The monitor moves to `WARNING`, because the count is between the two thresholds."
+    ],
+    "answer": 0,
+    "explanation": "A recovery threshold adds a condition: the monitor only recovers once the value passes it. For an alert condition of `>` threshold, recovery requires the value to be `<=` the alert recovery threshold.",
+    "notes": [
+      "Correct: with `> 100` and a recovery threshold of 80, the monitor recovers only at 80 or below.",
+      "Wrong: that is the behaviour without a recovery threshold.",
+      "Wrong: a recovery threshold is not a warning threshold, so it does not create a `WARNING` state."
+    ],
+    "ref": "https://docs.datadoghq.com/monitors/guide/recovery-thresholds/#behavior",
+    "verified": "2026-11"
+  }
+]

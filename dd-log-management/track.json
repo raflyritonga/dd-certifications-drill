@@ -1,0 +1,20 @@
+{
+  "key": "logs",
+  "order": 2,
+  "title": "Datadog Log Management Fundamentals",
+  "short": "Log Management",
+  "storage": "ddlm-drill-v1",
+  "checked": "November 2026",
+  "pools": ["pool_sys", "pool_fmt", "pool_emit", "pool_collect", "pool_filt", "pool_pipe", "pool_attr", "pool_live", "pool_srch", "pool_expl", "pool_excl", "pool_aggr", "pool_viz", "pool_mon", "pool_metr", "pool_exp", "pool_trbl"],
+  "packages": 20,
+  "focus": [
+    {"subtopic": "Search Syntax", "label": "Search syntax"},
+    {"subtopic": "Processors & Pipelines", "label": "Processors & pipelines"}
+  ],
+  "official": {
+    "file": "questions/official.json",
+    "source": "materials/official_example_questions.md",
+    "prefix": "lm-",
+    "ref": "https://learn.datadoghq.com/courses/log-management-fundamentals-practice-exam"
+  }
+}
